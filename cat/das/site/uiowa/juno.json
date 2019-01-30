@@ -1,0 +1,48 @@
+{
+   "catalog": {
+      "ephemeris": {
+         "name": "Ephemeris",
+         "title": "Spacecraft position - Jet Propulsion Laboratory (NAIF)",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/juno/ephemeris.json"
+         ]
+      },
+      "fgm": {
+         "name": "FGM",
+         "title": "Fluxgate Magnetometer - Goddard Spaceflight Center (Jack Connerney)",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/juno/fgm.json"
+         ]
+      },
+      "jad": {
+         "name": "JAD",
+         "title": "Jovian Auroral Distribution Experiment - Southwest Research Institute (David McComas)",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/juno/jad.json"
+         ]
+      },
+      "jed": {
+         "name": "JED",
+         "title": "Jovian Energetic Particle Detector Instrument - Johns Hopkins University Applied Physics Laboratory (Barry Mauk)",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/juno/jed.json"
+         ]
+      },
+      "wav": {
+         "name": "WAV",
+         "title": "Waves: A Radio and Plasma Wave Receiver - University of Iowa (Bill Kurth)",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/juno/wav.json"
+         ]
+      }
+   },
+   "name": "Juno",
+   "title": "Jupiter polar orbiter - Launch date 2011-08-05",
+   "type": "Catalog",
+   "version": "0.4"
+}

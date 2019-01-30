@@ -1,0 +1,40 @@
+{
+   "catalog": {
+      "aspera": {
+         "name": "ASPERA",
+         "title": "Analyzer of Space Plasma and Energetic Atoms - Southwest Research Institute (David Winningham)",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/mars_express/aspera.json"
+         ]
+      },
+      "ephemeris": {
+         "name": "Ephemeris",
+         "title": "Spacecraft location data - Jet Propulsion Laboratory (NAIF)",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/mars_express/ephemeris.json"
+         ]
+      },
+      "marsis": {
+         "name": "MARSIS",
+         "title": "Mars Advanced Radar for Subsurface and Ionosphere Sounding - Univ. of Iowa (Don Gurnett)",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/mars_express/marsis.json"
+         ]
+      },
+      "models": {
+         "name": "Models",
+         "title": "Data generated via physical models instead of measurments",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/mars_express/models.json"
+         ]
+      }
+   },
+   "name": "Mars Express",
+   "title": "Mars polar orbiter - Launch date 2003-06-02",
+   "type": "Catalog",
+   "version": "0.4"
+}

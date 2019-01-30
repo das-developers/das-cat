@@ -1,0 +1,16 @@
+{
+   "catalog": {
+      "de-1": {
+         "name": "de-1",
+         "title": null,
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/de/de-1.json"
+         ]
+      }
+   },
+   "name": "DE",
+   "title": "Earth polar orbiters - Launch date 1981-08-03",
+   "type": "Catalog",
+   "version": "0.4"
+}

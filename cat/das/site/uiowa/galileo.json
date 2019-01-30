@@ -1,0 +1,32 @@
+{
+   "catalog": {
+      "ephemeris": {
+         "name": "Ephemeris",
+         "title": "Spacecraft position - Jet Propulsion Laboratory (NAIF)",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/galileo/ephemeris.json"
+         ]
+      },
+      "mag": {
+         "name": "MAG",
+         "title": "Triaxial Fluxgate Magnetometer - UCLA Institute of Geophysics and Planetary Physics (M. G. Kivelson)",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/galileo/mag.json"
+         ]
+      },
+      "pws": {
+         "name": "PWS",
+         "title": "Plasma Wave Science instrument - University of Iowa (Donald Gurnett)",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/galileo/pws.json"
+         ]
+      }
+   },
+   "name": "Galileo",
+   "title": "Jupiter equatorial orbiter - Launch date 1989-10-13",
+   "type": "Catalog",
+   "version": "0.4"
+}

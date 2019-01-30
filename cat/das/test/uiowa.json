@@ -1,0 +1,16 @@
+{
+   "name": "U. Iowa",
+   "catalog": {
+      "mars_express": {
+         "name": "Mars Express",
+         "title": "Mars polar orbiter - Launch date 2003-06-02",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/test/uiowa/mars_express.json"
+         ]
+      }
+   },
+   "title": "University of Iowa, Department of Physics and Astronomy Test Catalog",
+   "type": "Catalog",
+   "version": "0.4"
+}

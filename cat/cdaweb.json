@@ -1,0 +1,18 @@
+{
+  "catalog": {
+    "/": {
+      "MIME": "text/xml",
+      "name": "CDAWeb_SPDF",
+      "title": "CDAWeb and Space Physics Data Facility (SPDF) catalog",
+      "type": "SpdfMasterCat",
+      "urls": [
+        "https://cdaweb.sci.gsfc.nasa.gov/pub/catalogs/all.xml"
+      ]
+    }
+  },
+  "name": "CDAWeb",
+  "separator": null,
+  "title": "NASA Goddard Spaceflight Center Data Sites",
+  "type": "Catalog",
+  "version": "0.4"
+}

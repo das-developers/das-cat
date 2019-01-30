@@ -1,0 +1,64 @@
+{
+   "catalog": {
+      "cassini-rpws-hfr": {
+         "name": "Cassini-RPWS-HFR",
+         "title": "Cassini/RPWS/HFR datasets",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/voparis/cassini-rpws-hfr.json"
+         ]
+      },
+      "cdpp": {
+         "name": "CDPP",
+         "title": null,
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/voparis/cdpp.json"
+         ]
+      },
+      "expres": {
+         "name": "ExPRES",
+         "title": "ExPRES (Exoplanetary and Planetary Radio Emission Simulator, Hess et al., 2017) datasets",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/voparis/expres.json"
+         ]
+      },
+      "nancay": {
+         "name": "Nancay",
+         "title": "Ground based low frequency radioastronomy observations starting from 1990",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/voparis/nancay.json"
+         ]
+      },
+      "radiojove": {
+         "name": "RadioJOVE",
+         "title": null,
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/voparis/radiojove.json"
+         ]
+      },
+      "stereo-waves": {
+         "name": "STEREO-Waves",
+         "title": "STEREO/Waves datasets",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/voparis/stereo-waves.json"
+         ]
+      },
+      "voyager-pra": {
+         "name": "Voyager-PRA",
+         "title": "Voyager-PRA datasets",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/voparis/voyager-pra.json"
+         ]
+      }
+   },
+   "name": "VO Paris",
+   "title": "My Das2.2 Server",
+   "type": "Catalog",
+   "version": "0.4"
+}

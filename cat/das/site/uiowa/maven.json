@@ -1,0 +1,40 @@
+{
+   "catalog": {
+      "ephemeris": {
+         "name": "Ephemeris",
+         "title": "Spacecraft location data - Jet Propulsion Laboratory (NAIF)",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/maven/ephemeris.json"
+         ]
+      },
+      "mag": {
+         "name": "MAG",
+         "title": "Dual tri-axial fluxgate magnetometer - Goddard Spaceflight Center (Jack Connerney)",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/maven/mag.json"
+         ]
+      },
+      "models": {
+         "name": "Models",
+         "title": "Data generated via physical models instead of measurments",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/maven/models.json"
+         ]
+      },
+      "ngi": {
+         "name": "NGI",
+         "title": "Neutral Gas and Ion Mass Spectrometer (NGIMS) - Goddard Spaceflight Center (Paul Mahaffy)",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/maven/ngi.json"
+         ]
+      }
+   },
+   "name": "Maven",
+   "title": "Mars Atmosphere and Volatile Evolution Mission - Orbit Insertion 2014-09-22",
+   "type": "Catalog",
+   "version": "0.4"
+}

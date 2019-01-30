@@ -1,0 +1,16 @@
+{
+   "name": "MIMI",
+   "catalog": {
+      "chems_pha_box_fluxes_full_time_res": {
+         "name": "CHEMS PHA Full Res",
+         "title": "CHEMS PHA flux box intensities for many species at the highest time resolution",
+         "type": "Collection",
+         "urls": [
+            "http://das2.org/catalog/das/site/jhuapl/cassini/mimi/chems_pha_box_fluxes_full_time_res.json"
+         ]
+      }
+   },
+   "title": "Magnetospheric IMaging Instrument - JHU/Applied Physics Laboratory (Donald Mitchell)",
+   "type": "Catalog",
+   "version": "0.4"
+}

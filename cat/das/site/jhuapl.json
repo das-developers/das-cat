@@ -1,0 +1,16 @@
+{
+   "name": "JHU APL",
+   "catalog": {
+      "cassini": {
+         "name": "Cassini",
+         "title": "Saturn System Explorer - Orbit Insertion 2004-06-30",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/jhuapl/cassini.json"
+         ]
+      }
+   },
+   "title": "Johns Hopkins, Applied Physics Laboratory",
+   "type": "Catalog",
+   "version": "0.4"
+}

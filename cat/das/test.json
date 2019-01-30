@@ -1,0 +1,25 @@
+{
+  "description": "This is the root node of the federated das2 test catalog. This is an even more informal registry than the das2 sites catalog. Data stream sources listed within this three may be temporary, may change names often and may not even work, and that's okay. If you would like to experiment with serving data via das2 streams or just with the global das2 catalog system you are welcome to have your site listed here. Contact Larry Granroth at the University of Iowa to have your top level site test catalog linked in at this point.",
+  "name": "Test",
+  "separator": ":/",
+  "catalog": {
+    "cottagesystems": {
+      "name": "Cottage Systems",
+      "type": "Catalog",
+      "urls": [
+        "http://das2.org/catalog/das/test/cottagesystems.json"
+      ]
+    },
+    "uiowa": {
+      "name": "U. Iowa",
+      "title": "University of Iowa, Department of Physics & Astronomy",
+      "type": "Catalog",
+      "urls": [
+        "http://das2.org/catalog/das/test/uiowa.json"
+      ]
+    }
+  },
+  "title": "Root test Catalog",
+  "type": "Catalog",
+  "version":"0.4"
+}

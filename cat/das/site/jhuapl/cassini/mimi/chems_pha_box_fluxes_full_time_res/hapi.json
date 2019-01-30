@@ -1,0 +1,4688 @@
+{
+  "authentication": {
+    "required": false
+  },
+  "base_urls": [
+    "http://datashop.elasticbeanstalk.com/hapi/data?id=CHEMS_PHA_BOX_FLUXES_FULL_TIME_RES&include=header"
+  ],
+  "convention": "hapi/2.0",
+  "coordinates": {
+    "dist_rs": {
+      "enabled": {
+        "set": {
+          "flag": "000",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "Dist_Rs",
+      "title": "radial distance from Cassini to Saturn in Saturn radii",
+      "units": "Rs"
+    },
+    "energy": {
+      "name": "energy",
+      "units": "keV"
+    },
+    "offset_dipolel": {
+      "enabled": {
+        "set": {
+          "flag": "007",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "Offset_DipoleL",
+      "title": "Cassini L shell location using offset dipole",
+      "units": "Rs"
+    },
+    "pa_for_chems_t1": {
+      "enabled": {
+        "set": {
+          "flag": "010",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "PA_for_CHEMS_T1",
+      "title": "pitch angle for CHEMS telescope 1",
+      "units": "degrees"
+    },
+    "pa_for_chems_t2": {
+      "enabled": {
+        "set": {
+          "flag": "011",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "PA_for_CHEMS_T2",
+      "title": "pitch angle for CHEMS telescope 2",
+      "units": "degrees"
+    },
+    "pa_for_chems_t3": {
+      "enabled": {
+        "set": {
+          "flag": "012",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "PA_for_CHEMS_T3",
+      "title": "pitch angle for CHEMS telescope 3",
+      "units": "degrees"
+    },
+    "pa_for_chems_tall": {
+      "enabled": {
+        "set": {
+          "flag": "013",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "PA_for_CHEMS_TALL",
+      "title": "pitch angle for CHEMS data summed over all telescopes",
+      "units": "degrees"
+    },
+    "sso_x": {
+      "enabled": {
+        "set": {
+          "flag": "001",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "SSO_X",
+      "title": "Cassini X position in SSO frame",
+      "units": "Rs"
+    },
+    "sso_y": {
+      "enabled": {
+        "set": {
+          "flag": "002",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "SSO_Y",
+      "title": "Cassini Y position in SSO frame",
+      "units": "Rs"
+    },
+    "sso_z": {
+      "enabled": {
+        "set": {
+          "flag": "003",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "SSO_Z",
+      "title": "Cassini Z position in SSO frame",
+      "units": "Rs"
+    },
+    "szs_latitude_degrees": {
+      "enabled": {
+        "set": {
+          "flag": "008",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "SZS_Latitude_degrees",
+      "title": "Cassini SZS latitude in degrees",
+      "units": "degrees"
+    },
+    "szs_localtime_hours": {
+      "enabled": {
+        "set": {
+          "flag": "009",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "SZS_LocalTime_hours",
+      "title": "Cassini SZS localtime in hours",
+      "units": "degrees"
+    },
+    "szs_x": {
+      "enabled": {
+        "set": {
+          "flag": "004",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "SZS_X",
+      "title": "Cassini X position in SZS frame",
+      "units": "Rs"
+    },
+    "szs_y": {
+      "enabled": {
+        "set": {
+          "flag": "005",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "SZS_Y",
+      "title": "Cassini Y position in SZS frame",
+      "units": "Rs"
+    },
+    "szs_z": {
+      "enabled": {
+        "set": {
+          "flag": "006",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "SZS_Z",
+      "title": "Cassini Z position in SZS frame",
+      "units": "Rs"
+    },
+    "time": {
+      "maximum": {
+        "set": {
+          "param": "time.max",
+          "required": true
+        },
+        "value": "2004-184T00:00:00.000Z"
+      },
+      "minimum": {
+        "set": {
+          "param": "time.min",
+          "required": true
+        },
+        "value": "2004-183T00:00:00.000Z"
+      },
+      "name": "Epoch",
+      "units": "UTC",
+      "valid_max": "2017-258T10:31:10.425Z",
+      "valid_min": "2004-001T00:00:04.734Z"
+    }
+  },
+  "data": {
+    "cplus_best_all": {
+      "enabled": {
+        "set": {
+          "flag": "045",
+          "param": "parameters",
+          "value": true
+        },
+        "value": true
+      },
+      "name": "CPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_best_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "177",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_BEST_ALL_uncert",
+      "title": "uncertainties for CPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_best_t1": {
+      "enabled": {
+        "set": {
+          "flag": "042",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_best_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "174",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_BEST_T1_uncert",
+      "title": "uncertainties for CPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_best_t2": {
+      "enabled": {
+        "set": {
+          "flag": "043",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_best_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "175",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_BEST_T2_uncert",
+      "title": "uncertainties for CPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_best_t3": {
+      "enabled": {
+        "set": {
+          "flag": "044",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_best_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "176",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_BEST_T3_uncert",
+      "title": "uncertainties for CPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_doubles_all": {
+      "enabled": {
+        "set": {
+          "flag": "089",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_doubles_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "221",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for CPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_doubles_t1": {
+      "enabled": {
+        "set": {
+          "flag": "086",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_doubles_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "218",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_DOUBLES_T1_uncert",
+      "title": "uncertainties for CPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_doubles_t2": {
+      "enabled": {
+        "set": {
+          "flag": "087",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_doubles_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "219",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_DOUBLES_T2_uncert",
+      "title": "uncertainties for CPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_doubles_t3": {
+      "enabled": {
+        "set": {
+          "flag": "088",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_doubles_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "220",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_DOUBLES_T3_uncert",
+      "title": "uncertainties for CPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_triples_all": {
+      "enabled": {
+        "set": {
+          "flag": "133",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_triples_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "265",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for CPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_triples_t1": {
+      "enabled": {
+        "set": {
+          "flag": "130",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_triples_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "262",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_TRIPLES_T1_uncert",
+      "title": "uncertainties for CPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_triples_t2": {
+      "enabled": {
+        "set": {
+          "flag": "131",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_triples_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "263",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_TRIPLES_T2_uncert",
+      "title": "uncertainties for CPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_triples_t3": {
+      "enabled": {
+        "set": {
+          "flag": "132",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_triples_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "264",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "CPlus_TRIPLES_T3_uncert",
+      "title": "uncertainties for CPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_best_all": {
+      "enabled": {
+        "set": {
+          "flag": "025",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_best_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "157",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_BEST_ALL_uncert",
+      "title": "uncertainties for H2Plus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_best_t1": {
+      "enabled": {
+        "set": {
+          "flag": "022",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_best_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "154",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_BEST_T1_uncert",
+      "title": "uncertainties for H2Plus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_best_t2": {
+      "enabled": {
+        "set": {
+          "flag": "023",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_best_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "155",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_BEST_T2_uncert",
+      "title": "uncertainties for H2Plus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_best_t3": {
+      "enabled": {
+        "set": {
+          "flag": "024",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_best_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "156",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_BEST_T3_uncert",
+      "title": "uncertainties for H2Plus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_doubles_all": {
+      "enabled": {
+        "set": {
+          "flag": "069",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_doubles_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "201",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for H2Plus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_doubles_t1": {
+      "enabled": {
+        "set": {
+          "flag": "066",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_doubles_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "198",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_DOUBLES_T1_uncert",
+      "title": "uncertainties for H2Plus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_doubles_t2": {
+      "enabled": {
+        "set": {
+          "flag": "067",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_doubles_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "199",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_DOUBLES_T2_uncert",
+      "title": "uncertainties for H2Plus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_doubles_t3": {
+      "enabled": {
+        "set": {
+          "flag": "068",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_doubles_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "200",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_DOUBLES_T3_uncert",
+      "title": "uncertainties for H2Plus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_triples_all": {
+      "enabled": {
+        "set": {
+          "flag": "113",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_triples_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "245",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for H2Plus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_triples_t1": {
+      "enabled": {
+        "set": {
+          "flag": "110",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_triples_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "242",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_TRIPLES_T1_uncert",
+      "title": "uncertainties for H2Plus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_triples_t2": {
+      "enabled": {
+        "set": {
+          "flag": "111",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_triples_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "243",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_TRIPLES_T2_uncert",
+      "title": "uncertainties for H2Plus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_triples_t3": {
+      "enabled": {
+        "set": {
+          "flag": "112",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_triples_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "244",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H2Plus_TRIPLES_T3_uncert",
+      "title": "uncertainties for H2Plus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_best_all": {
+      "enabled": {
+        "set": {
+          "flag": "041",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_best_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "173",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_BEST_ALL_uncert",
+      "title": "uncertainties for H3Plus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_best_t1": {
+      "enabled": {
+        "set": {
+          "flag": "038",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_best_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "170",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_BEST_T1_uncert",
+      "title": "uncertainties for H3Plus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_best_t2": {
+      "enabled": {
+        "set": {
+          "flag": "039",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_best_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "171",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_BEST_T2_uncert",
+      "title": "uncertainties for H3Plus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_best_t3": {
+      "enabled": {
+        "set": {
+          "flag": "040",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_best_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "172",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_BEST_T3_uncert",
+      "title": "uncertainties for H3Plus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_doubles_all": {
+      "enabled": {
+        "set": {
+          "flag": "085",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_doubles_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "217",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for H3Plus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_doubles_t1": {
+      "enabled": {
+        "set": {
+          "flag": "082",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_doubles_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "214",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_DOUBLES_T1_uncert",
+      "title": "uncertainties for H3Plus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_doubles_t2": {
+      "enabled": {
+        "set": {
+          "flag": "083",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_doubles_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "215",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_DOUBLES_T2_uncert",
+      "title": "uncertainties for H3Plus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_doubles_t3": {
+      "enabled": {
+        "set": {
+          "flag": "084",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_doubles_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "216",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_DOUBLES_T3_uncert",
+      "title": "uncertainties for H3Plus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_triples_all": {
+      "enabled": {
+        "set": {
+          "flag": "129",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_triples_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "261",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for H3Plus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_triples_t1": {
+      "enabled": {
+        "set": {
+          "flag": "126",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_triples_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "258",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_TRIPLES_T1_uncert",
+      "title": "uncertainties for H3Plus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_triples_t2": {
+      "enabled": {
+        "set": {
+          "flag": "127",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_triples_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "259",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_TRIPLES_T2_uncert",
+      "title": "uncertainties for H3Plus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_triples_t3": {
+      "enabled": {
+        "set": {
+          "flag": "128",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_triples_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "260",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "H3Plus_TRIPLES_T3_uncert",
+      "title": "uncertainties for H3Plus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_best_all": {
+      "enabled": {
+        "set": {
+          "flag": "029",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_best_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "161",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_BEST_ALL_uncert",
+      "title": "uncertainties for HePlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_best_t1": {
+      "enabled": {
+        "set": {
+          "flag": "026",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_best_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "158",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_BEST_T1_uncert",
+      "title": "uncertainties for HePlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_best_t2": {
+      "enabled": {
+        "set": {
+          "flag": "027",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_best_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "159",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_BEST_T2_uncert",
+      "title": "uncertainties for HePlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_best_t3": {
+      "enabled": {
+        "set": {
+          "flag": "028",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_best_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "160",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_BEST_T3_uncert",
+      "title": "uncertainties for HePlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_doubles_all": {
+      "enabled": {
+        "set": {
+          "flag": "073",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_doubles_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "205",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for HePlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_doubles_t1": {
+      "enabled": {
+        "set": {
+          "flag": "070",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_doubles_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "202",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_DOUBLES_T1_uncert",
+      "title": "uncertainties for HePlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_doubles_t2": {
+      "enabled": {
+        "set": {
+          "flag": "071",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_doubles_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "203",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_DOUBLES_T2_uncert",
+      "title": "uncertainties for HePlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_doubles_t3": {
+      "enabled": {
+        "set": {
+          "flag": "072",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_doubles_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "204",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_DOUBLES_T3_uncert",
+      "title": "uncertainties for HePlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_triples_all": {
+      "enabled": {
+        "set": {
+          "flag": "117",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_triples_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "249",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for HePlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_triples_t1": {
+      "enabled": {
+        "set": {
+          "flag": "114",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_triples_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "246",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_TRIPLES_T1_uncert",
+      "title": "uncertainties for HePlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_triples_t2": {
+      "enabled": {
+        "set": {
+          "flag": "115",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_triples_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "247",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_TRIPLES_T2_uncert",
+      "title": "uncertainties for HePlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_triples_t3": {
+      "enabled": {
+        "set": {
+          "flag": "116",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_triples_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "248",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlus_TRIPLES_T3_uncert",
+      "title": "uncertainties for HePlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_best_all": {
+      "enabled": {
+        "set": {
+          "flag": "021",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_best_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "153",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_BEST_ALL_uncert",
+      "title": "uncertainties for HePlusPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_best_t1": {
+      "enabled": {
+        "set": {
+          "flag": "018",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_best_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "150",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_BEST_T1_uncert",
+      "title": "uncertainties for HePlusPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_best_t2": {
+      "enabled": {
+        "set": {
+          "flag": "019",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_best_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "151",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_BEST_T2_uncert",
+      "title": "uncertainties for HePlusPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_best_t3": {
+      "enabled": {
+        "set": {
+          "flag": "020",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_best_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "152",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_BEST_T3_uncert",
+      "title": "uncertainties for HePlusPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_doubles_all": {
+      "enabled": {
+        "set": {
+          "flag": "065",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_doubles_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "197",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for HePlusPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_doubles_t1": {
+      "enabled": {
+        "set": {
+          "flag": "062",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_doubles_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "194",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_DOUBLES_T1_uncert",
+      "title": "uncertainties for HePlusPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_doubles_t2": {
+      "enabled": {
+        "set": {
+          "flag": "063",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_doubles_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "195",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_DOUBLES_T2_uncert",
+      "title": "uncertainties for HePlusPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_doubles_t3": {
+      "enabled": {
+        "set": {
+          "flag": "064",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_doubles_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "196",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_DOUBLES_T3_uncert",
+      "title": "uncertainties for HePlusPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_triples_all": {
+      "enabled": {
+        "set": {
+          "flag": "109",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_triples_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "241",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for HePlusPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_triples_t1": {
+      "enabled": {
+        "set": {
+          "flag": "106",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_triples_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "238",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_TRIPLES_T1_uncert",
+      "title": "uncertainties for HePlusPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_triples_t2": {
+      "enabled": {
+        "set": {
+          "flag": "107",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_triples_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "239",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_TRIPLES_T2_uncert",
+      "title": "uncertainties for HePlusPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_triples_t3": {
+      "enabled": {
+        "set": {
+          "flag": "108",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_triples_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "240",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HePlusPlus_TRIPLES_T3_uncert",
+      "title": "uncertainties for HePlusPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_best_all": {
+      "enabled": {
+        "set": {
+          "flag": "017",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_best_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "149",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_BEST_ALL_uncert",
+      "title": "uncertainties for HPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_best_t1": {
+      "enabled": {
+        "set": {
+          "flag": "014",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_best_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "146",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_BEST_T1_uncert",
+      "title": "uncertainties for HPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_best_t2": {
+      "enabled": {
+        "set": {
+          "flag": "015",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_best_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "147",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_BEST_T2_uncert",
+      "title": "uncertainties for HPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_best_t3": {
+      "enabled": {
+        "set": {
+          "flag": "016",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_best_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "148",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_BEST_T3_uncert",
+      "title": "uncertainties for HPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_doubles_all": {
+      "enabled": {
+        "set": {
+          "flag": "061",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_doubles_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "193",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for HPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_doubles_t1": {
+      "enabled": {
+        "set": {
+          "flag": "058",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_doubles_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "190",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_DOUBLES_T1_uncert",
+      "title": "uncertainties for HPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_doubles_t2": {
+      "enabled": {
+        "set": {
+          "flag": "059",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_doubles_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "191",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_DOUBLES_T2_uncert",
+      "title": "uncertainties for HPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_doubles_t3": {
+      "enabled": {
+        "set": {
+          "flag": "060",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_doubles_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "192",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_DOUBLES_T3_uncert",
+      "title": "uncertainties for HPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_triples_all": {
+      "enabled": {
+        "set": {
+          "flag": "105",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_triples_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "237",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for HPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_triples_t1": {
+      "enabled": {
+        "set": {
+          "flag": "102",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_triples_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "234",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_TRIPLES_T1_uncert",
+      "title": "uncertainties for HPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_triples_t2": {
+      "enabled": {
+        "set": {
+          "flag": "103",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_triples_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "235",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_TRIPLES_T2_uncert",
+      "title": "uncertainties for HPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_triples_t3": {
+      "enabled": {
+        "set": {
+          "flag": "104",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_triples_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "236",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "HPlus_TRIPLES_T3_uncert",
+      "title": "uncertainties for HPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_best_all": {
+      "enabled": {
+        "set": {
+          "flag": "049",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_best_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "181",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_BEST_ALL_uncert",
+      "title": "uncertainties for NPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_best_t1": {
+      "enabled": {
+        "set": {
+          "flag": "046",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_best_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "178",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_BEST_T1_uncert",
+      "title": "uncertainties for NPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_best_t2": {
+      "enabled": {
+        "set": {
+          "flag": "047",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_best_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "179",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_BEST_T2_uncert",
+      "title": "uncertainties for NPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_best_t3": {
+      "enabled": {
+        "set": {
+          "flag": "048",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_best_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "180",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_BEST_T3_uncert",
+      "title": "uncertainties for NPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_doubles_all": {
+      "enabled": {
+        "set": {
+          "flag": "093",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_doubles_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "225",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for NPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_doubles_t1": {
+      "enabled": {
+        "set": {
+          "flag": "090",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_doubles_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "222",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_DOUBLES_T1_uncert",
+      "title": "uncertainties for NPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_doubles_t2": {
+      "enabled": {
+        "set": {
+          "flag": "091",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_doubles_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "223",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_DOUBLES_T2_uncert",
+      "title": "uncertainties for NPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_doubles_t3": {
+      "enabled": {
+        "set": {
+          "flag": "092",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_doubles_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "224",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_DOUBLES_T3_uncert",
+      "title": "uncertainties for NPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_triples_all": {
+      "enabled": {
+        "set": {
+          "flag": "137",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_triples_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "269",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for NPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_triples_t1": {
+      "enabled": {
+        "set": {
+          "flag": "134",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_triples_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "266",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_TRIPLES_T1_uncert",
+      "title": "uncertainties for NPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_triples_t2": {
+      "enabled": {
+        "set": {
+          "flag": "135",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_triples_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "267",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_TRIPLES_T2_uncert",
+      "title": "uncertainties for NPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_triples_t3": {
+      "enabled": {
+        "set": {
+          "flag": "136",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_triples_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "268",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "NPlus_TRIPLES_T3_uncert",
+      "title": "uncertainties for NPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_best_all": {
+      "enabled": {
+        "set": {
+          "flag": "057",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_best_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "189",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_BEST_ALL_uncert",
+      "title": "uncertainties for O2Plus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_best_t1": {
+      "enabled": {
+        "set": {
+          "flag": "054",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_best_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "186",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_BEST_T1_uncert",
+      "title": "uncertainties for O2Plus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_best_t2": {
+      "enabled": {
+        "set": {
+          "flag": "055",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_best_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "187",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_BEST_T2_uncert",
+      "title": "uncertainties for O2Plus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_best_t3": {
+      "enabled": {
+        "set": {
+          "flag": "056",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_best_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "188",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_BEST_T3_uncert",
+      "title": "uncertainties for O2Plus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_doubles_all": {
+      "enabled": {
+        "set": {
+          "flag": "101",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_doubles_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "233",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for O2Plus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_doubles_t1": {
+      "enabled": {
+        "set": {
+          "flag": "098",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_doubles_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "230",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_DOUBLES_T1_uncert",
+      "title": "uncertainties for O2Plus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_doubles_t2": {
+      "enabled": {
+        "set": {
+          "flag": "099",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_doubles_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "231",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_DOUBLES_T2_uncert",
+      "title": "uncertainties for O2Plus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_doubles_t3": {
+      "enabled": {
+        "set": {
+          "flag": "100",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_doubles_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "232",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_DOUBLES_T3_uncert",
+      "title": "uncertainties for O2Plus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_triples_all": {
+      "enabled": {
+        "set": {
+          "flag": "145",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_triples_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "277",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for O2Plus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_triples_t1": {
+      "enabled": {
+        "set": {
+          "flag": "142",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_triples_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "274",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_TRIPLES_T1_uncert",
+      "title": "uncertainties for O2Plus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_triples_t2": {
+      "enabled": {
+        "set": {
+          "flag": "143",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_triples_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "275",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_TRIPLES_T2_uncert",
+      "title": "uncertainties for O2Plus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_triples_t3": {
+      "enabled": {
+        "set": {
+          "flag": "144",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_triples_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "276",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "O2Plus_TRIPLES_T3_uncert",
+      "title": "uncertainties for O2Plus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_best_all": {
+      "enabled": {
+        "set": {
+          "flag": "037",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_best_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "169",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_BEST_ALL_uncert",
+      "title": "uncertainties for OPlusPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_best_t1": {
+      "enabled": {
+        "set": {
+          "flag": "034",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_best_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "166",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_BEST_T1_uncert",
+      "title": "uncertainties for OPlusPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_best_t2": {
+      "enabled": {
+        "set": {
+          "flag": "035",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_best_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "167",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_BEST_T2_uncert",
+      "title": "uncertainties for OPlusPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_best_t3": {
+      "enabled": {
+        "set": {
+          "flag": "036",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_best_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "168",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_BEST_T3_uncert",
+      "title": "uncertainties for OPlusPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_doubles_all": {
+      "enabled": {
+        "set": {
+          "flag": "081",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_doubles_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "213",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for OPlusPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_doubles_t1": {
+      "enabled": {
+        "set": {
+          "flag": "078",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_doubles_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "210",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_DOUBLES_T1_uncert",
+      "title": "uncertainties for OPlusPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_doubles_t2": {
+      "enabled": {
+        "set": {
+          "flag": "079",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_doubles_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "211",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_DOUBLES_T2_uncert",
+      "title": "uncertainties for OPlusPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_doubles_t3": {
+      "enabled": {
+        "set": {
+          "flag": "080",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_doubles_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "212",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_DOUBLES_T3_uncert",
+      "title": "uncertainties for OPlusPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_triples_all": {
+      "enabled": {
+        "set": {
+          "flag": "125",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_triples_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "257",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for OPlusPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_triples_t1": {
+      "enabled": {
+        "set": {
+          "flag": "122",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_triples_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "254",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_TRIPLES_T1_uncert",
+      "title": "uncertainties for OPlusPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_triples_t2": {
+      "enabled": {
+        "set": {
+          "flag": "123",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_triples_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "255",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_TRIPLES_T2_uncert",
+      "title": "uncertainties for OPlusPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_triples_t3": {
+      "enabled": {
+        "set": {
+          "flag": "124",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_triples_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "256",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlus_TRIPLES_T3_uncert",
+      "title": "uncertainties for OPlusPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_best_all": {
+      "enabled": {
+        "set": {
+          "flag": "053",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_best_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "185",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_BEST_ALL_uncert",
+      "title": "uncertainties for OPlusPlusPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_best_t1": {
+      "enabled": {
+        "set": {
+          "flag": "050",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_best_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "182",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_BEST_T1_uncert",
+      "title": "uncertainties for OPlusPlusPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_best_t2": {
+      "enabled": {
+        "set": {
+          "flag": "051",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_best_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "183",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_BEST_T2_uncert",
+      "title": "uncertainties for OPlusPlusPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_best_t3": {
+      "enabled": {
+        "set": {
+          "flag": "052",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_best_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "184",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_BEST_T3_uncert",
+      "title": "uncertainties for OPlusPlusPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_doubles_all": {
+      "enabled": {
+        "set": {
+          "flag": "097",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_doubles_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "229",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for OPlusPlusPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_doubles_t1": {
+      "enabled": {
+        "set": {
+          "flag": "094",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_doubles_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "226",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_DOUBLES_T1_uncert",
+      "title": "uncertainties for OPlusPlusPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_doubles_t2": {
+      "enabled": {
+        "set": {
+          "flag": "095",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_doubles_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "227",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_DOUBLES_T2_uncert",
+      "title": "uncertainties for OPlusPlusPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_doubles_t3": {
+      "enabled": {
+        "set": {
+          "flag": "096",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_doubles_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "228",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_DOUBLES_T3_uncert",
+      "title": "uncertainties for OPlusPlusPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_triples_all": {
+      "enabled": {
+        "set": {
+          "flag": "141",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_triples_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "273",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for OPlusPlusPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_triples_t1": {
+      "enabled": {
+        "set": {
+          "flag": "138",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_triples_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "270",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_TRIPLES_T1_uncert",
+      "title": "uncertainties for OPlusPlusPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_triples_t2": {
+      "enabled": {
+        "set": {
+          "flag": "139",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_triples_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "271",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_TRIPLES_T2_uncert",
+      "title": "uncertainties for OPlusPlusPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_triples_t3": {
+      "enabled": {
+        "set": {
+          "flag": "140",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_triples_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "272",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "OPlusPlusPlus_TRIPLES_T3_uncert",
+      "title": "uncertainties for OPlusPlusPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_best_all": {
+      "enabled": {
+        "set": {
+          "flag": "033",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_best_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "165",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_BEST_ALL_uncert",
+      "title": "uncertainties for WPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_best_t1": {
+      "enabled": {
+        "set": {
+          "flag": "030",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_best_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "162",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_BEST_T1_uncert",
+      "title": "uncertainties for WPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_best_t2": {
+      "enabled": {
+        "set": {
+          "flag": "031",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_best_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "163",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_BEST_T2_uncert",
+      "title": "uncertainties for WPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_best_t3": {
+      "enabled": {
+        "set": {
+          "flag": "032",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_best_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "164",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_BEST_T3_uncert",
+      "title": "uncertainties for WPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_doubles_all": {
+      "enabled": {
+        "set": {
+          "flag": "077",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_doubles_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "209",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for WPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_doubles_t1": {
+      "enabled": {
+        "set": {
+          "flag": "074",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_doubles_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "206",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_DOUBLES_T1_uncert",
+      "title": "uncertainties for WPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_doubles_t2": {
+      "enabled": {
+        "set": {
+          "flag": "075",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_doubles_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "207",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_DOUBLES_T2_uncert",
+      "title": "uncertainties for WPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_doubles_t3": {
+      "enabled": {
+        "set": {
+          "flag": "076",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_doubles_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "208",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_DOUBLES_T3_uncert",
+      "title": "uncertainties for WPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_triples_all": {
+      "enabled": {
+        "set": {
+          "flag": "121",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_triples_all_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "253",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for WPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_triples_t1": {
+      "enabled": {
+        "set": {
+          "flag": "118",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_triples_t1_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "250",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_TRIPLES_T1_uncert",
+      "title": "uncertainties for WPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_triples_t2": {
+      "enabled": {
+        "set": {
+          "flag": "119",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_triples_t2_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "251",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_TRIPLES_T2_uncert",
+      "title": "uncertainties for WPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_triples_t3": {
+      "enabled": {
+        "set": {
+          "flag": "120",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_triples_t3_uncert": {
+      "enabled": {
+        "set": {
+          "flag": "252",
+          "param": "parameters",
+          "value": true
+        },
+        "value": false
+      },
+      "name": "WPlus_TRIPLES_T3_uncert",
+      "title": "uncertainties for WPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    }
+  },
+  "examples": {
+    "example": {
+      "http_params": {
+        "time.max": "2004-184T00:00:00.000Z",
+        "time.min": "2004-183T00:00:00.000Z"
+      },
+      "name": "Example HPlus_BEST_T1",
+      "url": "http://datashop.elasticbeanstalk.com/hapi/data?id=CHEMS_PHA_BOX_FLUXES_FULL_TIME_RES&include=header&time.min=2004-183T00:00:00.000Z&time.max=2004-184T00:00:00.000Z&parameters=HPlus_BEST_T1"
+    }
+  },
+  "format":{
+		"default": {
+         "mime": "application/vnd.hapi.stream",
+         "name": "Hapi Stream"
+		}
+  },
+  "http_params": {
+    "parameters": {
+      "flag_sep": ",",
+      "flags": {
+        "000": {
+          "description": "Enable Dist_Rs Output",
+          "value": "Dist_Rs"
+        },
+        "001": {
+          "description": "Enable SSO_X Output",
+          "value": "SSO_X"
+        },
+        "002": {
+          "description": "Enable SSO_Y Output",
+          "value": "SSO_Y"
+        },
+        "003": {
+          "description": "Enable SSO_Z Output",
+          "value": "SSO_Z"
+        },
+        "004": {
+          "description": "Enable SZS_X Output",
+          "value": "SZS_X"
+        },
+        "005": {
+          "description": "Enable SZS_Y Output",
+          "value": "SZS_Y"
+        },
+        "006": {
+          "description": "Enable SZS_Z Output",
+          "value": "SZS_Z"
+        },
+        "007": {
+          "description": "Enable Offset_DipoleL Output",
+          "value": "Offset_DipoleL"
+        },
+        "008": {
+          "description": "Enable SZS_Latitude_degrees Output",
+          "value": "SZS_Latitude_degrees"
+        },
+        "009": {
+          "description": "Enable SZS_LocalTime_hours Output",
+          "value": "SZS_LocalTime_hours"
+        },
+        "010": {
+          "description": "Enable PA_for_CHEMS_T1 Output",
+          "value": "PA_for_CHEMS_T1"
+        },
+        "011": {
+          "description": "Enable PA_for_CHEMS_T2 Output",
+          "value": "PA_for_CHEMS_T2"
+        },
+        "012": {
+          "description": "Enable PA_for_CHEMS_T3 Output",
+          "value": "PA_for_CHEMS_T3"
+        },
+        "013": {
+          "description": "Enable PA_for_CHEMS_TALL Output",
+          "value": "PA_for_CHEMS_TALL"
+        },
+        "014": {
+          "description": "Enable HPlus_BEST_T1 Output",
+          "value": "HPlus_BEST_T1"
+        },
+        "015": {
+          "description": "Enable HPlus_BEST_T2 Output",
+          "value": "HPlus_BEST_T2"
+        },
+        "016": {
+          "description": "Enable HPlus_BEST_T3 Output",
+          "value": "HPlus_BEST_T3"
+        },
+        "017": {
+          "description": "Enable HPlus_BEST_ALL Output",
+          "value": "HPlus_BEST_ALL"
+        },
+        "018": {
+          "description": "Enable HePlusPlus_BEST_T1 Output",
+          "value": "HePlusPlus_BEST_T1"
+        },
+        "019": {
+          "description": "Enable HePlusPlus_BEST_T2 Output",
+          "value": "HePlusPlus_BEST_T2"
+        },
+        "020": {
+          "description": "Enable HePlusPlus_BEST_T3 Output",
+          "value": "HePlusPlus_BEST_T3"
+        },
+        "021": {
+          "description": "Enable HePlusPlus_BEST_ALL Output",
+          "value": "HePlusPlus_BEST_ALL"
+        },
+        "022": {
+          "description": "Enable H2Plus_BEST_T1 Output",
+          "value": "H2Plus_BEST_T1"
+        },
+        "023": {
+          "description": "Enable H2Plus_BEST_T2 Output",
+          "value": "H2Plus_BEST_T2"
+        },
+        "024": {
+          "description": "Enable H2Plus_BEST_T3 Output",
+          "value": "H2Plus_BEST_T3"
+        },
+        "025": {
+          "description": "Enable H2Plus_BEST_ALL Output",
+          "value": "H2Plus_BEST_ALL"
+        },
+        "026": {
+          "description": "Enable HePlus_BEST_T1 Output",
+          "value": "HePlus_BEST_T1"
+        },
+        "027": {
+          "description": "Enable HePlus_BEST_T2 Output",
+          "value": "HePlus_BEST_T2"
+        },
+        "028": {
+          "description": "Enable HePlus_BEST_T3 Output",
+          "value": "HePlus_BEST_T3"
+        },
+        "029": {
+          "description": "Enable HePlus_BEST_ALL Output",
+          "value": "HePlus_BEST_ALL"
+        },
+        "030": {
+          "description": "Enable WPlus_BEST_T1 Output",
+          "value": "WPlus_BEST_T1"
+        },
+        "031": {
+          "description": "Enable WPlus_BEST_T2 Output",
+          "value": "WPlus_BEST_T2"
+        },
+        "032": {
+          "description": "Enable WPlus_BEST_T3 Output",
+          "value": "WPlus_BEST_T3"
+        },
+        "033": {
+          "description": "Enable WPlus_BEST_ALL Output",
+          "value": "WPlus_BEST_ALL"
+        },
+        "034": {
+          "description": "Enable OPlusPlus_BEST_T1 Output",
+          "value": "OPlusPlus_BEST_T1"
+        },
+        "035": {
+          "description": "Enable OPlusPlus_BEST_T2 Output",
+          "value": "OPlusPlus_BEST_T2"
+        },
+        "036": {
+          "description": "Enable OPlusPlus_BEST_T3 Output",
+          "value": "OPlusPlus_BEST_T3"
+        },
+        "037": {
+          "description": "Enable OPlusPlus_BEST_ALL Output",
+          "value": "OPlusPlus_BEST_ALL"
+        },
+        "038": {
+          "description": "Enable H3Plus_BEST_T1 Output",
+          "value": "H3Plus_BEST_T1"
+        },
+        "039": {
+          "description": "Enable H3Plus_BEST_T2 Output",
+          "value": "H3Plus_BEST_T2"
+        },
+        "040": {
+          "description": "Enable H3Plus_BEST_T3 Output",
+          "value": "H3Plus_BEST_T3"
+        },
+        "041": {
+          "description": "Enable H3Plus_BEST_ALL Output",
+          "value": "H3Plus_BEST_ALL"
+        },
+        "042": {
+          "description": "Enable CPlus_BEST_T1 Output",
+          "value": "CPlus_BEST_T1"
+        },
+        "043": {
+          "description": "Enable CPlus_BEST_T2 Output",
+          "value": "CPlus_BEST_T2"
+        },
+        "044": {
+          "description": "Enable CPlus_BEST_T3 Output",
+          "value": "CPlus_BEST_T3"
+        },
+        "045": {
+          "description": "Enable CPlus_BEST_ALL Output",
+          "value": "CPlus_BEST_ALL"
+        },
+        "046": {
+          "description": "Enable NPlus_BEST_T1 Output",
+          "value": "NPlus_BEST_T1"
+        },
+        "047": {
+          "description": "Enable NPlus_BEST_T2 Output",
+          "value": "NPlus_BEST_T2"
+        },
+        "048": {
+          "description": "Enable NPlus_BEST_T3 Output",
+          "value": "NPlus_BEST_T3"
+        },
+        "049": {
+          "description": "Enable NPlus_BEST_ALL Output",
+          "value": "NPlus_BEST_ALL"
+        },
+        "050": {
+          "description": "Enable OPlusPlusPlus_BEST_T1 Output",
+          "value": "OPlusPlusPlus_BEST_T1"
+        },
+        "051": {
+          "description": "Enable OPlusPlusPlus_BEST_T2 Output",
+          "value": "OPlusPlusPlus_BEST_T2"
+        },
+        "052": {
+          "description": "Enable OPlusPlusPlus_BEST_T3 Output",
+          "value": "OPlusPlusPlus_BEST_T3"
+        },
+        "053": {
+          "description": "Enable OPlusPlusPlus_BEST_ALL Output",
+          "value": "OPlusPlusPlus_BEST_ALL"
+        },
+        "054": {
+          "description": "Enable O2Plus_BEST_T1 Output",
+          "value": "O2Plus_BEST_T1"
+        },
+        "055": {
+          "description": "Enable O2Plus_BEST_T2 Output",
+          "value": "O2Plus_BEST_T2"
+        },
+        "056": {
+          "description": "Enable O2Plus_BEST_T3 Output",
+          "value": "O2Plus_BEST_T3"
+        },
+        "057": {
+          "description": "Enable O2Plus_BEST_ALL Output",
+          "value": "O2Plus_BEST_ALL"
+        },
+        "058": {
+          "description": "Enable HPlus_DOUBLES_T1 Output",
+          "value": "HPlus_DOUBLES_T1"
+        },
+        "059": {
+          "description": "Enable HPlus_DOUBLES_T2 Output",
+          "value": "HPlus_DOUBLES_T2"
+        },
+        "060": {
+          "description": "Enable HPlus_DOUBLES_T3 Output",
+          "value": "HPlus_DOUBLES_T3"
+        },
+        "061": {
+          "description": "Enable HPlus_DOUBLES_ALL Output",
+          "value": "HPlus_DOUBLES_ALL"
+        },
+        "062": {
+          "description": "Enable HePlusPlus_DOUBLES_T1 Output",
+          "value": "HePlusPlus_DOUBLES_T1"
+        },
+        "063": {
+          "description": "Enable HePlusPlus_DOUBLES_T2 Output",
+          "value": "HePlusPlus_DOUBLES_T2"
+        },
+        "064": {
+          "description": "Enable HePlusPlus_DOUBLES_T3 Output",
+          "value": "HePlusPlus_DOUBLES_T3"
+        },
+        "065": {
+          "description": "Enable HePlusPlus_DOUBLES_ALL Output",
+          "value": "HePlusPlus_DOUBLES_ALL"
+        },
+        "066": {
+          "description": "Enable H2Plus_DOUBLES_T1 Output",
+          "value": "H2Plus_DOUBLES_T1"
+        },
+        "067": {
+          "description": "Enable H2Plus_DOUBLES_T2 Output",
+          "value": "H2Plus_DOUBLES_T2"
+        },
+        "068": {
+          "description": "Enable H2Plus_DOUBLES_T3 Output",
+          "value": "H2Plus_DOUBLES_T3"
+        },
+        "069": {
+          "description": "Enable H2Plus_DOUBLES_ALL Output",
+          "value": "H2Plus_DOUBLES_ALL"
+        },
+        "070": {
+          "description": "Enable HePlus_DOUBLES_T1 Output",
+          "value": "HePlus_DOUBLES_T1"
+        },
+        "071": {
+          "description": "Enable HePlus_DOUBLES_T2 Output",
+          "value": "HePlus_DOUBLES_T2"
+        },
+        "072": {
+          "description": "Enable HePlus_DOUBLES_T3 Output",
+          "value": "HePlus_DOUBLES_T3"
+        },
+        "073": {
+          "description": "Enable HePlus_DOUBLES_ALL Output",
+          "value": "HePlus_DOUBLES_ALL"
+        },
+        "074": {
+          "description": "Enable WPlus_DOUBLES_T1 Output",
+          "value": "WPlus_DOUBLES_T1"
+        },
+        "075": {
+          "description": "Enable WPlus_DOUBLES_T2 Output",
+          "value": "WPlus_DOUBLES_T2"
+        },
+        "076": {
+          "description": "Enable WPlus_DOUBLES_T3 Output",
+          "value": "WPlus_DOUBLES_T3"
+        },
+        "077": {
+          "description": "Enable WPlus_DOUBLES_ALL Output",
+          "value": "WPlus_DOUBLES_ALL"
+        },
+        "078": {
+          "description": "Enable OPlusPlus_DOUBLES_T1 Output",
+          "value": "OPlusPlus_DOUBLES_T1"
+        },
+        "079": {
+          "description": "Enable OPlusPlus_DOUBLES_T2 Output",
+          "value": "OPlusPlus_DOUBLES_T2"
+        },
+        "080": {
+          "description": "Enable OPlusPlus_DOUBLES_T3 Output",
+          "value": "OPlusPlus_DOUBLES_T3"
+        },
+        "081": {
+          "description": "Enable OPlusPlus_DOUBLES_ALL Output",
+          "value": "OPlusPlus_DOUBLES_ALL"
+        },
+        "082": {
+          "description": "Enable H3Plus_DOUBLES_T1 Output",
+          "value": "H3Plus_DOUBLES_T1"
+        },
+        "083": {
+          "description": "Enable H3Plus_DOUBLES_T2 Output",
+          "value": "H3Plus_DOUBLES_T2"
+        },
+        "084": {
+          "description": "Enable H3Plus_DOUBLES_T3 Output",
+          "value": "H3Plus_DOUBLES_T3"
+        },
+        "085": {
+          "description": "Enable H3Plus_DOUBLES_ALL Output",
+          "value": "H3Plus_DOUBLES_ALL"
+        },
+        "086": {
+          "description": "Enable CPlus_DOUBLES_T1 Output",
+          "value": "CPlus_DOUBLES_T1"
+        },
+        "087": {
+          "description": "Enable CPlus_DOUBLES_T2 Output",
+          "value": "CPlus_DOUBLES_T2"
+        },
+        "088": {
+          "description": "Enable CPlus_DOUBLES_T3 Output",
+          "value": "CPlus_DOUBLES_T3"
+        },
+        "089": {
+          "description": "Enable CPlus_DOUBLES_ALL Output",
+          "value": "CPlus_DOUBLES_ALL"
+        },
+        "090": {
+          "description": "Enable NPlus_DOUBLES_T1 Output",
+          "value": "NPlus_DOUBLES_T1"
+        },
+        "091": {
+          "description": "Enable NPlus_DOUBLES_T2 Output",
+          "value": "NPlus_DOUBLES_T2"
+        },
+        "092": {
+          "description": "Enable NPlus_DOUBLES_T3 Output",
+          "value": "NPlus_DOUBLES_T3"
+        },
+        "093": {
+          "description": "Enable NPlus_DOUBLES_ALL Output",
+          "value": "NPlus_DOUBLES_ALL"
+        },
+        "094": {
+          "description": "Enable OPlusPlusPlus_DOUBLES_T1 Output",
+          "value": "OPlusPlusPlus_DOUBLES_T1"
+        },
+        "095": {
+          "description": "Enable OPlusPlusPlus_DOUBLES_T2 Output",
+          "value": "OPlusPlusPlus_DOUBLES_T2"
+        },
+        "096": {
+          "description": "Enable OPlusPlusPlus_DOUBLES_T3 Output",
+          "value": "OPlusPlusPlus_DOUBLES_T3"
+        },
+        "097": {
+          "description": "Enable OPlusPlusPlus_DOUBLES_ALL Output",
+          "value": "OPlusPlusPlus_DOUBLES_ALL"
+        },
+        "098": {
+          "description": "Enable O2Plus_DOUBLES_T1 Output",
+          "value": "O2Plus_DOUBLES_T1"
+        },
+        "099": {
+          "description": "Enable O2Plus_DOUBLES_T2 Output",
+          "value": "O2Plus_DOUBLES_T2"
+        },
+        "100": {
+          "description": "Enable O2Plus_DOUBLES_T3 Output",
+          "value": "O2Plus_DOUBLES_T3"
+        },
+        "101": {
+          "description": "Enable O2Plus_DOUBLES_ALL Output",
+          "value": "O2Plus_DOUBLES_ALL"
+        },
+        "102": {
+          "description": "Enable HPlus_TRIPLES_T1 Output",
+          "value": "HPlus_TRIPLES_T1"
+        },
+        "103": {
+          "description": "Enable HPlus_TRIPLES_T2 Output",
+          "value": "HPlus_TRIPLES_T2"
+        },
+        "104": {
+          "description": "Enable HPlus_TRIPLES_T3 Output",
+          "value": "HPlus_TRIPLES_T3"
+        },
+        "105": {
+          "description": "Enable HPlus_TRIPLES_ALL Output",
+          "value": "HPlus_TRIPLES_ALL"
+        },
+        "106": {
+          "description": "Enable HePlusPlus_TRIPLES_T1 Output",
+          "value": "HePlusPlus_TRIPLES_T1"
+        },
+        "107": {
+          "description": "Enable HePlusPlus_TRIPLES_T2 Output",
+          "value": "HePlusPlus_TRIPLES_T2"
+        },
+        "108": {
+          "description": "Enable HePlusPlus_TRIPLES_T3 Output",
+          "value": "HePlusPlus_TRIPLES_T3"
+        },
+        "109": {
+          "description": "Enable HePlusPlus_TRIPLES_ALL Output",
+          "value": "HePlusPlus_TRIPLES_ALL"
+        },
+        "110": {
+          "description": "Enable H2Plus_TRIPLES_T1 Output",
+          "value": "H2Plus_TRIPLES_T1"
+        },
+        "111": {
+          "description": "Enable H2Plus_TRIPLES_T2 Output",
+          "value": "H2Plus_TRIPLES_T2"
+        },
+        "112": {
+          "description": "Enable H2Plus_TRIPLES_T3 Output",
+          "value": "H2Plus_TRIPLES_T3"
+        },
+        "113": {
+          "description": "Enable H2Plus_TRIPLES_ALL Output",
+          "value": "H2Plus_TRIPLES_ALL"
+        },
+        "114": {
+          "description": "Enable HePlus_TRIPLES_T1 Output",
+          "value": "HePlus_TRIPLES_T1"
+        },
+        "115": {
+          "description": "Enable HePlus_TRIPLES_T2 Output",
+          "value": "HePlus_TRIPLES_T2"
+        },
+        "116": {
+          "description": "Enable HePlus_TRIPLES_T3 Output",
+          "value": "HePlus_TRIPLES_T3"
+        },
+        "117": {
+          "description": "Enable HePlus_TRIPLES_ALL Output",
+          "value": "HePlus_TRIPLES_ALL"
+        },
+        "118": {
+          "description": "Enable WPlus_TRIPLES_T1 Output",
+          "value": "WPlus_TRIPLES_T1"
+        },
+        "119": {
+          "description": "Enable WPlus_TRIPLES_T2 Output",
+          "value": "WPlus_TRIPLES_T2"
+        },
+        "120": {
+          "description": "Enable WPlus_TRIPLES_T3 Output",
+          "value": "WPlus_TRIPLES_T3"
+        },
+        "121": {
+          "description": "Enable WPlus_TRIPLES_ALL Output",
+          "value": "WPlus_TRIPLES_ALL"
+        },
+        "122": {
+          "description": "Enable OPlusPlus_TRIPLES_T1 Output",
+          "value": "OPlusPlus_TRIPLES_T1"
+        },
+        "123": {
+          "description": "Enable OPlusPlus_TRIPLES_T2 Output",
+          "value": "OPlusPlus_TRIPLES_T2"
+        },
+        "124": {
+          "description": "Enable OPlusPlus_TRIPLES_T3 Output",
+          "value": "OPlusPlus_TRIPLES_T3"
+        },
+        "125": {
+          "description": "Enable OPlusPlus_TRIPLES_ALL Output",
+          "value": "OPlusPlus_TRIPLES_ALL"
+        },
+        "126": {
+          "description": "Enable H3Plus_TRIPLES_T1 Output",
+          "value": "H3Plus_TRIPLES_T1"
+        },
+        "127": {
+          "description": "Enable H3Plus_TRIPLES_T2 Output",
+          "value": "H3Plus_TRIPLES_T2"
+        },
+        "128": {
+          "description": "Enable H3Plus_TRIPLES_T3 Output",
+          "value": "H3Plus_TRIPLES_T3"
+        },
+        "129": {
+          "description": "Enable H3Plus_TRIPLES_ALL Output",
+          "value": "H3Plus_TRIPLES_ALL"
+        },
+        "130": {
+          "description": "Enable CPlus_TRIPLES_T1 Output",
+          "value": "CPlus_TRIPLES_T1"
+        },
+        "131": {
+          "description": "Enable CPlus_TRIPLES_T2 Output",
+          "value": "CPlus_TRIPLES_T2"
+        },
+        "132": {
+          "description": "Enable CPlus_TRIPLES_T3 Output",
+          "value": "CPlus_TRIPLES_T3"
+        },
+        "133": {
+          "description": "Enable CPlus_TRIPLES_ALL Output",
+          "value": "CPlus_TRIPLES_ALL"
+        },
+        "134": {
+          "description": "Enable NPlus_TRIPLES_T1 Output",
+          "value": "NPlus_TRIPLES_T1"
+        },
+        "135": {
+          "description": "Enable NPlus_TRIPLES_T2 Output",
+          "value": "NPlus_TRIPLES_T2"
+        },
+        "136": {
+          "description": "Enable NPlus_TRIPLES_T3 Output",
+          "value": "NPlus_TRIPLES_T3"
+        },
+        "137": {
+          "description": "Enable NPlus_TRIPLES_ALL Output",
+          "value": "NPlus_TRIPLES_ALL"
+        },
+        "138": {
+          "description": "Enable OPlusPlusPlus_TRIPLES_T1 Output",
+          "value": "OPlusPlusPlus_TRIPLES_T1"
+        },
+        "139": {
+          "description": "Enable OPlusPlusPlus_TRIPLES_T2 Output",
+          "value": "OPlusPlusPlus_TRIPLES_T2"
+        },
+        "140": {
+          "description": "Enable OPlusPlusPlus_TRIPLES_T3 Output",
+          "value": "OPlusPlusPlus_TRIPLES_T3"
+        },
+        "141": {
+          "description": "Enable OPlusPlusPlus_TRIPLES_ALL Output",
+          "value": "OPlusPlusPlus_TRIPLES_ALL"
+        },
+        "142": {
+          "description": "Enable O2Plus_TRIPLES_T1 Output",
+          "value": "O2Plus_TRIPLES_T1"
+        },
+        "143": {
+          "description": "Enable O2Plus_TRIPLES_T2 Output",
+          "value": "O2Plus_TRIPLES_T2"
+        },
+        "144": {
+          "description": "Enable O2Plus_TRIPLES_T3 Output",
+          "value": "O2Plus_TRIPLES_T3"
+        },
+        "145": {
+          "description": "Enable O2Plus_TRIPLES_ALL Output",
+          "value": "O2Plus_TRIPLES_ALL"
+        },
+        "146": {
+          "description": "Enable HPlus_BEST_T1_uncert Output",
+          "value": "HPlus_BEST_T1_uncert"
+        },
+        "147": {
+          "description": "Enable HPlus_BEST_T2_uncert Output",
+          "value": "HPlus_BEST_T2_uncert"
+        },
+        "148": {
+          "description": "Enable HPlus_BEST_T3_uncert Output",
+          "value": "HPlus_BEST_T3_uncert"
+        },
+        "149": {
+          "description": "Enable HPlus_BEST_ALL_uncert Output",
+          "value": "HPlus_BEST_ALL_uncert"
+        },
+        "150": {
+          "description": "Enable HePlusPlus_BEST_T1_uncert Output",
+          "value": "HePlusPlus_BEST_T1_uncert"
+        },
+        "151": {
+          "description": "Enable HePlusPlus_BEST_T2_uncert Output",
+          "value": "HePlusPlus_BEST_T2_uncert"
+        },
+        "152": {
+          "description": "Enable HePlusPlus_BEST_T3_uncert Output",
+          "value": "HePlusPlus_BEST_T3_uncert"
+        },
+        "153": {
+          "description": "Enable HePlusPlus_BEST_ALL_uncert Output",
+          "value": "HePlusPlus_BEST_ALL_uncert"
+        },
+        "154": {
+          "description": "Enable H2Plus_BEST_T1_uncert Output",
+          "value": "H2Plus_BEST_T1_uncert"
+        },
+        "155": {
+          "description": "Enable H2Plus_BEST_T2_uncert Output",
+          "value": "H2Plus_BEST_T2_uncert"
+        },
+        "156": {
+          "description": "Enable H2Plus_BEST_T3_uncert Output",
+          "value": "H2Plus_BEST_T3_uncert"
+        },
+        "157": {
+          "description": "Enable H2Plus_BEST_ALL_uncert Output",
+          "value": "H2Plus_BEST_ALL_uncert"
+        },
+        "158": {
+          "description": "Enable HePlus_BEST_T1_uncert Output",
+          "value": "HePlus_BEST_T1_uncert"
+        },
+        "159": {
+          "description": "Enable HePlus_BEST_T2_uncert Output",
+          "value": "HePlus_BEST_T2_uncert"
+        },
+        "160": {
+          "description": "Enable HePlus_BEST_T3_uncert Output",
+          "value": "HePlus_BEST_T3_uncert"
+        },
+        "161": {
+          "description": "Enable HePlus_BEST_ALL_uncert Output",
+          "value": "HePlus_BEST_ALL_uncert"
+        },
+        "162": {
+          "description": "Enable WPlus_BEST_T1_uncert Output",
+          "value": "WPlus_BEST_T1_uncert"
+        },
+        "163": {
+          "description": "Enable WPlus_BEST_T2_uncert Output",
+          "value": "WPlus_BEST_T2_uncert"
+        },
+        "164": {
+          "description": "Enable WPlus_BEST_T3_uncert Output",
+          "value": "WPlus_BEST_T3_uncert"
+        },
+        "165": {
+          "description": "Enable WPlus_BEST_ALL_uncert Output",
+          "value": "WPlus_BEST_ALL_uncert"
+        },
+        "166": {
+          "description": "Enable OPlusPlus_BEST_T1_uncert Output",
+          "value": "OPlusPlus_BEST_T1_uncert"
+        },
+        "167": {
+          "description": "Enable OPlusPlus_BEST_T2_uncert Output",
+          "value": "OPlusPlus_BEST_T2_uncert"
+        },
+        "168": {
+          "description": "Enable OPlusPlus_BEST_T3_uncert Output",
+          "value": "OPlusPlus_BEST_T3_uncert"
+        },
+        "169": {
+          "description": "Enable OPlusPlus_BEST_ALL_uncert Output",
+          "value": "OPlusPlus_BEST_ALL_uncert"
+        },
+        "170": {
+          "description": "Enable H3Plus_BEST_T1_uncert Output",
+          "value": "H3Plus_BEST_T1_uncert"
+        },
+        "171": {
+          "description": "Enable H3Plus_BEST_T2_uncert Output",
+          "value": "H3Plus_BEST_T2_uncert"
+        },
+        "172": {
+          "description": "Enable H3Plus_BEST_T3_uncert Output",
+          "value": "H3Plus_BEST_T3_uncert"
+        },
+        "173": {
+          "description": "Enable H3Plus_BEST_ALL_uncert Output",
+          "value": "H3Plus_BEST_ALL_uncert"
+        },
+        "174": {
+          "description": "Enable CPlus_BEST_T1_uncert Output",
+          "value": "CPlus_BEST_T1_uncert"
+        },
+        "175": {
+          "description": "Enable CPlus_BEST_T2_uncert Output",
+          "value": "CPlus_BEST_T2_uncert"
+        },
+        "176": {
+          "description": "Enable CPlus_BEST_T3_uncert Output",
+          "value": "CPlus_BEST_T3_uncert"
+        },
+        "177": {
+          "description": "Enable CPlus_BEST_ALL_uncert Output",
+          "value": "CPlus_BEST_ALL_uncert"
+        },
+        "178": {
+          "description": "Enable NPlus_BEST_T1_uncert Output",
+          "value": "NPlus_BEST_T1_uncert"
+        },
+        "179": {
+          "description": "Enable NPlus_BEST_T2_uncert Output",
+          "value": "NPlus_BEST_T2_uncert"
+        },
+        "180": {
+          "description": "Enable NPlus_BEST_T3_uncert Output",
+          "value": "NPlus_BEST_T3_uncert"
+        },
+        "181": {
+          "description": "Enable NPlus_BEST_ALL_uncert Output",
+          "value": "NPlus_BEST_ALL_uncert"
+        },
+        "182": {
+          "description": "Enable OPlusPlusPlus_BEST_T1_uncert Output",
+          "value": "OPlusPlusPlus_BEST_T1_uncert"
+        },
+        "183": {
+          "description": "Enable OPlusPlusPlus_BEST_T2_uncert Output",
+          "value": "OPlusPlusPlus_BEST_T2_uncert"
+        },
+        "184": {
+          "description": "Enable OPlusPlusPlus_BEST_T3_uncert Output",
+          "value": "OPlusPlusPlus_BEST_T3_uncert"
+        },
+        "185": {
+          "description": "Enable OPlusPlusPlus_BEST_ALL_uncert Output",
+          "value": "OPlusPlusPlus_BEST_ALL_uncert"
+        },
+        "186": {
+          "description": "Enable O2Plus_BEST_T1_uncert Output",
+          "value": "O2Plus_BEST_T1_uncert"
+        },
+        "187": {
+          "description": "Enable O2Plus_BEST_T2_uncert Output",
+          "value": "O2Plus_BEST_T2_uncert"
+        },
+        "188": {
+          "description": "Enable O2Plus_BEST_T3_uncert Output",
+          "value": "O2Plus_BEST_T3_uncert"
+        },
+        "189": {
+          "description": "Enable O2Plus_BEST_ALL_uncert Output",
+          "value": "O2Plus_BEST_ALL_uncert"
+        },
+        "190": {
+          "description": "Enable HPlus_DOUBLES_T1_uncert Output",
+          "value": "HPlus_DOUBLES_T1_uncert"
+        },
+        "191": {
+          "description": "Enable HPlus_DOUBLES_T2_uncert Output",
+          "value": "HPlus_DOUBLES_T2_uncert"
+        },
+        "192": {
+          "description": "Enable HPlus_DOUBLES_T3_uncert Output",
+          "value": "HPlus_DOUBLES_T3_uncert"
+        },
+        "193": {
+          "description": "Enable HPlus_DOUBLES_ALL_uncert Output",
+          "value": "HPlus_DOUBLES_ALL_uncert"
+        },
+        "194": {
+          "description": "Enable HePlusPlus_DOUBLES_T1_uncert Output",
+          "value": "HePlusPlus_DOUBLES_T1_uncert"
+        },
+        "195": {
+          "description": "Enable HePlusPlus_DOUBLES_T2_uncert Output",
+          "value": "HePlusPlus_DOUBLES_T2_uncert"
+        },
+        "196": {
+          "description": "Enable HePlusPlus_DOUBLES_T3_uncert Output",
+          "value": "HePlusPlus_DOUBLES_T3_uncert"
+        },
+        "197": {
+          "description": "Enable HePlusPlus_DOUBLES_ALL_uncert Output",
+          "value": "HePlusPlus_DOUBLES_ALL_uncert"
+        },
+        "198": {
+          "description": "Enable H2Plus_DOUBLES_T1_uncert Output",
+          "value": "H2Plus_DOUBLES_T1_uncert"
+        },
+        "199": {
+          "description": "Enable H2Plus_DOUBLES_T2_uncert Output",
+          "value": "H2Plus_DOUBLES_T2_uncert"
+        },
+        "200": {
+          "description": "Enable H2Plus_DOUBLES_T3_uncert Output",
+          "value": "H2Plus_DOUBLES_T3_uncert"
+        },
+        "201": {
+          "description": "Enable H2Plus_DOUBLES_ALL_uncert Output",
+          "value": "H2Plus_DOUBLES_ALL_uncert"
+        },
+        "202": {
+          "description": "Enable HePlus_DOUBLES_T1_uncert Output",
+          "value": "HePlus_DOUBLES_T1_uncert"
+        },
+        "203": {
+          "description": "Enable HePlus_DOUBLES_T2_uncert Output",
+          "value": "HePlus_DOUBLES_T2_uncert"
+        },
+        "204": {
+          "description": "Enable HePlus_DOUBLES_T3_uncert Output",
+          "value": "HePlus_DOUBLES_T3_uncert"
+        },
+        "205": {
+          "description": "Enable HePlus_DOUBLES_ALL_uncert Output",
+          "value": "HePlus_DOUBLES_ALL_uncert"
+        },
+        "206": {
+          "description": "Enable WPlus_DOUBLES_T1_uncert Output",
+          "value": "WPlus_DOUBLES_T1_uncert"
+        },
+        "207": {
+          "description": "Enable WPlus_DOUBLES_T2_uncert Output",
+          "value": "WPlus_DOUBLES_T2_uncert"
+        },
+        "208": {
+          "description": "Enable WPlus_DOUBLES_T3_uncert Output",
+          "value": "WPlus_DOUBLES_T3_uncert"
+        },
+        "209": {
+          "description": "Enable WPlus_DOUBLES_ALL_uncert Output",
+          "value": "WPlus_DOUBLES_ALL_uncert"
+        },
+        "210": {
+          "description": "Enable OPlusPlus_DOUBLES_T1_uncert Output",
+          "value": "OPlusPlus_DOUBLES_T1_uncert"
+        },
+        "211": {
+          "description": "Enable OPlusPlus_DOUBLES_T2_uncert Output",
+          "value": "OPlusPlus_DOUBLES_T2_uncert"
+        },
+        "212": {
+          "description": "Enable OPlusPlus_DOUBLES_T3_uncert Output",
+          "value": "OPlusPlus_DOUBLES_T3_uncert"
+        },
+        "213": {
+          "description": "Enable OPlusPlus_DOUBLES_ALL_uncert Output",
+          "value": "OPlusPlus_DOUBLES_ALL_uncert"
+        },
+        "214": {
+          "description": "Enable H3Plus_DOUBLES_T1_uncert Output",
+          "value": "H3Plus_DOUBLES_T1_uncert"
+        },
+        "215": {
+          "description": "Enable H3Plus_DOUBLES_T2_uncert Output",
+          "value": "H3Plus_DOUBLES_T2_uncert"
+        },
+        "216": {
+          "description": "Enable H3Plus_DOUBLES_T3_uncert Output",
+          "value": "H3Plus_DOUBLES_T3_uncert"
+        },
+        "217": {
+          "description": "Enable H3Plus_DOUBLES_ALL_uncert Output",
+          "value": "H3Plus_DOUBLES_ALL_uncert"
+        },
+        "218": {
+          "description": "Enable CPlus_DOUBLES_T1_uncert Output",
+          "value": "CPlus_DOUBLES_T1_uncert"
+        },
+        "219": {
+          "description": "Enable CPlus_DOUBLES_T2_uncert Output",
+          "value": "CPlus_DOUBLES_T2_uncert"
+        },
+        "220": {
+          "description": "Enable CPlus_DOUBLES_T3_uncert Output",
+          "value": "CPlus_DOUBLES_T3_uncert"
+        },
+        "221": {
+          "description": "Enable CPlus_DOUBLES_ALL_uncert Output",
+          "value": "CPlus_DOUBLES_ALL_uncert"
+        },
+        "222": {
+          "description": "Enable NPlus_DOUBLES_T1_uncert Output",
+          "value": "NPlus_DOUBLES_T1_uncert"
+        },
+        "223": {
+          "description": "Enable NPlus_DOUBLES_T2_uncert Output",
+          "value": "NPlus_DOUBLES_T2_uncert"
+        },
+        "224": {
+          "description": "Enable NPlus_DOUBLES_T3_uncert Output",
+          "value": "NPlus_DOUBLES_T3_uncert"
+        },
+        "225": {
+          "description": "Enable NPlus_DOUBLES_ALL_uncert Output",
+          "value": "NPlus_DOUBLES_ALL_uncert"
+        },
+        "226": {
+          "description": "Enable OPlusPlusPlus_DOUBLES_T1_uncert Output",
+          "value": "OPlusPlusPlus_DOUBLES_T1_uncert"
+        },
+        "227": {
+          "description": "Enable OPlusPlusPlus_DOUBLES_T2_uncert Output",
+          "value": "OPlusPlusPlus_DOUBLES_T2_uncert"
+        },
+        "228": {
+          "description": "Enable OPlusPlusPlus_DOUBLES_T3_uncert Output",
+          "value": "OPlusPlusPlus_DOUBLES_T3_uncert"
+        },
+        "229": {
+          "description": "Enable OPlusPlusPlus_DOUBLES_ALL_uncert Output",
+          "value": "OPlusPlusPlus_DOUBLES_ALL_uncert"
+        },
+        "230": {
+          "description": "Enable O2Plus_DOUBLES_T1_uncert Output",
+          "value": "O2Plus_DOUBLES_T1_uncert"
+        },
+        "231": {
+          "description": "Enable O2Plus_DOUBLES_T2_uncert Output",
+          "value": "O2Plus_DOUBLES_T2_uncert"
+        },
+        "232": {
+          "description": "Enable O2Plus_DOUBLES_T3_uncert Output",
+          "value": "O2Plus_DOUBLES_T3_uncert"
+        },
+        "233": {
+          "description": "Enable O2Plus_DOUBLES_ALL_uncert Output",
+          "value": "O2Plus_DOUBLES_ALL_uncert"
+        },
+        "234": {
+          "description": "Enable HPlus_TRIPLES_T1_uncert Output",
+          "value": "HPlus_TRIPLES_T1_uncert"
+        },
+        "235": {
+          "description": "Enable HPlus_TRIPLES_T2_uncert Output",
+          "value": "HPlus_TRIPLES_T2_uncert"
+        },
+        "236": {
+          "description": "Enable HPlus_TRIPLES_T3_uncert Output",
+          "value": "HPlus_TRIPLES_T3_uncert"
+        },
+        "237": {
+          "description": "Enable HPlus_TRIPLES_ALL_uncert Output",
+          "value": "HPlus_TRIPLES_ALL_uncert"
+        },
+        "238": {
+          "description": "Enable HePlusPlus_TRIPLES_T1_uncert Output",
+          "value": "HePlusPlus_TRIPLES_T1_uncert"
+        },
+        "239": {
+          "description": "Enable HePlusPlus_TRIPLES_T2_uncert Output",
+          "value": "HePlusPlus_TRIPLES_T2_uncert"
+        },
+        "240": {
+          "description": "Enable HePlusPlus_TRIPLES_T3_uncert Output",
+          "value": "HePlusPlus_TRIPLES_T3_uncert"
+        },
+        "241": {
+          "description": "Enable HePlusPlus_TRIPLES_ALL_uncert Output",
+          "value": "HePlusPlus_TRIPLES_ALL_uncert"
+        },
+        "242": {
+          "description": "Enable H2Plus_TRIPLES_T1_uncert Output",
+          "value": "H2Plus_TRIPLES_T1_uncert"
+        },
+        "243": {
+          "description": "Enable H2Plus_TRIPLES_T2_uncert Output",
+          "value": "H2Plus_TRIPLES_T2_uncert"
+        },
+        "244": {
+          "description": "Enable H2Plus_TRIPLES_T3_uncert Output",
+          "value": "H2Plus_TRIPLES_T3_uncert"
+        },
+        "245": {
+          "description": "Enable H2Plus_TRIPLES_ALL_uncert Output",
+          "value": "H2Plus_TRIPLES_ALL_uncert"
+        },
+        "246": {
+          "description": "Enable HePlus_TRIPLES_T1_uncert Output",
+          "value": "HePlus_TRIPLES_T1_uncert"
+        },
+        "247": {
+          "description": "Enable HePlus_TRIPLES_T2_uncert Output",
+          "value": "HePlus_TRIPLES_T2_uncert"
+        },
+        "248": {
+          "description": "Enable HePlus_TRIPLES_T3_uncert Output",
+          "value": "HePlus_TRIPLES_T3_uncert"
+        },
+        "249": {
+          "description": "Enable HePlus_TRIPLES_ALL_uncert Output",
+          "value": "HePlus_TRIPLES_ALL_uncert"
+        },
+        "250": {
+          "description": "Enable WPlus_TRIPLES_T1_uncert Output",
+          "value": "WPlus_TRIPLES_T1_uncert"
+        },
+        "251": {
+          "description": "Enable WPlus_TRIPLES_T2_uncert Output",
+          "value": "WPlus_TRIPLES_T2_uncert"
+        },
+        "252": {
+          "description": "Enable WPlus_TRIPLES_T3_uncert Output",
+          "value": "WPlus_TRIPLES_T3_uncert"
+        },
+        "253": {
+          "description": "Enable WPlus_TRIPLES_ALL_uncert Output",
+          "value": "WPlus_TRIPLES_ALL_uncert"
+        },
+        "254": {
+          "description": "Enable OPlusPlus_TRIPLES_T1_uncert Output",
+          "value": "OPlusPlus_TRIPLES_T1_uncert"
+        },
+        "255": {
+          "description": "Enable OPlusPlus_TRIPLES_T2_uncert Output",
+          "value": "OPlusPlus_TRIPLES_T2_uncert"
+        },
+        "256": {
+          "description": "Enable OPlusPlus_TRIPLES_T3_uncert Output",
+          "value": "OPlusPlus_TRIPLES_T3_uncert"
+        },
+        "257": {
+          "description": "Enable OPlusPlus_TRIPLES_ALL_uncert Output",
+          "value": "OPlusPlus_TRIPLES_ALL_uncert"
+        },
+        "258": {
+          "description": "Enable H3Plus_TRIPLES_T1_uncert Output",
+          "value": "H3Plus_TRIPLES_T1_uncert"
+        },
+        "259": {
+          "description": "Enable H3Plus_TRIPLES_T2_uncert Output",
+          "value": "H3Plus_TRIPLES_T2_uncert"
+        },
+        "260": {
+          "description": "Enable H3Plus_TRIPLES_T3_uncert Output",
+          "value": "H3Plus_TRIPLES_T3_uncert"
+        },
+        "261": {
+          "description": "Enable H3Plus_TRIPLES_ALL_uncert Output",
+          "value": "H3Plus_TRIPLES_ALL_uncert"
+        },
+        "262": {
+          "description": "Enable CPlus_TRIPLES_T1_uncert Output",
+          "value": "CPlus_TRIPLES_T1_uncert"
+        },
+        "263": {
+          "description": "Enable CPlus_TRIPLES_T2_uncert Output",
+          "value": "CPlus_TRIPLES_T2_uncert"
+        },
+        "264": {
+          "description": "Enable CPlus_TRIPLES_T3_uncert Output",
+          "value": "CPlus_TRIPLES_T3_uncert"
+        },
+        "265": {
+          "description": "Enable CPlus_TRIPLES_ALL_uncert Output",
+          "value": "CPlus_TRIPLES_ALL_uncert"
+        },
+        "266": {
+          "description": "Enable NPlus_TRIPLES_T1_uncert Output",
+          "value": "NPlus_TRIPLES_T1_uncert"
+        },
+        "267": {
+          "description": "Enable NPlus_TRIPLES_T2_uncert Output",
+          "value": "NPlus_TRIPLES_T2_uncert"
+        },
+        "268": {
+          "description": "Enable NPlus_TRIPLES_T3_uncert Output",
+          "value": "NPlus_TRIPLES_T3_uncert"
+        },
+        "269": {
+          "description": "Enable NPlus_TRIPLES_ALL_uncert Output",
+          "value": "NPlus_TRIPLES_ALL_uncert"
+        },
+        "270": {
+          "description": "Enable OPlusPlusPlus_TRIPLES_T1_uncert Output",
+          "value": "OPlusPlusPlus_TRIPLES_T1_uncert"
+        },
+        "271": {
+          "description": "Enable OPlusPlusPlus_TRIPLES_T2_uncert Output",
+          "value": "OPlusPlusPlus_TRIPLES_T2_uncert"
+        },
+        "272": {
+          "description": "Enable OPlusPlusPlus_TRIPLES_T3_uncert Output",
+          "value": "OPlusPlusPlus_TRIPLES_T3_uncert"
+        },
+        "273": {
+          "description": "Enable OPlusPlusPlus_TRIPLES_ALL_uncert Output",
+          "value": "OPlusPlusPlus_TRIPLES_ALL_uncert"
+        },
+        "274": {
+          "description": "Enable O2Plus_TRIPLES_T1_uncert Output",
+          "value": "O2Plus_TRIPLES_T1_uncert"
+        },
+        "275": {
+          "description": "Enable O2Plus_TRIPLES_T2_uncert Output",
+          "value": "O2Plus_TRIPLES_T2_uncert"
+        },
+        "276": {
+          "description": "Enable O2Plus_TRIPLES_T3_uncert Output",
+          "value": "O2Plus_TRIPLES_T3_uncert"
+        },
+        "277": {
+          "description": "Enable O2Plus_TRIPLES_ALL_uncert Output",
+          "value": "O2Plus_TRIPLES_ALL_uncert"
+        }
+      },
+      "required": true,
+      "title": "Data and Coordinate Columns to output",
+      "type": "flag_set"
+    },
+    "time.max": {
+      "name": "Min Time",
+      "required": true,
+      "title": "Minimum time value to stream",
+      "type": "isotime",
+      "units": "UTC"
+    },
+    "time.min": {
+      "name": "Min Time",
+      "required": true,
+      "title": "Minimum time value to stream",
+      "type": "isotime",
+      "units": "UTC"
+    }
+  },
+  "name": "HAPI/2.0 Source",
+  "options": {
+    "format": {
+      "mine": {
+        "name": "Output MIME type",
+        "value": "application/vnd.hapi.stream"
+      }
+    }
+  },
+  "tech_contacts": [
+    {
+      "name": "Lawrence Brown"
+    }
+  ],
+  "title": "CHEMS PHA flux box intensities for many species at the highest time resolution",
+  "type": "HttpStreamSrc",
+  "version": "0.3"
+}

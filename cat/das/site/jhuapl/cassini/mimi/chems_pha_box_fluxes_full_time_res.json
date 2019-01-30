@@ -1,0 +1,1293 @@
+{
+  "coordinates": {
+    "dist_rs": {
+      "name": "Dist_Rs",
+      "title": "radial distance from Cassini to Saturn in Saturn radii",
+      "units": "Rs"
+    },
+    "energy": {
+      "name": "energy",
+      "units": "keV"
+    },
+    "offset_dipolel": {
+      "name": "Offset_DipoleL",
+      "title": "Cassini L shell location using offset dipole",
+      "units": "Rs"
+    },
+    "pa_for_chems_t1": {
+      "name": "PA_for_CHEMS_T1",
+      "title": "pitch angle for CHEMS telescope 1",
+      "units": "degrees"
+    },
+    "pa_for_chems_t2": {
+      "name": "PA_for_CHEMS_T2",
+      "title": "pitch angle for CHEMS telescope 2",
+      "units": "degrees"
+    },
+    "pa_for_chems_t3": {
+      "name": "PA_for_CHEMS_T3",
+      "title": "pitch angle for CHEMS telescope 3",
+      "units": "degrees"
+    },
+    "pa_for_chems_tall": {
+      "name": "PA_for_CHEMS_TALL",
+      "title": "pitch angle for CHEMS data summed over all telescopes",
+      "units": "degrees"
+    },
+    "sso_x": {
+      "name": "SSO_X",
+      "title": "Cassini X position in SSO frame",
+      "units": "Rs"
+    },
+    "sso_y": {
+      "name": "SSO_Y",
+      "title": "Cassini Y position in SSO frame",
+      "units": "Rs"
+    },
+    "sso_z": {
+      "name": "SSO_Z",
+      "title": "Cassini Z position in SSO frame",
+      "units": "Rs"
+    },
+    "szs_latitude_degrees": {
+      "name": "SZS_Latitude_degrees",
+      "title": "Cassini SZS latitude in degrees",
+      "units": "degrees"
+    },
+    "szs_localtime_hours": {
+      "name": "SZS_LocalTime_hours",
+      "title": "Cassini SZS localtime in hours",
+      "units": "degrees"
+    },
+    "szs_x": {
+      "name": "SZS_X",
+      "title": "Cassini X position in SZS frame",
+      "units": "Rs"
+    },
+    "szs_y": {
+      "name": "SZS_Y",
+      "title": "Cassini Y position in SZS frame",
+      "units": "Rs"
+    },
+    "szs_z": {
+      "name": "SZS_Z",
+      "title": "Cassini Z position in SZS frame",
+      "units": "Rs"
+    },
+    "time": {
+      "name": "Epoch",
+      "units": "UTC",
+      "valid_max": "2017-258T10:31:10.425Z",
+      "valid_min": "2004-001T00:00:04.734Z"
+    }
+  },
+  "data": {
+    "cplus_best_all": {
+      "name": "CPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_best_all_uncert": {
+      "name": "CPlus_BEST_ALL_uncert",
+      "title": "uncertainties for CPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_best_t1": {
+      "name": "CPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_best_t1_uncert": {
+      "name": "CPlus_BEST_T1_uncert",
+      "title": "uncertainties for CPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_best_t2": {
+      "name": "CPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_best_t2_uncert": {
+      "name": "CPlus_BEST_T2_uncert",
+      "title": "uncertainties for CPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_best_t3": {
+      "name": "CPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_best_t3_uncert": {
+      "name": "CPlus_BEST_T3_uncert",
+      "title": "uncertainties for CPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_doubles_all": {
+      "name": "CPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_doubles_all_uncert": {
+      "name": "CPlus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for CPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_doubles_t1": {
+      "name": "CPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_doubles_t1_uncert": {
+      "name": "CPlus_DOUBLES_T1_uncert",
+      "title": "uncertainties for CPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_doubles_t2": {
+      "name": "CPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_doubles_t2_uncert": {
+      "name": "CPlus_DOUBLES_T2_uncert",
+      "title": "uncertainties for CPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_doubles_t3": {
+      "name": "CPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_doubles_t3_uncert": {
+      "name": "CPlus_DOUBLES_T3_uncert",
+      "title": "uncertainties for CPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_triples_all": {
+      "name": "CPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_triples_all_uncert": {
+      "name": "CPlus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for CPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_triples_t1": {
+      "name": "CPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_triples_t1_uncert": {
+      "name": "CPlus_TRIPLES_T1_uncert",
+      "title": "uncertainties for CPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_triples_t2": {
+      "name": "CPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_triples_t2_uncert": {
+      "name": "CPlus_TRIPLES_T2_uncert",
+      "title": "uncertainties for CPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_triples_t3": {
+      "name": "CPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "cplus_triples_t3_uncert": {
+      "name": "CPlus_TRIPLES_T3_uncert",
+      "title": "uncertainties for CPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_best_all": {
+      "name": "H2Plus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_best_all_uncert": {
+      "name": "H2Plus_BEST_ALL_uncert",
+      "title": "uncertainties for H2Plus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_best_t1": {
+      "name": "H2Plus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_best_t1_uncert": {
+      "name": "H2Plus_BEST_T1_uncert",
+      "title": "uncertainties for H2Plus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_best_t2": {
+      "name": "H2Plus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_best_t2_uncert": {
+      "name": "H2Plus_BEST_T2_uncert",
+      "title": "uncertainties for H2Plus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_best_t3": {
+      "name": "H2Plus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_best_t3_uncert": {
+      "name": "H2Plus_BEST_T3_uncert",
+      "title": "uncertainties for H2Plus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_doubles_all": {
+      "name": "H2Plus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_doubles_all_uncert": {
+      "name": "H2Plus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for H2Plus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_doubles_t1": {
+      "name": "H2Plus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_doubles_t1_uncert": {
+      "name": "H2Plus_DOUBLES_T1_uncert",
+      "title": "uncertainties for H2Plus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_doubles_t2": {
+      "name": "H2Plus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_doubles_t2_uncert": {
+      "name": "H2Plus_DOUBLES_T2_uncert",
+      "title": "uncertainties for H2Plus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_doubles_t3": {
+      "name": "H2Plus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_doubles_t3_uncert": {
+      "name": "H2Plus_DOUBLES_T3_uncert",
+      "title": "uncertainties for H2Plus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_triples_all": {
+      "name": "H2Plus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_triples_all_uncert": {
+      "name": "H2Plus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for H2Plus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_triples_t1": {
+      "name": "H2Plus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_triples_t1_uncert": {
+      "name": "H2Plus_TRIPLES_T1_uncert",
+      "title": "uncertainties for H2Plus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_triples_t2": {
+      "name": "H2Plus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_triples_t2_uncert": {
+      "name": "H2Plus_TRIPLES_T2_uncert",
+      "title": "uncertainties for H2Plus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_triples_t3": {
+      "name": "H2Plus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h2plus_triples_t3_uncert": {
+      "name": "H2Plus_TRIPLES_T3_uncert",
+      "title": "uncertainties for H2Plus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_best_all": {
+      "name": "H3Plus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_best_all_uncert": {
+      "name": "H3Plus_BEST_ALL_uncert",
+      "title": "uncertainties for H3Plus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_best_t1": {
+      "name": "H3Plus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_best_t1_uncert": {
+      "name": "H3Plus_BEST_T1_uncert",
+      "title": "uncertainties for H3Plus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_best_t2": {
+      "name": "H3Plus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_best_t2_uncert": {
+      "name": "H3Plus_BEST_T2_uncert",
+      "title": "uncertainties for H3Plus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_best_t3": {
+      "name": "H3Plus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_best_t3_uncert": {
+      "name": "H3Plus_BEST_T3_uncert",
+      "title": "uncertainties for H3Plus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_doubles_all": {
+      "name": "H3Plus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_doubles_all_uncert": {
+      "name": "H3Plus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for H3Plus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_doubles_t1": {
+      "name": "H3Plus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_doubles_t1_uncert": {
+      "name": "H3Plus_DOUBLES_T1_uncert",
+      "title": "uncertainties for H3Plus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_doubles_t2": {
+      "name": "H3Plus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_doubles_t2_uncert": {
+      "name": "H3Plus_DOUBLES_T2_uncert",
+      "title": "uncertainties for H3Plus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_doubles_t3": {
+      "name": "H3Plus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_doubles_t3_uncert": {
+      "name": "H3Plus_DOUBLES_T3_uncert",
+      "title": "uncertainties for H3Plus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_triples_all": {
+      "name": "H3Plus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_triples_all_uncert": {
+      "name": "H3Plus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for H3Plus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_triples_t1": {
+      "name": "H3Plus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_triples_t1_uncert": {
+      "name": "H3Plus_TRIPLES_T1_uncert",
+      "title": "uncertainties for H3Plus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_triples_t2": {
+      "name": "H3Plus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_triples_t2_uncert": {
+      "name": "H3Plus_TRIPLES_T2_uncert",
+      "title": "uncertainties for H3Plus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_triples_t3": {
+      "name": "H3Plus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "h3plus_triples_t3_uncert": {
+      "name": "H3Plus_TRIPLES_T3_uncert",
+      "title": "uncertainties for H3Plus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_best_all": {
+      "name": "HePlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_best_all_uncert": {
+      "name": "HePlus_BEST_ALL_uncert",
+      "title": "uncertainties for HePlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_best_t1": {
+      "name": "HePlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_best_t1_uncert": {
+      "name": "HePlus_BEST_T1_uncert",
+      "title": "uncertainties for HePlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_best_t2": {
+      "name": "HePlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_best_t2_uncert": {
+      "name": "HePlus_BEST_T2_uncert",
+      "title": "uncertainties for HePlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_best_t3": {
+      "name": "HePlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_best_t3_uncert": {
+      "name": "HePlus_BEST_T3_uncert",
+      "title": "uncertainties for HePlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_doubles_all": {
+      "name": "HePlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_doubles_all_uncert": {
+      "name": "HePlus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for HePlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_doubles_t1": {
+      "name": "HePlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_doubles_t1_uncert": {
+      "name": "HePlus_DOUBLES_T1_uncert",
+      "title": "uncertainties for HePlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_doubles_t2": {
+      "name": "HePlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_doubles_t2_uncert": {
+      "name": "HePlus_DOUBLES_T2_uncert",
+      "title": "uncertainties for HePlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_doubles_t3": {
+      "name": "HePlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_doubles_t3_uncert": {
+      "name": "HePlus_DOUBLES_T3_uncert",
+      "title": "uncertainties for HePlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_triples_all": {
+      "name": "HePlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_triples_all_uncert": {
+      "name": "HePlus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for HePlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_triples_t1": {
+      "name": "HePlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_triples_t1_uncert": {
+      "name": "HePlus_TRIPLES_T1_uncert",
+      "title": "uncertainties for HePlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_triples_t2": {
+      "name": "HePlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_triples_t2_uncert": {
+      "name": "HePlus_TRIPLES_T2_uncert",
+      "title": "uncertainties for HePlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_triples_t3": {
+      "name": "HePlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplus_triples_t3_uncert": {
+      "name": "HePlus_TRIPLES_T3_uncert",
+      "title": "uncertainties for HePlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_best_all": {
+      "name": "HePlusPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_best_all_uncert": {
+      "name": "HePlusPlus_BEST_ALL_uncert",
+      "title": "uncertainties for HePlusPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_best_t1": {
+      "name": "HePlusPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_best_t1_uncert": {
+      "name": "HePlusPlus_BEST_T1_uncert",
+      "title": "uncertainties for HePlusPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_best_t2": {
+      "name": "HePlusPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_best_t2_uncert": {
+      "name": "HePlusPlus_BEST_T2_uncert",
+      "title": "uncertainties for HePlusPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_best_t3": {
+      "name": "HePlusPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_best_t3_uncert": {
+      "name": "HePlusPlus_BEST_T3_uncert",
+      "title": "uncertainties for HePlusPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_doubles_all": {
+      "name": "HePlusPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_doubles_all_uncert": {
+      "name": "HePlusPlus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for HePlusPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_doubles_t1": {
+      "name": "HePlusPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_doubles_t1_uncert": {
+      "name": "HePlusPlus_DOUBLES_T1_uncert",
+      "title": "uncertainties for HePlusPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_doubles_t2": {
+      "name": "HePlusPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_doubles_t2_uncert": {
+      "name": "HePlusPlus_DOUBLES_T2_uncert",
+      "title": "uncertainties for HePlusPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_doubles_t3": {
+      "name": "HePlusPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_doubles_t3_uncert": {
+      "name": "HePlusPlus_DOUBLES_T3_uncert",
+      "title": "uncertainties for HePlusPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_triples_all": {
+      "name": "HePlusPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_triples_all_uncert": {
+      "name": "HePlusPlus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for HePlusPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_triples_t1": {
+      "name": "HePlusPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_triples_t1_uncert": {
+      "name": "HePlusPlus_TRIPLES_T1_uncert",
+      "title": "uncertainties for HePlusPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_triples_t2": {
+      "name": "HePlusPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_triples_t2_uncert": {
+      "name": "HePlusPlus_TRIPLES_T2_uncert",
+      "title": "uncertainties for HePlusPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_triples_t3": {
+      "name": "HePlusPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "heplusplus_triples_t3_uncert": {
+      "name": "HePlusPlus_TRIPLES_T3_uncert",
+      "title": "uncertainties for HePlusPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_best_all": {
+      "name": "HPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_best_all_uncert": {
+      "name": "HPlus_BEST_ALL_uncert",
+      "title": "uncertainties for HPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_best_t1": {
+      "name": "HPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_best_t1_uncert": {
+      "name": "HPlus_BEST_T1_uncert",
+      "title": "uncertainties for HPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_best_t2": {
+      "name": "HPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_best_t2_uncert": {
+      "name": "HPlus_BEST_T2_uncert",
+      "title": "uncertainties for HPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_best_t3": {
+      "name": "HPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_best_t3_uncert": {
+      "name": "HPlus_BEST_T3_uncert",
+      "title": "uncertainties for HPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_doubles_all": {
+      "name": "HPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_doubles_all_uncert": {
+      "name": "HPlus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for HPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_doubles_t1": {
+      "name": "HPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_doubles_t1_uncert": {
+      "name": "HPlus_DOUBLES_T1_uncert",
+      "title": "uncertainties for HPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_doubles_t2": {
+      "name": "HPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_doubles_t2_uncert": {
+      "name": "HPlus_DOUBLES_T2_uncert",
+      "title": "uncertainties for HPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_doubles_t3": {
+      "name": "HPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_doubles_t3_uncert": {
+      "name": "HPlus_DOUBLES_T3_uncert",
+      "title": "uncertainties for HPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_triples_all": {
+      "name": "HPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_triples_all_uncert": {
+      "name": "HPlus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for HPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_triples_t1": {
+      "name": "HPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_triples_t1_uncert": {
+      "name": "HPlus_TRIPLES_T1_uncert",
+      "title": "uncertainties for HPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_triples_t2": {
+      "name": "HPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_triples_t2_uncert": {
+      "name": "HPlus_TRIPLES_T2_uncert",
+      "title": "uncertainties for HPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_triples_t3": {
+      "name": "HPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "hplus_triples_t3_uncert": {
+      "name": "HPlus_TRIPLES_T3_uncert",
+      "title": "uncertainties for HPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_best_all": {
+      "name": "NPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_best_all_uncert": {
+      "name": "NPlus_BEST_ALL_uncert",
+      "title": "uncertainties for NPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_best_t1": {
+      "name": "NPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_best_t1_uncert": {
+      "name": "NPlus_BEST_T1_uncert",
+      "title": "uncertainties for NPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_best_t2": {
+      "name": "NPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_best_t2_uncert": {
+      "name": "NPlus_BEST_T2_uncert",
+      "title": "uncertainties for NPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_best_t3": {
+      "name": "NPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_best_t3_uncert": {
+      "name": "NPlus_BEST_T3_uncert",
+      "title": "uncertainties for NPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_doubles_all": {
+      "name": "NPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_doubles_all_uncert": {
+      "name": "NPlus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for NPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_doubles_t1": {
+      "name": "NPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_doubles_t1_uncert": {
+      "name": "NPlus_DOUBLES_T1_uncert",
+      "title": "uncertainties for NPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_doubles_t2": {
+      "name": "NPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_doubles_t2_uncert": {
+      "name": "NPlus_DOUBLES_T2_uncert",
+      "title": "uncertainties for NPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_doubles_t3": {
+      "name": "NPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_doubles_t3_uncert": {
+      "name": "NPlus_DOUBLES_T3_uncert",
+      "title": "uncertainties for NPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_triples_all": {
+      "name": "NPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_triples_all_uncert": {
+      "name": "NPlus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for NPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_triples_t1": {
+      "name": "NPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_triples_t1_uncert": {
+      "name": "NPlus_TRIPLES_T1_uncert",
+      "title": "uncertainties for NPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_triples_t2": {
+      "name": "NPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_triples_t2_uncert": {
+      "name": "NPlus_TRIPLES_T2_uncert",
+      "title": "uncertainties for NPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_triples_t3": {
+      "name": "NPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "nplus_triples_t3_uncert": {
+      "name": "NPlus_TRIPLES_T3_uncert",
+      "title": "uncertainties for NPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_best_all": {
+      "name": "O2Plus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_best_all_uncert": {
+      "name": "O2Plus_BEST_ALL_uncert",
+      "title": "uncertainties for O2Plus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_best_t1": {
+      "name": "O2Plus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_best_t1_uncert": {
+      "name": "O2Plus_BEST_T1_uncert",
+      "title": "uncertainties for O2Plus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_best_t2": {
+      "name": "O2Plus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_best_t2_uncert": {
+      "name": "O2Plus_BEST_T2_uncert",
+      "title": "uncertainties for O2Plus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_best_t3": {
+      "name": "O2Plus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_best_t3_uncert": {
+      "name": "O2Plus_BEST_T3_uncert",
+      "title": "uncertainties for O2Plus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_doubles_all": {
+      "name": "O2Plus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_doubles_all_uncert": {
+      "name": "O2Plus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for O2Plus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_doubles_t1": {
+      "name": "O2Plus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_doubles_t1_uncert": {
+      "name": "O2Plus_DOUBLES_T1_uncert",
+      "title": "uncertainties for O2Plus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_doubles_t2": {
+      "name": "O2Plus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_doubles_t2_uncert": {
+      "name": "O2Plus_DOUBLES_T2_uncert",
+      "title": "uncertainties for O2Plus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_doubles_t3": {
+      "name": "O2Plus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_doubles_t3_uncert": {
+      "name": "O2Plus_DOUBLES_T3_uncert",
+      "title": "uncertainties for O2Plus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_triples_all": {
+      "name": "O2Plus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_triples_all_uncert": {
+      "name": "O2Plus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for O2Plus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_triples_t1": {
+      "name": "O2Plus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_triples_t1_uncert": {
+      "name": "O2Plus_TRIPLES_T1_uncert",
+      "title": "uncertainties for O2Plus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_triples_t2": {
+      "name": "O2Plus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_triples_t2_uncert": {
+      "name": "O2Plus_TRIPLES_T2_uncert",
+      "title": "uncertainties for O2Plus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_triples_t3": {
+      "name": "O2Plus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "o2plus_triples_t3_uncert": {
+      "name": "O2Plus_TRIPLES_T3_uncert",
+      "title": "uncertainties for O2Plus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_best_all": {
+      "name": "OPlusPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_best_all_uncert": {
+      "name": "OPlusPlus_BEST_ALL_uncert",
+      "title": "uncertainties for OPlusPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_best_t1": {
+      "name": "OPlusPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_best_t1_uncert": {
+      "name": "OPlusPlus_BEST_T1_uncert",
+      "title": "uncertainties for OPlusPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_best_t2": {
+      "name": "OPlusPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_best_t2_uncert": {
+      "name": "OPlusPlus_BEST_T2_uncert",
+      "title": "uncertainties for OPlusPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_best_t3": {
+      "name": "OPlusPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_best_t3_uncert": {
+      "name": "OPlusPlus_BEST_T3_uncert",
+      "title": "uncertainties for OPlusPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_doubles_all": {
+      "name": "OPlusPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_doubles_all_uncert": {
+      "name": "OPlusPlus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for OPlusPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_doubles_t1": {
+      "name": "OPlusPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_doubles_t1_uncert": {
+      "name": "OPlusPlus_DOUBLES_T1_uncert",
+      "title": "uncertainties for OPlusPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_doubles_t2": {
+      "name": "OPlusPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_doubles_t2_uncert": {
+      "name": "OPlusPlus_DOUBLES_T2_uncert",
+      "title": "uncertainties for OPlusPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_doubles_t3": {
+      "name": "OPlusPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_doubles_t3_uncert": {
+      "name": "OPlusPlus_DOUBLES_T3_uncert",
+      "title": "uncertainties for OPlusPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_triples_all": {
+      "name": "OPlusPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_triples_all_uncert": {
+      "name": "OPlusPlus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for OPlusPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_triples_t1": {
+      "name": "OPlusPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_triples_t1_uncert": {
+      "name": "OPlusPlus_TRIPLES_T1_uncert",
+      "title": "uncertainties for OPlusPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_triples_t2": {
+      "name": "OPlusPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_triples_t2_uncert": {
+      "name": "OPlusPlus_TRIPLES_T2_uncert",
+      "title": "uncertainties for OPlusPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_triples_t3": {
+      "name": "OPlusPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplus_triples_t3_uncert": {
+      "name": "OPlusPlus_TRIPLES_T3_uncert",
+      "title": "uncertainties for OPlusPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_best_all": {
+      "name": "OPlusPlusPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_best_all_uncert": {
+      "name": "OPlusPlusPlus_BEST_ALL_uncert",
+      "title": "uncertainties for OPlusPlusPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_best_t1": {
+      "name": "OPlusPlusPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_best_t1_uncert": {
+      "name": "OPlusPlusPlus_BEST_T1_uncert",
+      "title": "uncertainties for OPlusPlusPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_best_t2": {
+      "name": "OPlusPlusPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_best_t2_uncert": {
+      "name": "OPlusPlusPlus_BEST_T2_uncert",
+      "title": "uncertainties for OPlusPlusPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_best_t3": {
+      "name": "OPlusPlusPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_best_t3_uncert": {
+      "name": "OPlusPlusPlus_BEST_T3_uncert",
+      "title": "uncertainties for OPlusPlusPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_doubles_all": {
+      "name": "OPlusPlusPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_doubles_all_uncert": {
+      "name": "OPlusPlusPlus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for OPlusPlusPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_doubles_t1": {
+      "name": "OPlusPlusPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_doubles_t1_uncert": {
+      "name": "OPlusPlusPlus_DOUBLES_T1_uncert",
+      "title": "uncertainties for OPlusPlusPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_doubles_t2": {
+      "name": "OPlusPlusPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_doubles_t2_uncert": {
+      "name": "OPlusPlusPlus_DOUBLES_T2_uncert",
+      "title": "uncertainties for OPlusPlusPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_doubles_t3": {
+      "name": "OPlusPlusPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_doubles_t3_uncert": {
+      "name": "OPlusPlusPlus_DOUBLES_T3_uncert",
+      "title": "uncertainties for OPlusPlusPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_triples_all": {
+      "name": "OPlusPlusPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_triples_all_uncert": {
+      "name": "OPlusPlusPlus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for OPlusPlusPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_triples_t1": {
+      "name": "OPlusPlusPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_triples_t1_uncert": {
+      "name": "OPlusPlusPlus_TRIPLES_T1_uncert",
+      "title": "uncertainties for OPlusPlusPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_triples_t2": {
+      "name": "OPlusPlusPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_triples_t2_uncert": {
+      "name": "OPlusPlusPlus_TRIPLES_T2_uncert",
+      "title": "uncertainties for OPlusPlusPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_triples_t3": {
+      "name": "OPlusPlusPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "oplusplusplus_triples_t3_uncert": {
+      "name": "OPlusPlusPlus_TRIPLES_T3_uncert",
+      "title": "uncertainties for OPlusPlusPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_best_all": {
+      "name": "WPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_best_all_uncert": {
+      "name": "WPlus_BEST_ALL_uncert",
+      "title": "uncertainties for WPlus_BEST_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_best_t1": {
+      "name": "WPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_best_t1_uncert": {
+      "name": "WPlus_BEST_T1_uncert",
+      "title": "uncertainties for WPlus_BEST_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_best_t2": {
+      "name": "WPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_best_t2_uncert": {
+      "name": "WPlus_BEST_T2_uncert",
+      "title": "uncertainties for WPlus_BEST_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_best_t3": {
+      "name": "WPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_best_t3_uncert": {
+      "name": "WPlus_BEST_T3_uncert",
+      "title": "uncertainties for WPlus_BEST_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_doubles_all": {
+      "name": "WPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_doubles_all_uncert": {
+      "name": "WPlus_DOUBLES_ALL_uncert",
+      "title": "uncertainties for WPlus_DOUBLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_doubles_t1": {
+      "name": "WPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_doubles_t1_uncert": {
+      "name": "WPlus_DOUBLES_T1_uncert",
+      "title": "uncertainties for WPlus_DOUBLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_doubles_t2": {
+      "name": "WPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_doubles_t2_uncert": {
+      "name": "WPlus_DOUBLES_T2_uncert",
+      "title": "uncertainties for WPlus_DOUBLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_doubles_t3": {
+      "name": "WPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_doubles_t3_uncert": {
+      "name": "WPlus_DOUBLES_T3_uncert",
+      "title": "uncertainties for WPlus_DOUBLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_triples_all": {
+      "name": "WPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_triples_all_uncert": {
+      "name": "WPlus_TRIPLES_ALL_uncert",
+      "title": "uncertainties for WPlus_TRIPLES_ALL",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_triples_t1": {
+      "name": "WPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_triples_t1_uncert": {
+      "name": "WPlus_TRIPLES_T1_uncert",
+      "title": "uncertainties for WPlus_TRIPLES_T1",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_triples_t2": {
+      "name": "WPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_triples_t2_uncert": {
+      "name": "WPlus_TRIPLES_T2_uncert",
+      "title": "uncertainties for WPlus_TRIPLES_T2",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_triples_t3": {
+      "name": "WPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    },
+    "wplus_triples_t3_uncert": {
+      "name": "WPlus_TRIPLES_T3_uncert",
+      "title": "uncertainties for WPlus_TRIPLES_T3",
+      "units": "particles/s/keV/cm^2/ster"
+    }
+  },
+  "name": "CHEMS PHA Box Fluxes, Full Res",
+  "sci_contacts": [
+    {
+      "name": "Don Mitchell"
+    }
+  ],
+  "sources": {
+    "hapi": {
+      "convention": "hapi/2.0",
+      "name": "HAPI/2.0 Source",
+      "type": "HttpStreamSrc",
+      "urls": [
+        "http://das2.org/catalog/das/site/jhuapl/cassini/mimi/chems_pha_box_fluxes_full_time_res/hapi.json"
+      ]
+    }
+  },
+  "title": "CHEMS PHA flux box intensities for many species at the highest time resolution",
+  "type": "Collection",
+  "version": "0.4"
+}

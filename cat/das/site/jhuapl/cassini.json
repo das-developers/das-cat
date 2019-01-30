@@ -1,0 +1,16 @@
+{
+   "name": "Cassini",
+   "catalog": {
+      "mimi": {
+         "name": "MIMI",
+         "title": "Magnetospheric IMaging Instrument - JHU/Applied Physics Laboratory (Donald Mitchell)",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/jhuapl/cassini/mimi.json"
+         ]
+      }
+   },
+   "title": "Saturn System Explorer - Orbit Insertion 2004-06-30",
+   "type": "Catalog",
+   "version": "0.4"
+}

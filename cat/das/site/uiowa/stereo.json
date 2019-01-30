@@ -1,0 +1,16 @@
+{
+   "catalog": {
+      "a": {
+         "name": "A",
+         "title": "Spacecraft A (Ahead)",
+         "type": "Catalog",
+         "urls": [
+            "http://das2.org/catalog/das/site/uiowa/stereo/a.json"
+         ]
+      }
+   },
+   "name": "Stereo",
+   "title": "Dual Solar Terrestrial Relation Observatories - Launch date 2006-10-26",
+   "type": "Catalog",
+   "version": "0.4"
+}
