@@ -7,7 +7,7 @@
       "name": "Cottage Systems",
       "type": "Catalog",
       "urls": [
-        "http://das2.org/catalog/das/test/cottagesystems.json"
+        "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/test/cottagesystems.json"
       ]
     },
     "uiowa": {
@@ -15,7 +15,7 @@
       "title": "University of Iowa, Department of Physics & Astronomy",
       "type": "Catalog",
       "urls": [
-        "http://das2.org/catalog/das/test/uiowa.json"
+        "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/test/uiowa.json"
       ]
     }
   },

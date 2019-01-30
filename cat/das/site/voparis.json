@@ -5,7 +5,7 @@
          "title": "Cassini/RPWS/HFR datasets",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/voparis/cassini-rpws-hfr.json"
+            "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/site/voparis/cassini-rpws-hfr.json"
          ]
       },
       "cdpp": {
@@ -13,7 +13,7 @@
          "title": null,
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/voparis/cdpp.json"
+            "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/site/voparis/cdpp.json"
          ]
       },
       "expres": {
@@ -21,7 +21,7 @@
          "title": "ExPRES (Exoplanetary and Planetary Radio Emission Simulator, Hess et al., 2017) datasets",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/voparis/expres.json"
+            "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/site/voparis/expres.json"
          ]
       },
       "nancay": {
@@ -29,7 +29,7 @@
          "title": "Ground based low frequency radioastronomy observations starting from 1990",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/voparis/nancay.json"
+            "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/site/voparis/nancay.json"
          ]
       },
       "radiojove": {
@@ -37,7 +37,7 @@
          "title": null,
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/voparis/radiojove.json"
+            "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/site/voparis/radiojove.json"
          ]
       },
       "stereo-waves": {
@@ -45,7 +45,7 @@
          "title": "STEREO/Waves datasets",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/voparis/stereo-waves.json"
+            "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/site/voparis/stereo-waves.json"
          ]
       },
       "voyager-pra": {
@@ -53,7 +53,7 @@
          "title": "Voyager-PRA datasets",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/voparis/voyager-pra.json"
+            "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/site/voparis/voyager-pra.json"
          ]
       }
    },

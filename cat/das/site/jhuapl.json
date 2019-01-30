@@ -6,7 +6,7 @@
          "title": "Saturn System Explorer - Orbit Insertion 2004-06-30",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/jhuapl/cassini.json"
+            "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/site/jhuapl/cassini.json"
          ]
       }
    },

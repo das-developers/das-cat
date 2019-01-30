@@ -6,7 +6,7 @@
          "title": "Mars polar orbiter - Launch date 2003-06-02",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/test/uiowa/mars_express.json"
+            "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/test/uiowa/mars_express.json"
          ]
       }
    },

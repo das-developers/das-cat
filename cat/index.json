@@ -5,7 +5,7 @@
       "title": "NASA Goddard Spaceflight Center Data Sites",
       "type": "Catalog",
       "urls": [
-        "http://das2.org/catalog/cdaweb.json"
+        "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/cdaweb.json"
       ]
     },
     "tag:das2.org,2012:": {
@@ -13,7 +13,7 @@
       "title": "Federated Das2 Catalog",
       "type": "Catalog",
       "urls": [
-        "http://das2.org/catalog/das.json"
+        "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das.json"
       ]
     },
     "tag:spase-group.org,2018:spase://": {
@@ -21,7 +21,7 @@
       "title": "Space Physics Archive Search and Extract (SPASE) Metadata Registry",
       "type": "Catalog",
       "urls": [
-        "http://das2.org/catalog/spase.json"
+        "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/spase.json"
       ]
     }
   },

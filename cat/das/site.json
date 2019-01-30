@@ -5,7 +5,7 @@
       "title": "Johns Hopkins University, Applied Physics Laboratory",
       "type": "Catalog",
       "urls": [
-        "http://das2.org/catalog/das/site/jhuapl.json"
+        "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/site/jhuapl.json"
       ]
     },
     "uiowa": {
@@ -13,7 +13,7 @@
       "title": "University of Iowa, Department of Physics & Astronomy",
       "type": "Catalog",
       "urls": [
-        "http://das2.org/catalog/das/site/uiowa.json"
+        "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/site/uiowa.json"
       ]
     },
     "voparis": {
@@ -21,7 +21,7 @@
       "title": "Paris Astronomical Data Centre",
       "type": "Catalog",
       "urls": [
-        "http://das2.org/catalog/das/site/voparis.json"
+        "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/site/voparis.json"
       ]
     }
   },

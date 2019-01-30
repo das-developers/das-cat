@@ -5,7 +5,7 @@
       "title": "Federated Site Catalog",
       "type": "Catalog",
       "urls": [
-        "http://das2.org/catalog/das/site.json"
+        "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/site.json"
       ]
     },
     "test": {
@@ -13,7 +13,7 @@
       "title": "Root test Catalog",
       "type": "Catalog",
       "urls": [
-        "http://das2.org/catalog/das/test.json"
+        "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/test.json"
       ]
     }
   },

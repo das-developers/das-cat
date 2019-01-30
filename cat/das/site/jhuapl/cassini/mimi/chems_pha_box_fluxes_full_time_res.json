@@ -1283,7 +1283,7 @@
       "name": "HAPI/2.0 Source",
       "type": "HttpStreamSrc",
       "urls": [
-        "http://das2.org/catalog/das/site/jhuapl/cassini/mimi/chems_pha_box_fluxes_full_time_res/hapi.json"
+        "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/site/jhuapl/cassini/mimi/chems_pha_box_fluxes_full_time_res/hapi.json"
       ]
     }
   },

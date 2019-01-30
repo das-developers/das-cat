@@ -6,7 +6,7 @@
          "title": "Magnetospheric IMaging Instrument - JHU/Applied Physics Laboratory (Donald Mitchell)",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/jhuapl/cassini/mimi.json"
+            "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/site/jhuapl/cassini/mimi.json"
          ]
       }
    },
