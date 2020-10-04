@@ -233,10 +233,17 @@ def _getNode(lAttempted, lPathTo, sUrl, sPath, sWanted):
 				lPathTo.append(
 					(dNode['name'], dNode['title'], catPathToBrowseUrl(sPath) )
 				)
-
-			dNode = _getNode(lAttempted, lPathTo, sUrl, sSubPath, sWanted)
-			if dNode != None:
-				return dNode
+				
+				dSubNode = _getNode(lAttempted, lPathTo, sUrl, sSubPath, sWanted)
+				if dSubNode != None:
+					return dSubNode
+				
+				lPathTo.pop()
+				
+			else:
+				dSubNode = _getNode(lAttempted, lPathTo, sUrl, sSubPath, sWanted)
+				if dSubNode != None:
+					return dSubNode
 
 	return None
 
