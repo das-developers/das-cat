@@ -5,7 +5,7 @@
          "title": "Saturn System Explorer - Orbit Insertion 2004-06-30",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/uiowa/cassini.json"
+            "https://das2.org/catalog/das/site/uiowa/cassini.json"
          ]
       },
       "de": {
@@ -13,7 +13,7 @@
          "title": "Earth polar orbiters - Launch date 1981-08-03",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/uiowa/de.json"
+            "https://das2.org/catalog/das/site/uiowa/de.json"
          ]
       },
       "earth": {
@@ -21,7 +21,7 @@
          "title": "Earth based observatories",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/uiowa/earth.json"
+            "https://das2.org/catalog/das/site/uiowa/earth.json"
          ]
       },
       "galileo": {
@@ -29,7 +29,7 @@
          "title": "Jupiter equatorial orbiter - Launch date 1989-10-13",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/uiowa/galileo.json"
+            "https://das2.org/catalog/das/site/uiowa/galileo.json"
          ]
       },
       "isee": {
@@ -37,7 +37,7 @@
          "title": "International Sun-Earth Explorers - Launch date 1977-10-22",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/uiowa/isee.json"
+            "https://das2.org/catalog/das/site/uiowa/isee.json"
          ]
       },
       "juno": {
@@ -45,7 +45,7 @@
          "title": "Jupiter polar orbiter - Launch date 2011-08-05",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/uiowa/juno.json"
+            "https://das2.org/catalog/das/site/uiowa/juno.json"
          ]
       },
       "mars_express": {
@@ -53,7 +53,7 @@
          "title": "Mars polar orbiter - Launch date 2003-06-02",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/uiowa/mars_express.json"
+            "https://das2.org/catalog/das/site/uiowa/mars_express.json"
          ]
       },
       "maven": {
@@ -61,7 +61,7 @@
          "title": "Mars Atmosphere and Volatile Evolution Mission - Orbit Insertion 2014-09-22",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/uiowa/maven.json"
+            "https://das2.org/catalog/das/site/uiowa/maven.json"
          ]
       },
       "stereo": {
@@ -69,7 +69,7 @@
          "title": "Dual Solar Terrestrial Relation Observatories - Launch date 2006-10-26",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/uiowa/stereo.json"
+            "https://das2.org/catalog/das/site/uiowa/stereo.json"
          ]
       },
       "van_allen_probes": {
@@ -85,7 +85,7 @@
          "title": "Dual Spacecraft Mission to the Outer Planets, and Beyond",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/uiowa/voyager.json"
+            "https://das2.org/catalog/das/site/uiowa/voyager.json"
          ]
       },
       "wind": {
@@ -93,7 +93,7 @@
          "title": "WIND Solar-Terrestrial Mission  - Launch date 1994-11-01",
          "type": "Catalog",
          "urls": [
-            "http://das2.org/catalog/das/site/uiowa/wind.json"
+            "https://das2.org/catalog/das/site/uiowa/wind.json"
          ]
       }
    },

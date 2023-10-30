@@ -4,91 +4,91 @@
       "description": "Assigns resource IDs for data registered in the Australian Space Weather Services.",
       "name": "ASWS",
       "reference_urls": [
-        "http://www.sws.bom.gov.au/World_Data_Centre",
+        "https://www.sws.bom.gov.au/World_Data_Centre",
         "https://github.com/hpde/ASWS"
       ],
       "title": "Australian Space Weather Services (ASWS)",
       "type": "SpaseRecord",
       "urls": [
-        "http://spase-group.org/registry/resolver?t=yes&i=spase://ASWS"
+        "https://spase-group.org/registry/resolver?t=yes&i=spase://ASWS"
       ]
     },
     "CCMC": {
       "description": "Assigns resource IDs for data available from the Community Coordinated Modeling Center",
       "name": "CCMC",
       "reference_urls": [
-        "http://ccmc.gsfc.nasa.gov/",
+        "https://ccmc.gsfc.nasa.gov/",
         "https://github.com/hpde/CCMC"
       ],
       "title": "Community Coordinated Modeling Center (CCMC)",
       "type": "SpaseRecord",
       "urls": [
-        "http://spase-group.org/registry/resolver?t=yes&i=spase://CCMC"
+        "https://spase-group.org/registry/resolver?t=yes&i=spase://CCMC"
       ]
     },
     "CSSDP": {
       "description": "Assigns resource IDs for data registered in the Canadian Space Science Data Portal",
       "name": "CSSDP",
       "reference_urls": [
-        "http://www.cssdp.ca/",
+        "https://www.cssdp.ca/",
         "https://github.com/hpde/CSSDP"
       ],
       "title": "Canadian Space Science Data Portal (CSSDP)",
       "type": "SpaseRecord",
       "urls": [
-        "http://spase-group.org/registry/resolver?t=yes&i=spase://CSSDP"
+        "https://spase-group.org/registry/resolver?t=yes&i=spase://CSSDP"
       ]
     },
     "ESA": {
       "description": "Assigns resource IDs for data available from the European Space Agency",
       "name": "ESA",
       "reference_urls": [
-        "http://www.esa.int/ESA",
+        "https://www.esa.int/ESA",
         "https://github.com/hpde/ESA"
       ],
       "title": "European Space Agency (ESA)",
       "type": "SpaseRecord",
       "urls": [
-        "http://spase-group.org/registry/resolver?t=yes&i=spase://ESA"
+        "https://spase-group.org/registry/resolver?t=yes&i=spase://ESA"
       ]
     },
     "GBO": {
       "description": "Assigns resource IDs for data available from the ground based observatories",
       "name": "GBO",
       "reference_urls": [
-        "http://vspo.gsfc.nasa.gov",
+        "https://vspo.gsfc.nasa.gov",
         "https://github.com/hpde/GBO"
       ],
       "title": "Ground Based Observatories",
       "type": "SpaseRecord",
       "urls": [
-        "http://spase-group.org/registry/resolver?t=yes&i=spase://GBO"
+        "https://spase-group.org/registry/resolver?t=yes&i=spase://GBO"
       ]
     },
     "ISWI": {
       "description": "Assigns resource IDs for data available from the International Space Weather Initiative",
       "name": "ISWI",
       "reference_urls": [
-        "http://www.iswi-secretariat.org/",
+        "https://www.iswi-secretariat.org/",
         "https://github.com/hpde/ISWI"
       ],
       "title": "International Space Weather Initiative (ISWI)",
       "type": "SpaseRecord",
       "urls": [
-        "http://spase-group.org/registry/resolver?t=yes&i=spase://ISWI"
+        "https://spase-group.org/registry/resolver?t=yes&i=spase://ISWI"
       ]
     },
     "JAXA": {
       "description": "Assigns resource IDs for data available from the Japan Aerospace Exploration Agency",
       "name": "JAXA",
       "reference_urls": [
-        "http://global.jaxa.jp/",
+        "https://global.jaxa.jp/",
         "https://github.com/hpde/JAXA"
       ],
       "title": "Japan Aerospace Exploration Agency (JAXA)",
       "type": "SpaseRecord",
       "urls": [
-        "http://spase-group.org/registry/resolver?t=yes&i=spase://JAXA"
+        "https://spase-group.org/registry/resolver?t=yes&i=spase://JAXA"
       ]
     },
     "NFS": {
@@ -101,46 +101,46 @@
       "title": "National Science Foundation (NSF)",
       "type": "SpaseRecord",
       "urls": [
-        "http://spase-group.org/registry/resolver?t=yes&i=spase://NFS"
+        "https://spase-group.org/registry/resolver?t=yes&i=spase://NFS"
       ]
     },
     "NOAA": {
       "description": "Assigns resource IDs for data registered in National Oceanic and Atmospheric Administration (NOAA) data systems.",
       "name": "NOAA",
       "reference_urls": [
-        "http://www.nesdis.noaa.gov/",
+        "https://www.nesdis.noaa.gov/",
         "https://github.com/hpde/NOAA"
       ],
       "title": "National Oceanic and Atmospheric Administration (NOAA)",
       "type": "SpaseRecord",
       "urls": [
-        "http://spase-group.org/registry/resolver?t=yes&i=spase://NOAA"
+        "https://spase-group.org/registry/resolver?t=yes&i=spase://NOAA"
       ]
     },
     "SMWG": {
       "description": "The community location for entities such as persons, observatories, instruments, repositories, registries and services.",
       "name": "SMWG",
       "reference_urls": [
-        "http://www.spase-group.org/registry",
+        "https://www.spase-group.org/registry",
         "https://github.com/hpde/spase-SMWG"
       ],
       "title": "SPASE Metadata Working Group (SMWG)",
       "type": "SpaseRecord",
       "urls": [
-        "http://spase-group.org/registry/resolver?t=yes&i=spase://SMWG"
+        "https://spase-group.org/registry/resolver?t=yes&i=spase://SMWG"
       ]
     },
     "VSPO": {
       "description": "",
       "name": "VSPO",
       "reference_urls": [
-        "http://vspo.gsfc.nasa.gov",
+        "https://vspo.gsfc.nasa.gov",
         "https://github.com/hpde/spase-VSPO"
       ],
       "title": "Virtual Space Physics Observatory (VSPO)",
       "type": "SpaseRecord",
       "urls": [
-        "http://spase-group.org/registry/resolver?t=yes&i=spase://VSPO"
+        "https://spase-group.org/registry/resolver?t=yes&i=spase://VSPO"
       ]
     }
   },

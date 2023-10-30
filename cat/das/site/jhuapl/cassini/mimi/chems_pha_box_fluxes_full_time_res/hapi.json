@@ -3,7 +3,7 @@
     "required": false
   },
   "base_urls": [
-    "http://datashop.elasticbeanstalk.com/hapi/data?id=CHEMS_PHA_BOX_FLUXES_FULL_TIME_RES&include=header"
+    "https://datashop.elasticbeanstalk.com/hapi/data?id=CHEMS_PHA_BOX_FLUXES_FULL_TIME_RES&include=header"
   ],
   "convention": "hapi/2.0",
   "coordinates": {
@@ -3523,7 +3523,7 @@
         "time.min": "2004-183T00:00:00.000Z"
       },
       "name": "Example HPlus_BEST_T1",
-      "url": "http://datashop.elasticbeanstalk.com/hapi/data?id=CHEMS_PHA_BOX_FLUXES_FULL_TIME_RES&include=header&time.min=2004-183T00:00:00.000Z&time.max=2004-184T00:00:00.000Z&parameters=HPlus_BEST_T1"
+      "url": "https://datashop.elasticbeanstalk.com/hapi/data?id=CHEMS_PHA_BOX_FLUXES_FULL_TIME_RES&include=header&time.min=2004-183T00:00:00.000Z&time.max=2004-184T00:00:00.000Z&parameters=HPlus_BEST_T1"
     }
   },
   "format":{
