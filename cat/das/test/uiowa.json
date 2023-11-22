@@ -1,16 +1,40 @@
 {
-   "name": "U. Iowa",
    "catalog": {
+      "juno": {
+         "name": "Juno",
+         "title": "Jupiter polar orbiter - Launch date 2011-08-05",
+         "type": "Catalog",
+         "urls": [
+            "https://das2.org/catalog/das/test/uiowa/juno.json"
+         ]
+      },
       "mars_express": {
          "name": "Mars Express",
          "title": "Mars polar orbiter - Launch date 2003-06-02",
          "type": "Catalog",
          "urls": [
-            "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/test/uiowa/mars_express.json"
+            "https://das2.org/catalog/das/test/uiowa/mars_express.json"
          ]
-      }
+      },
+      "voyager": {
+         "name": "Voyager",
+         "title": "Dual Spacecraft Mission to the Outer Planets, and Beyond",
+         "type": "Catalog",
+         "urls": [
+            "https://das2.org/catalog/das/test/uiowa/voyager.json"
+         ]
+      },
+		"tracers": {
+		   "name": "TRACERS",
+			"type": "Catalog",
+			"title": "Tandem Reconnection and Cusp Electrodynamics Reconnaissance Satellites (2025)",
+			"urls": [
+            "https://das2.org/catalog/das/test/uiowa/tracers.json"
+			]
+		}
    },
+   "name": "U. Iowa",
    "title": "University of Iowa, Department of Physics and Astronomy Test Catalog",
    "type": "Catalog",
-   "version": "0.4"
+   "version": "0.5"
 }
