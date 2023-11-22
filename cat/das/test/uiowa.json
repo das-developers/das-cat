@@ -24,14 +24,14 @@
             "https://das2.org/catalog/das/test/uiowa/voyager.json"
          ]
       },
-		"tracers": {
-		   "name": "TRACERS",
-			"type": "Catalog",
-			"title": "Tandem Reconnection and Cusp Electrodynamics Reconnaissance Satellites (2025)",
-			"urls": [
+      "tracers": {
+         "name": "TRACERS",
+	 "type": "Catalog",
+         "title": "Tandem Reconnection and Cusp Electrodynamics Reconnaissance Satellites (2025)",
+         "urls": [
             "https://das2.org/catalog/das/test/uiowa/tracers.json"
-			]
-		}
+         ]
+      }
    },
    "name": "U. Iowa",
    "title": "University of Iowa, Department of Physics and Astronomy Test Catalog",
