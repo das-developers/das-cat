@@ -1,0 +1,57 @@
+{
+	// Das Federated Catalog (FedCat) Common Properties for all nodes
+	//
+	//   Node (0.2)
+	//
+	// This is essentially a virtual class, no real catalog object uses this
+	// directly.
+	
+	"$schema":"http://json-schema.org/draft/2020-12/schema",
+
+	// Default baseURL: https://das2.org/schema/cat-0.7/
+	"$id":"node.json5",
+
+	"title":"Node",
+	"description":"All JSON nodes in the das federated catalog have these properties",
+	"type":"object",
+	"properties":{
+
+		// The schema that this node definition supposedly follows
+		"$schema":{"type":"string", "format":"uri", "pattern": "^https?://"},
+
+		// The catalog node type. Since there are not many node types, this
+		// value isused to determine both the syntax and semantics of a node
+		"type":{"type":"string", "pattern":"^[a-zA-Z_][a-zA-Z0-9_]{0,63}$"},
+
+		// The version of a catalog node type.  Different versions of the same
+		// type must serve the same function in the global catalog
+		"version":{
+			"type":"string",
+			"pattern":"^[0-9][0-9]{0,2}\\.[0-9][0-9]{0,2}(\\.[0-9][0-9]{0,2})?$"
+		},
+
+		// The URI token this node want's to have when included in a path.
+		// this is used for bottom-up generation of catalogs.  There is no
+		// requirement that the container use this as the key for the node
+		// but usually it does.
+		"token":{"type":"string", "pattern":"^[a-z_][a-z0-9_]{0,32}$"},
+
+		// Short display string for tight spaces
+		"label":{"type":"string", "minLength":1, "maxLength":32},
+
+		// Synonym for label
+		"name":{"type":"string", "minLength":1, "maxLength":32, "deprecated":true},	
+
+		// A 1-line summary of the node
+		"title":{"type":"string", "minLength":1, "maxLength":256},
+
+		// A longer description of the node, intended for GUI elements that
+		// are often hidden or require interaction to dispaly extra information
+		"description":{"type":"string", "minLength":3, "maxLength":8192}
+	},
+
+	"oneOf":[
+		{"required":["name","type","version"]},
+		{"required":["label","type","version"]}
+	]
+}

@@ -1,9 +1,11 @@
 {
+  "$schema":"https://das2.org/schema/cat-0.7/catalog.json5",
+
   "catalog": {
     "ASWS": {
       "description": "Assigns resource IDs for data registered in the Australian Space Weather Services.",
       "name": "ASWS",
-      "reference_urls": [
+      "externalDesc": [
         "https://www.sws.bom.gov.au/World_Data_Centre",
         "https://github.com/hpde/ASWS"
       ],
@@ -16,7 +18,7 @@
     "CCMC": {
       "description": "Assigns resource IDs for data available from the Community Coordinated Modeling Center",
       "name": "CCMC",
-      "reference_urls": [
+      "externalDesc": [
         "https://ccmc.gsfc.nasa.gov/",
         "https://github.com/hpde/CCMC"
       ],
@@ -29,7 +31,7 @@
     "CSSDP": {
       "description": "Assigns resource IDs for data registered in the Canadian Space Science Data Portal",
       "name": "CSSDP",
-      "reference_urls": [
+      "externalDesc": [
         "https://www.cssdp.ca/",
         "https://github.com/hpde/CSSDP"
       ],
@@ -42,7 +44,7 @@
     "ESA": {
       "description": "Assigns resource IDs for data available from the European Space Agency",
       "name": "ESA",
-      "reference_urls": [
+      "externalDesc": [
         "https://www.esa.int/ESA",
         "https://github.com/hpde/ESA"
       ],
@@ -55,7 +57,7 @@
     "GBO": {
       "description": "Assigns resource IDs for data available from the ground based observatories",
       "name": "GBO",
-      "reference_urls": [
+      "externalDesc": [
         "https://vspo.gsfc.nasa.gov",
         "https://github.com/hpde/GBO"
       ],
@@ -68,7 +70,7 @@
     "ISWI": {
       "description": "Assigns resource IDs for data available from the International Space Weather Initiative",
       "name": "ISWI",
-      "reference_urls": [
+      "externalDesc": [
         "https://www.iswi-secretariat.org/",
         "https://github.com/hpde/ISWI"
       ],
@@ -81,7 +83,7 @@
     "JAXA": {
       "description": "Assigns resource IDs for data available from the Japan Aerospace Exploration Agency",
       "name": "JAXA",
-      "reference_urls": [
+      "externalDesc": [
         "https://global.jaxa.jp/",
         "https://github.com/hpde/JAXA"
       ],
@@ -94,7 +96,7 @@
     "NFS": {
       "description": "Assigns resource IDs for data available from the National Science Foundation (NSF)",
       "name": "NFS",
-      "reference_urls": [
+      "externalDesc": [
         "https://www.nsf.gov/",
         "https://github.com/hpde/NFS"
       ],
@@ -107,7 +109,7 @@
     "NOAA": {
       "description": "Assigns resource IDs for data registered in National Oceanic and Atmospheric Administration (NOAA) data systems.",
       "name": "NOAA",
-      "reference_urls": [
+      "externalDesc": [
         "https://www.nesdis.noaa.gov/",
         "https://github.com/hpde/NOAA"
       ],
@@ -120,7 +122,7 @@
     "SMWG": {
       "description": "The community location for entities such as persons, observatories, instruments, repositories, registries and services.",
       "name": "SMWG",
-      "reference_urls": [
+      "externalDesc": [
         "https://www.spase-group.org/registry",
         "https://github.com/hpde/spase-SMWG"
       ],
@@ -131,9 +133,8 @@
       ]
     },
     "VSPO": {
-      "description": "",
       "name": "VSPO",
-      "reference_urls": [
+      "externalDesc": [
         "https://vspo.gsfc.nasa.gov",
         "https://github.com/hpde/spase-VSPO"
       ],
@@ -149,5 +150,5 @@
   "separator": "://",
   "title": "Space Physics Archive Search and Extract (SPASE) Metadata Registry",
   "type": "Catalog",
-  "version": "0.4"
+  "version": "0.5"
 }

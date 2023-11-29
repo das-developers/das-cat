@@ -1,4 +1,6 @@
 {
+  "$schema":"https://das2.org/schema/cat-0.7/catalog.json5",
+
   "catalog": {
     "/": {
       "MIME": "text/xml",
@@ -14,5 +16,5 @@
   "separator": null,
   "title": "NASA Goddard Spaceflight Center Data Sites",
   "type": "Catalog",
-  "version": "0.4"
+  "version": "0.5"
 }

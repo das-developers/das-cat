@@ -10,7 +10,6 @@
       },
       "cdpp": {
          "name": "CDPP",
-         "title": null,
          "type": "Catalog",
          "urls": [
             "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/site/voparis/cdpp.json"
@@ -34,7 +33,6 @@
       },
       "radiojove": {
          "name": "RadioJOVE",
-         "title": null,
          "type": "Catalog",
          "urls": [
             "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/site/voparis/radiojove.json"
@@ -60,5 +58,5 @@
    "name": "VO Paris",
    "title": "My Das2.2 Server",
    "type": "Catalog",
-   "version": "0.4"
+   "version": "0.5"
 }

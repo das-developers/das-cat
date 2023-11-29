@@ -1,4 +1,6 @@
 {
+  "$schema":"https://das2.org/schema/cat-0.7/catalog.json5",
+
   "catalog": {
     "tag:cdaweb.sci.gsfc.nasa.gov,2018:": {
       "name": "CDAWeb",
@@ -30,5 +32,5 @@
   "separator": null,
   "title": "Root Path List",
   "type": "Catalog",
-  "version": "0.4"
+  "version": "0.5"
 }

@@ -1,10 +1,8 @@
 {
    "name": "cottagesystems",
-   "path_uri": "tag:das2.org,2012:test:/cottagesystems",
    "catalog": {
       "housetemps": {
          "name": "housetemps",
-         "title": null,
          "type": "Catalog",
          "urls": [
             "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/test/cottagesystems/housetemps.json"
@@ -12,7 +10,6 @@
       },
       "test": {
          "name": "test",
-         "title": null,
          "type": "Catalog",
          "urls": [
             "https://raw.githubusercontent.com/das-developers/das-cat/master/cat/das/test/cottagesystems/test.json"
@@ -21,5 +18,5 @@
    },
    "title": "Jeremy Faden's test Das2 Server",
    "type": "Catalog",
-   "version": "0.4"
+   "version": "0.5"
 }

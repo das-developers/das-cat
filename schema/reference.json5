@@ -1,0 +1,104 @@
+{
+	// Das Federated Catalog (FedCat) Node Definition
+	//
+	//   Reference (0.2)
+	//
+	// This node type is a placeholder.  It provides the location of some 
+	// other full node that may be placed into the node hierarchy in place
+	// of this node.  Consider it to be a "fat URL".  Unlike plain URLs, a 
+	// reference node also defined the type of object it references, and
+	// warns about access restrictions that may apply when loading data from
+	// a given URL.
+
+	// Implementation note:
+	//   The base properites, type, name, version and label could have been
+	//   placed in a separate schema, but the "required" elements are 
+	//   different for each so it seemed inefficent to add an additional 
+	//   file load during schema validation for just four properties.
+	//   -piker
+
+	"$schema":"http://json-schema.org/draft/2020-12/schema",
+
+	// Default baseURL: https://das2.org/schema/cat-0.7/
+	"$id":"reference.json5",
+	
+	"title":"A reference to a complete node",
+
+	"type":"object",
+
+	"properties":{
+
+		// Same as definition in node.json5
+		"type":{"type":"string", "pattern":"^[a-zA-Z_][a-zA-Z0-9_]{0,63}$" },
+
+		// same as definition in node.json5
+		"label":{"type":"string", "minLength":1, "maxLength":32},
+
+		// Synonym for label
+		"name":{"type":"string", "minLength":1, "maxLength":32, "deprecated":true},	
+
+		// same as definition in node.json5
+		"title":{"type":"string", "minLength":1, "maxLength":256},
+
+		// same as definition in node.json5
+		"description":{"type":"string", "minLength":3, "maxLength":8192},
+
+		// In order to integrate with other catalog systems, references 
+		// can point outside to locations in external catalogs that have
+		// thier own format, so long as the external item has a type name
+		// inside the federated catalog.  
+		//
+		// For external nodes it's useful to provide links to external 
+		// documentation as well.
+		"externalDesc":{"type":"array", "items":{"$ref":"#/$defs/Url"}},
+		
+		// The MIME type of the referenced node
+		"MIME":{"type":"string", "maxLength":64, "default":"application/json5"},
+
+		// Where to find definitions of the node
+		"locations":{"type":"array", "items":{"$ref":"#/$defs/Location"} },
+
+		// Deprecated version of above, with less information
+		"urls":{"type":"array", "items":{"$ref":"#/$defs/Url"}, "deprecacted":true }
+
+	},
+
+	// Must always have a location and the type of thing pointed to. This is
+	// what makes us differente from a raw URL.
+	"oneOf":[
+		{"required":["label","type","locations"]},
+		{"required":["name","type","locations"]},
+		{"required":["label","type","urls"]},
+		{"required":["name","type","urls"]}
+	],
+
+	// Reference are intentionally a small set, but nodes can have extras
+	"additionalProperties": false,
+
+	"$defs":{
+
+		// Only http and https are supported in order to simplify client
+		// dependencies
+		"Url":{ "type":"string", "format":"uri", "pattern": "^https?://"},
+
+		"Location" : {
+			"type":"object",
+			"properties":{
+
+				"url":{"$ref":"#/$defs/Url"},
+
+				// If true, full node access requires authentication, Details of the
+				// authentication needed are intentially omitted otherwise it would
+				// be possible to trick a web client into leaking
+				// basic-auth tokens destine for one realm to be provided to another.
+				"authReq":{"type":"boolean", "default":false},
+
+				// Node accessible only to clients within a restricted address range.
+				// Again the particulars of the address restriction are intentionally
+				// omitted for security purposes.
+				"addressReq":{"type":"boolean", "default":false}
+			},
+			"required":["url"]
+		}
+	}
+}
