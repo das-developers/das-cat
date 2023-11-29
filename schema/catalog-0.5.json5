@@ -1,0 +1,35 @@
+{
+	// Das Federated Catalog (FedCat) Node Definition
+	//
+	//   Catalog v0.5
+	//
+	// This defines a simple, recursive container for catalog nodes and node
+	// references.
+	
+	"$schema":"http://json-schema.org/draft-06/schema#",
+	"$id":"https://das2.org/catalog/schema/catalog-0.5.json",
+
+	// All nodes have these properties
+	"$ref":"https://das2.org/catalog/schema/node-0.2.json",
+
+	"title":"A potentially recursive collection of das FedCat nodes",
+	"type":"object",
+	"properties":{
+		"catalog":{
+			"type":"object",
+			"items":{"$ref":"#/$defs/CatEntry"},
+		},
+		"separator":{"type":["null", "string"], "maxLength":16, "pattern":"[:/\\.,;]+"}
+	},
+	"required":["catalog"],
+
+	"$defs": {
+		"CatEntry":{
+			"oneOf":[
+				{"$ref":"https://das2.org/catalog/schema/reference-0.2.json"},
+				{"$ref":"#"}
+			]
+		}
+
+	}
+}

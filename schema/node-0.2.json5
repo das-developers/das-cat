@@ -1,22 +1,30 @@
 {
+	// Das Federated Catalog (FedCat) Common Properties, v0.2
+	
 	"$schema":"http://json-schema.org/draft-06/schema#",
 	"$id":"https://das2.org/schema/catalog/node-0.2.json",
 	"title":"Node",
 	"description":"All JSON nodes in the das federated catalog have these properties",
 	"type":"object",
 	"properties":{
+
+		// A short mnemonic for this node, suitable for use as a variable name
+		// in most languages.
 		"name":{
-			"description":"A short mnemonic for this node, suitable for use as a variable name in most languages.",
 			"type":"string",
 			"pattern":"^[a-zA-Z_][a-zA-Z0-9_]{0,63}$"
 		},
+
+		// The catalog node type. Since there are not many node types, this
+		// value isused to determine both the syntax and semantics of a node
 		"type":{
-			"description":"The catalog node type. Since there are not many node types, this value can be used to dermine both the syntax and semantics of a node",
 			"type":"string",
 			"pattern":"^[a-zA-Z_][a-zA-Z0-9_]{0,63}$"
 		},
+
+		// The version of a catalog node type.  Different versions of the same
+		// type must serve the same function in the global catalog
 		"version":{
-			"description":"The version of a catalog node type.  Different versions of the same type must serve the same function in the global catalog",
 			"type":"string",
 			"pattern":"^[0-9][0-9]{0,2}\\.[0-9][0-9]{0,2}(\\.[0-9][0-9]{0,2})?$"
 		},

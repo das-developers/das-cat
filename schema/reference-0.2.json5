@@ -1,0 +1,56 @@
+{
+	// Das Federated Catalog (FedCat) Node Definition
+	//
+	//   Reference v0.2
+	//
+	// This node type is a placeholder.  It provides the location of some 
+	// other full node that may be placed into the node hierarchy in place
+	// of this node.  Consider it to be a "fat URL".  Unlike plain URLs, a 
+	// reference node also defined the type of object it references, and
+	// warns about access restrictions that may apply when loading data from
+	// a given URL.
+
+	"$schema":"http://json-schema.org/draft-06/schema#",
+
+	// All catalog nodes must have these properties
+	"$ref":"https://das2.org/schema/cataleg/node-0.2.json",
+
+	"$id":"https://das2.org/schema/catalog/reference-0.2.json",
+	"title":"A reference to a complete node",
+	"type":"object",
+	"properties":{
+		"locations":{"type":"array", "items":{"$ref":"#/$defs/Location"} },
+		"urls":{"type":"array", "items":{"$ref":"#/$defs/Url"}, "deprecacted":true }
+	},
+	"oneOf":[
+		{"required":["name","type","version","locations"]},
+		{"required":["name","type","version","urls"]},
+	],
+
+	"$defs":{
+
+		"Url":{ "type":"string", "format":"uri", "pattern": "^https?://"},
+
+		"Location" : {
+			"type":"object",
+			"properties":{
+
+				// Only http and https are supported in order to simplify client
+				// dependencies
+				"url":{"$ref":"#/$defs/Url"},
+
+				// If true, full node access requires authentication, Details of the
+				// authentication needed are intentially omitted otherwise it would
+				// be possible to trick a web client into leaking
+				// basic-auth tokens destine for one realm to be provided to another.
+				"authReq":{"type":"boolean", "default":false},
+
+				// Node accessible only to clients within a restricted address range.
+				// Again the particulars of the address restriction are intentionally
+				// omitted for security purposes.
+				"addressReq":{"type":"boolean", "default":false}
+			},
+			"required":["url"]
+		}
+	}
+}
