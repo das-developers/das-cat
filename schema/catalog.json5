@@ -5,20 +5,7 @@
 	//
 	// This defines a simple, recursive container for catalog nodes and node
 	// references.
-	//
-	// Command line validation example:
-	//
-	// $ python -m pip install jsonschema check-jsonschema json5
-	// $ check-jsonschema -v --base-uri ABS_DIR --schemafile ABS_DIR/catalog.json5 NODE_FILE
-	//
-	// For example, if you schemas are in a sub directory named schema and
-	// you want to check files in /some/other/place, then:
-	//
-	// $ check-jsonschema -v --base-uri $(pwd)/schemas/ \
-	//     --schemafile $(pwd)/schemas/catalog.json5 /some/other/place/*.json
-	//
-	// The trailing slash on the base-uri is *very important*.
-
+	
 	"$schema":"http://json-schema.org/draft/2020-12/schema",
 
 	// Default baseURL: https://das2.org/schema/cat-0.7/
