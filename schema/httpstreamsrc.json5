@@ -1,0 +1,152 @@
+{
+	// Das Federated Catalog (FedCat) Node Definition
+	//
+	//   HttpStreamSrc (0.7)
+	//
+	// This defines an HTTP GET/POST endpoints that provides data in
+	// coordinates in a requested format.
+
+	"$schema":"http://json-schema.org/draft/2020-12/schema",
+
+	// Default baseURL: https://das2.org/schema/cat-0.7/
+	"$id":"catalog.json5",
+
+	"$ref":"node.json5",  // All nodes have these properties
+
+	"title":"Definition of a single transaction HTTP data endpoint",
+
+	"type":"object",
+
+	"properties":{
+
+		// Helpful humans
+		"contacts":{
+			"type":"array", "items":{
+				"type":"object",
+				"properties":{
+					"type":{"type":"string"},
+					"name":{"type":"string"},
+					"email":{"type":"string"}
+				},
+				"required":["name","type"]
+			}
+		},
+
+		// How to convert user selections into GET parameters
+		"protocol":{
+			"type":"object",
+			"properties":{
+
+				// Method supported by this source
+				"method":{"type":"string", "enum":["GET","POST"]},
+
+				// A hint as what to expect when communicating with this source (deprecate?)
+				"convention":{"type":"string"},
+
+				// Do you need authorization to load data from this source
+				"authorization":{
+					"type":"object",
+					"properties":{
+						"required":{"type":"boolean"}, // False for world-wide public sources
+
+						// The HTTP Basic Auth realm associated with this data source, if any
+						"realm":{"type":"string"},
+
+						// If true, you may need to be within a particular network to access
+						// these data
+						"address":{"type":"boolean"}
+					},
+					"required":["required"]
+				},
+
+				// Root URL for the source, not including GET parameters specified
+				// in httpParams below.  If this does not contain a '?' character 
+				// then the client must append '?' before adding param=value pairs.
+				"baseUrls":{"type":"array", "items":{"$ref":"#/$defs/Url"}},
+
+				"httpParams":{
+					"additionalProperties":{
+						"oneOf":[
+							{"$ref":"#/$defs/ValueParam"},
+							{"$ref":"#/$defs/ListParam"}
+						]
+					}
+				}
+				
+			},
+			"required":["method","convention","baseUrls","authorization"]
+		},
+	},
+
+	"unevaluatedProperties": false,  // Strict version
+
+	"$defs":{
+		// Only http and https are supported in order to simplify client
+		// dependencies
+		"Url":{ "type":"string", "format":"uri", "pattern": "^https?://"},
+
+		// Defines a parameter that provides a single value
+		"ValueParam":{
+			"properties":{
+
+				// Define a value format rule for the parameter, should have been
+				// named "constraint"
+				"type":{
+					// Undifferentiated string, default if no type specified
+					"type":"string", 
+
+					"enum":[
+						// Value is a time string in mostly in ISO-8601 format, UTC times
+						// are assumed in space physics, 'Z' suffix is not required
+						"isotime", 
+					         
+					  // Value is the string 'true' or 'false', some servers may accept 
+					  // 1 or 0 as well
+						"bool",
+
+						"string",  // Value is an undefined string
+						"real",    // Value is an ascii real number
+						"int",     // Value is an ascii integer
+						"enum",    // Value defined by enumerated list
+
+						// Similar to an enum, but multiple values are concantenated into
+						// a single value (in any order) via a separator
+						"set",
+
+						"FlagSet",  // Deprecated synonym for "set"
+						"flag_set", // Deprecated synonym for "set"
+					]
+				},
+
+				// Does the data source required this parameter to produce anything
+				"required":{"type":"boolean"},
+
+				// Should any standard text be added before a user entered value
+				"prefix":{"type":"string"},
+
+				// The units the data source assumes the value is in.  Includes the
+				// fake unit UTC as (unnecessary?) documentation
+				"units":{"type":"string", "maxLength":32},
+
+				// Enum list for enumerated values, ignore if type not "enum"
+				"enum":{
+					"type":"array",
+					"items":{"type":"string"}
+
+				},
+
+				// Synonym for an enum that provides only one value
+				"value":{"type":"string"}
+			},
+
+			"required":["required"]
+
+		},
+
+		// Defines a parameter that provides multiple values.  Does not
+		// support recursion.
+		"ListParam":{
+
+		}
+	}
+}

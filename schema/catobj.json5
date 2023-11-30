@@ -1,0 +1,49 @@
+{
+	// Das Federated Catalog (FedCat) Common Catalog Object properties
+	//
+	//   CatObj (0.1)
+	//
+	// This is a "virtual object", no real catalog node has only these
+	// properties
+
+	"$schema":"http://json-schema.org/draft/2020-12/schema",
+
+	// Default baseURL: https://das2.org/schema/cat-0.7/
+	"$id":"catobj.json5",
+
+	"title":"CatObj",
+	"description":"All JSON nodes and references have these properties",
+	"type":"object",
+	"properties":{
+
+		// The catalog node type, even links to external items have a type
+		"type":{"type":"string", "enum":[
+				"Catalog",       // General recursive container
+				"SpdfMasterCat", // [External] Goddard's Space Physics Data facility
+				"SpaseCatalog",  // [External] Heliophysics File Source Listing
+				"SourceSet",     // Collection of endpoints that provide the same
+				                 //    via multiple source definitions
+				"HttpStreamSrc", // Multi-format HTTP single-transaction data source
+				"WebSockSrc",    // Mulit-format HTTP continuous interacion source
+				"Das2DSDF"       // [External] Legacy das2 server=dsdf end-point
+			]
+			//"pattern":"^[a-zA-Z_][a-zA-Z0-9_]{0,63}$"
+		},
+
+		// Short display string for tight spaces
+		"label":{"type":"string", "minLength":1, "maxLength":32},
+
+		// Synonym for label
+		"name":{"type":"string", "minLength":1, "maxLength":32, "deprecated":true},	
+
+		// A 1-line summary of the node
+		"title":{"type":"string", "minLength":1, "maxLength":256},
+
+		// A longer description of the node, intended for GUI elements that
+		// are often hidden or require interaction to dispaly extra information
+		"description":{"type":"string", "minLength":3, "maxLength":8192}
+	},
+
+	"oneOf":[ {"required":["name","type"]}, {"required":["label","type"]} ]
+}
+

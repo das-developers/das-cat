@@ -21,27 +21,14 @@
 
 	// Default baseURL: https://das2.org/schema/cat-0.7/
 	"$id":"reference.json5",
+
+	"$ref":"catobj.json5",  // All references are catalog objects
 	
 	"title":"A reference to a complete node",
 
 	"type":"object",
 
 	"properties":{
-
-		// Same as definition in node.json5
-		"type":{"type":"string", "pattern":"^[a-zA-Z_][a-zA-Z0-9_]{0,63}$" },
-
-		// same as definition in node.json5
-		"label":{"type":"string", "minLength":1, "maxLength":32},
-
-		// Synonym for label
-		"name":{"type":"string", "minLength":1, "maxLength":32, "deprecated":true},	
-
-		// same as definition in node.json5
-		"title":{"type":"string", "minLength":1, "maxLength":256},
-
-		// same as definition in node.json5
-		"description":{"type":"string", "minLength":3, "maxLength":8192},
 
 		// In order to integrate with other catalog systems, references 
 		// can point outside to locations in external catalogs that have
@@ -60,7 +47,6 @@
 
 		// Deprecated version of above, with less information
 		"urls":{"type":"array", "items":{"$ref":"#/$defs/Url"}, "deprecacted":true }
-
 	},
 
 	// Must always have a location and the type of thing pointed to. This is

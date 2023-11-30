@@ -11,27 +11,64 @@
 	// Default baseURL: https://das2.org/schema/cat-0.7/
 	"$id":"catalog.json5",
 
-	// All nodes have these properties
-	"$ref":"node.json5",
+	"$ref":"node.json5",  // All nodes have these properties
 
 	"title":"A potentially recursive collection of das FedCat nodes",
+
 	"type":"object",
 
 	"properties":{
 		"catalog":{
 			"type":"object",
+
+			// In the federated catalog, the property names for these
+			// additionalProperties perform a very specific task.  A catalog
+			// sub-property name, when prepended by the 'separator' value, forms
+			// the relative URI for the child catalog node.
+			//
+			// The URL at which you tap into the federated catalog system is called
+			// the root node, and thus has no property name and no catalog URI.
+			//
+			// If you don't designate a tap point, then clients retrive the default
+			// root node from https://das2.org/catalog (or it's mirror) first.  The
+			// default root node is a catalog whose child property names all begin
+			// with *a legal TAG URN (RFT 4151)*.  
+			//
+			// Starting with one of the children of the root node, a client can read
+			// recursive catalogs, while resolving any 'reference' objects encountered
+			// to get to a desired end point. The concatenated list of all catalog
+			// property names (and separators) defines a catalog navigation path. 
+			// Due to the way property names are defined in the Root catalog, this 
+			// string is also a URN.  
+			//
+			// Reversing the process, if a client only has one of these URN's, it can
+			// use it's built in URL for the Root node, and walk the catalog down to
+			// the end point.  Furthermore, each end point may actually be provided 
+			// by more then one server.  If one path fails, the other may be used.  
+			//
+			// Thus these static catalog files can be used to retrieve data without 
+			// fixed URLs, linking across web servers with dynamic fail-over, with 
+			// requiring server side support code. This is the purpose of the
+			// federated catalog system.
+			
 			"additionalProperties":{
+
 				"oneOf":[
-					{"$ref":"reference.json5"},
-					{"$ref":"#"}
+					{"$ref":"#"}                   // <-- recursive catalogs
+					{"$ref":"reference.json5"},    // <-- node reference
+					{"$ref":"httpstreamsrc.json5"} // <-- data source
 				]
-				//"$ref":"reference.json5"
-			},
+
+			}
+
 		},
-		"separator":{"type":["null", "string"], "maxLength":16, "pattern":"[:/\\.,;]+"}
+		"separator":{
+			"type":["null", "string"], "maxLength":16, "pattern":"[:/\\.,;]+",
+			"default":"/"
+		}
 	},
 
 	"required":["catalog"],
 
-	"unevaluatedProperties": false
+	"unevaluatedProperties": false // <-- temporary
 }

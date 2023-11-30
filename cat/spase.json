@@ -10,7 +10,7 @@
         "https://github.com/hpde/ASWS"
       ],
       "title": "Australian Space Weather Services (ASWS)",
-      "type": "SpaseRecord",
+      "type": "SpaseCatalog",
       "urls": [
         "https://spase-group.org/registry/resolver?t=yes&i=spase://ASWS"
       ]
@@ -23,7 +23,7 @@
         "https://github.com/hpde/CCMC"
       ],
       "title": "Community Coordinated Modeling Center (CCMC)",
-      "type": "SpaseRecord",
+      "type": "SpaseCatalog",
       "urls": [
         "https://spase-group.org/registry/resolver?t=yes&i=spase://CCMC"
       ]
@@ -36,7 +36,7 @@
         "https://github.com/hpde/CSSDP"
       ],
       "title": "Canadian Space Science Data Portal (CSSDP)",
-      "type": "SpaseRecord",
+      "type": "SpaseCatalog",
       "urls": [
         "https://spase-group.org/registry/resolver?t=yes&i=spase://CSSDP"
       ]
@@ -49,7 +49,7 @@
         "https://github.com/hpde/ESA"
       ],
       "title": "European Space Agency (ESA)",
-      "type": "SpaseRecord",
+      "type": "SpaseCatalog",
       "urls": [
         "https://spase-group.org/registry/resolver?t=yes&i=spase://ESA"
       ]
@@ -62,7 +62,7 @@
         "https://github.com/hpde/GBO"
       ],
       "title": "Ground Based Observatories",
-      "type": "SpaseRecord",
+      "type": "SpaseCatalog",
       "urls": [
         "https://spase-group.org/registry/resolver?t=yes&i=spase://GBO"
       ]
@@ -75,7 +75,7 @@
         "https://github.com/hpde/ISWI"
       ],
       "title": "International Space Weather Initiative (ISWI)",
-      "type": "SpaseRecord",
+      "type": "SpaseCatalog",
       "urls": [
         "https://spase-group.org/registry/resolver?t=yes&i=spase://ISWI"
       ]
@@ -88,7 +88,7 @@
         "https://github.com/hpde/JAXA"
       ],
       "title": "Japan Aerospace Exploration Agency (JAXA)",
-      "type": "SpaseRecord",
+      "type": "SpaseCatalog",
       "urls": [
         "https://spase-group.org/registry/resolver?t=yes&i=spase://JAXA"
       ]
@@ -101,7 +101,7 @@
         "https://github.com/hpde/NFS"
       ],
       "title": "National Science Foundation (NSF)",
-      "type": "SpaseRecord",
+      "type": "SpaseCatalog",
       "urls": [
         "https://spase-group.org/registry/resolver?t=yes&i=spase://NFS"
       ]
@@ -114,7 +114,7 @@
         "https://github.com/hpde/NOAA"
       ],
       "title": "National Oceanic and Atmospheric Administration (NOAA)",
-      "type": "SpaseRecord",
+      "type": "SpaseCatalog",
       "urls": [
         "https://spase-group.org/registry/resolver?t=yes&i=spase://NOAA"
       ]
@@ -127,7 +127,7 @@
         "https://github.com/hpde/spase-SMWG"
       ],
       "title": "SPASE Metadata Working Group (SMWG)",
-      "type": "SpaseRecord",
+      "type": "SpaseCatalog",
       "urls": [
         "https://spase-group.org/registry/resolver?t=yes&i=spase://SMWG"
       ]
@@ -139,7 +139,7 @@
         "https://github.com/hpde/spase-VSPO"
       ],
       "title": "Virtual Space Physics Observatory (VSPO)",
-      "type": "SpaseRecord",
+      "type": "SpaseCatalog",
       "urls": [
         "https://spase-group.org/registry/resolver?t=yes&i=spase://VSPO"
       ]
