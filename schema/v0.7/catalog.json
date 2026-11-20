@@ -1,0 +1,49 @@
+{
+	"$schema": "http://json-schema.org/draft/2020-12/schema",
+	"$id": "catalog.json",
+	"$ref": "node.json",
+	"title": "A potentially recursive collection of das FedCat nodes",
+	"type": "object",
+	"properties": {
+		"type": {
+			"const": "Catalog"
+		},
+		"catalog": {
+			"type": "object",
+			"additionalProperties": {
+				"$ref": "#/$defs/Child"
+			}
+		},
+		"separator": {
+			"type": [
+				"null",
+				"string"
+			],
+			"maxLength": 16,
+			"pattern": "[:/\\.,;]+",
+			"default": "/"
+		}
+	},
+	"required": [
+		"catalog"
+	],
+	"unevaluatedProperties": false,
+	"$defs": {
+		"Child": {
+			"oneOf": [
+				{
+					"$ref": "#"
+				},
+				{
+					"$ref": "sourceset.json"
+				},
+				{
+					"$ref": "reference.json"
+				},
+				{
+					"$ref": "httpstreamsrc.json"
+				}
+			]
+		}
+	}
+}

@@ -1,15 +1,16 @@
 {
 	// Das Federated Catalog (FedCat) Common Catalog Object properties
 	//
-	//   CatObj (0.1)
+	//   CatObj (0.7)
 	//
 	// This is a "virtual object", no real catalog node has only these
 	// properties
 
 	"$schema":"http://json-schema.org/draft/2020-12/schema",
 
-	// Default baseURL: https://das2.org/schema/cat-0.7/
-	"$id":"catobj.json5",
+	// Relative ids: $ref targets resolve against wherever this file was
+	// fetched from, so the published set works from any host or checkout
+	"$id":"catobj.json",
 
 	"title":"CatObj",
 	"description":"All JSON nodes and references have these properties",
@@ -44,6 +45,8 @@
 		"description":{"type":"string", "minLength":3, "maxLength":8192}
 	},
 
-	"oneOf":[ {"required":["name","type"]}, {"required":["label","type"]} ]
+	// anyOf, not oneOf: a node carrying both label and the deprecated name
+	// (dasflex SourceSets copy both when present) must still validate
+	"anyOf":[ {"required":["name","type"]}, {"required":["label","type"]} ]
 }
 

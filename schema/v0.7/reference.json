@@ -1,0 +1,90 @@
+{
+	"$schema": "http://json-schema.org/draft/2020-12/schema",
+	"$id": "reference.json",
+	"$ref": "catobj.json",
+	"title": "A reference to a complete node",
+	"type": "object",
+	"properties": {
+		"externalDesc": {
+			"type": "array",
+			"items": {
+				"$ref": "#/$defs/Url"
+			}
+		},
+		"MIME": {
+			"type": "string",
+			"maxLength": 64,
+			"default": "application/json"
+		},
+		"locations": {
+			"type": "array",
+			"items": {
+				"$ref": "#/$defs/Location"
+			}
+		},
+		"urls": {
+			"type": "array",
+			"items": {
+				"$ref": "#/$defs/Url"
+			},
+			"deprecated": true
+		}
+	},
+	"anyOf": [
+		{
+			"required": [
+				"label",
+				"type",
+				"locations"
+			]
+		},
+		{
+			"required": [
+				"name",
+				"type",
+				"locations"
+			]
+		},
+		{
+			"required": [
+				"label",
+				"type",
+				"urls"
+			]
+		},
+		{
+			"required": [
+				"name",
+				"type",
+				"urls"
+			]
+		}
+	],
+	"unevaluatedProperties": false,
+	"$defs": {
+		"Url": {
+			"type": "string",
+			"format": "uri",
+			"pattern": "^https?://"
+		},
+		"Location": {
+			"type": "object",
+			"properties": {
+				"url": {
+					"$ref": "#/$defs/Url"
+				},
+				"authReq": {
+					"type": "boolean",
+					"default": false
+				},
+				"addressReq": {
+					"type": "boolean",
+					"default": false
+				}
+			},
+			"required": [
+				"url"
+			]
+		}
+	}
+}
