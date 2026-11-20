@@ -1,7 +1,7 @@
 {
 	// Das Federated Catalog (FedCat) Node Definition
 	//
-	//   Reference (0.2)
+	//   Reference (0.7)
 	//
 	// This node type is a placeholder.  It provides the location of some 
 	// other full node that may be placed into the node hierarchy in place
@@ -19,10 +19,11 @@
 
 	"$schema":"http://json-schema.org/draft/2020-12/schema",
 
-	// Default baseURL: https://das2.org/schema/cat-0.7/
-	"$id":"reference.json5",
+	// Relative ids: $ref targets resolve against wherever this file was
+	// fetched from, so the published set works from any host or checkout
+	"$id":"reference.json",
 
-	"$ref":"catobj.json5",  // All references are catalog objects
+	"$ref":"catobj.json",  // All references are catalog objects
 	
 	"title":"A reference to a complete node",
 
@@ -40,18 +41,19 @@
 		"externalDesc":{"type":"array", "items":{"$ref":"#/$defs/Url"}},
 		
 		// The MIME type of the referenced node
-		"MIME":{"type":"string", "maxLength":64, "default":"application/json5"},
+		"MIME":{"type":"string", "maxLength":64, "default":"application/json"},
 
 		// Where to find definitions of the node
 		"locations":{"type":"array", "items":{"$ref":"#/$defs/Location"} },
 
 		// Deprecated version of above, with less information
-		"urls":{"type":"array", "items":{"$ref":"#/$defs/Url"}, "deprecacted":true }
+		"urls":{"type":"array", "items":{"$ref":"#/$defs/Url"}, "deprecated":true }
 	},
 
 	// Must always have a location and the type of thing pointed to. This is
-	// what makes us differente from a raw URL.
-	"oneOf":[
+	// what makes us differente from a raw URL.  anyOf so that a transitional
+	// reference with both name and label, or both locations and urls, passes.
+	"anyOf":[
 		{"required":["label","type","locations"]},
 		{"required":["name","type","locations"]},
 		{"required":["label","type","urls"]},

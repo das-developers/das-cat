@@ -1,0 +1,161 @@
+{
+	"$schema": "http://json-schema.org/draft/2020-12/schema",
+	"$id": "httpstreamsrc.json",
+	"$ref": "node.json",
+	"title": "Definition of a single transaction HTTP data endpoint",
+	"type": "object",
+	"properties": {
+		"type": {
+			"const": "HttpStreamSrc"
+		},
+		"contacts": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"role": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"name",
+					"type"
+				]
+			}
+		},
+		"protocol": {
+			"type": "object",
+			"properties": {
+				"method": {
+					"type": "string",
+					"enum": [
+						"GET",
+						"POST"
+					]
+				},
+				"convention": {
+					"type": "string"
+				},
+				"authorization": {
+					"type": "object",
+					"properties": {
+						"required": {
+							"type": "boolean"
+						},
+						"realm": {
+							"type": "string"
+						},
+						"address": {
+							"type": "boolean"
+						}
+					},
+					"required": [
+						"required"
+					]
+				},
+				"baseUrls": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/Url"
+					}
+				},
+				"httpParams": {
+					"additionalProperties": {
+						"oneOf": [
+							{
+								"$ref": "#/$defs/ValueParam"
+							},
+							{
+								"$ref": "#/$defs/ListParam"
+							}
+						]
+					}
+				}
+			},
+			"required": [
+				"method",
+				"convention",
+				"baseUrls",
+				"authorization"
+			]
+		}
+	},
+	"unevaluatedProperties": false,
+	"$defs": {
+		"Url": {
+			"type": "string",
+			"format": "uri",
+			"pattern": "^https?://"
+		},
+		"ValueParam": {
+			"properties": {
+				"type": {
+					"type": "string",
+					"enum": [
+						"isotime",
+						"bool",
+						"string",
+						"real",
+						"int",
+						"enum",
+						"set",
+						"FlagSet",
+						"flag_set"
+					],
+					"default": "string"
+				},
+				"required": {
+					"type": "boolean"
+				},
+				"prefix": {
+					"type": "string"
+				},
+				"units": {
+					"type": "string",
+					"maxLength": 32
+				},
+				"enum": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"required"
+			]
+		},
+		"ListParam": {
+			"type": "object",
+			"properties": {
+				"type": {
+					"type": "string",
+					"pattern": "list"
+				},
+				"listSep": {
+					"type": "string",
+					"default": ","
+				},
+				"subValues": {
+					"type": "object",
+					"additionalProperties": {
+						"$ref": "#/$defs/ValueParam"
+					}
+				}
+			},
+			"required": [
+				"type",
+				"required"
+			]
+		}
+	}
+}

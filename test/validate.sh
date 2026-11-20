@@ -1,56 +1,73 @@
 #!/usr/bin/env bash
 
-# Run this script from the root of the das-cat git project
+# Run this script from the root of the das-cat git project.  Validates the
+# generated schemas (build them with 'make schema') and then the root
+# catalog nodes against them.  Usage: validate.sh [SCHEMA_DIR]
+
+sSchema="${1:-schema/v0.7}"
+if [ ! -f "$sSchema/catalog.json" ]; then
+	echo "No $sSchema/catalog.json, run 'make schema' first"
+	exit 7
+fi
+
+nFail=0
 
 function validate {
-	check-jsonschema -v --base-uri $(pwd)/schema/ --schemafile $(pwd)/schema/catalog.json5 "$@"
+	check-jsonschema --base-uri "file://$(pwd)/$sSchema/" \
+		--schemafile "$(pwd)/$sSchema/catalog.json" "$@"
 
-	if [ "$?" != "0" ] ; then
+	if [ "$?" == "0" ] ; then
 		echo "OK"
 	else
 		echo "Failed"
-		exit "$?"
+		nFail=$((nFail + 1))
 	fi
 }
 
-if [ ! -d "test_venv" ]; then
+if [ ! -d "venv" ]; then
 	echo -n "Creating virtual environment... "
-	python3 -m venv test_venv
-	if [ "$?" == "0" ]; then 
+	python3 -m venv venv
+	if [ "$?" == "0" ]; then
 		echo "OK"
 	else
 		echo "Failed"
 		exit 7
 	fi
 
-	source test_venv/bin/activate
-	python3 -m pip install jsonschema check-jsonschema json5	
+	source venv/bin/activate
+	python3 -m pip install jsonschema check-jsonschema
+	if [ "$?" != "0" ]; then
+		echo "pip install failed"
+		exit 7
+	fi
 else
-	source test_venv/bin/activate
+	source venv/bin/activate
 fi
 
 echo "Validating schema files... "
-check-jsonschema -v  --check-metaschema schema/*.json5
+check-jsonschema --check-metaschema "$sSchema"/*.json
 if [ "$?" != "0" ]; then
 	exit 7
 fi
 
-echo -n "FedCat Root catalogs... "
+echo "FedCat Root catalogs... "
 validate cat/*.json
 
-#echo -n "Checking das root catalogs... "
+#echo "Checking das root catalogs... "
 #validate cat/das/*.json
 
-#$echo -n "Checking das site root catalogs... "
+#echo "Checking das site root catalogs... "
 #validate cat/das/site/*.json
 
-#echo -n "Checking das test root catalogs... "
+#echo "Checking das test root catalogs... "
 #validate cat/das/test/*.json
-
-echo "All validation tests passed, but JHU-APL not checked"
 
 deactivate
 
+if [ "$nFail" != "0" ]; then
+	echo "$nFail validation group(s) failed"
+	exit 7
+fi
+
+echo "All validation tests passed, but JHU-APL not checked"
 exit 0
-
-

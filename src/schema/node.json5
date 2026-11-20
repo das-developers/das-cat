@@ -1,17 +1,18 @@
 {
 	// Das Federated Catalog (FedCat) Common Properties for all nodes
 	//
-	//   Node (0.2)
+	//   Node (0.7)
 	//
 	// This is essentially a virtual class, no real catalog object uses this
 	// directly.
 	
 	"$schema":"http://json-schema.org/draft/2020-12/schema",
 
-	// Default baseURL: https://das2.org/schema/cat-0.7/
-	"$id":"node.json5",
+	// Relative ids: $ref targets resolve against wherever this file was
+	// fetched from, so the published set works from any host or checkout
+	"$id":"node.json",
 
-	"$ref":"catobj.json5",  // All nodes are catalog objects
+	"$ref":"catobj.json",  // All nodes are catalog objects
 
 	"title":"Node",
 	"description":"All JSON nodes have these properties",

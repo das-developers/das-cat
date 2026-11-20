@@ -8,16 +8,20 @@
 
 	"$schema":"http://json-schema.org/draft/2020-12/schema",
 
-	// Default baseURL: https://das2.org/schema/cat-0.7/
-	"$id":"catalog.json5",
+	// Relative ids: $ref targets resolve against wherever this file was
+	// fetched from, so the published set works from any host or checkout
+	"$id":"httpstreamsrc.json",
 
-	"$ref":"node.json5",  // All nodes have these properties
+	"$ref":"node.json",  // All nodes have these properties
 
 	"title":"Definition of a single transaction HTTP data endpoint",
 
 	"type":"object",
 
 	"properties":{
+
+		// Pinned so catalog.json's child oneOf can tell node types apart
+		"type":{"const":"HttpStreamSrc"},
 
 		// Helpful humans
 		"contacts":{

@@ -1,0 +1,153 @@
+#!/usr/bin/env python3
+"""Convert the JSON5 subset used by das-cat sources to strict JSON.
+
+Usage: json5_to_json INPUT [OUTPUT]
+
+Handles exactly two JSON5 extensions: comments (// and /* */) and trailing
+commas.  Anything else JSON5 allows (single quotes, unquoted keys, hex
+numbers, ...) is passed through to the strict parser and rejected there,
+so a source that grows a new JSON5 feature fails loudly instead of being
+half converted.  Duplicate keys are also rejected; strict json would
+silently keep the last one.
+
+Output is tab indented with a trailing newline.  With no OUTPUT, writes to
+standard output.  With OUTPUT, writes a temporary file and renames it so a
+failed run does not leave a truncated target for make to consider fresh.
+"""
+
+import sys
+import os
+import json
+
+# ########################################################################## #
+
+def stripExtensions(sText):
+	"""Remove comments and trailing commas outside of strings.
+
+	Newlines inside comments are kept, and removed characters become
+	spaces, so line and column numbers in any later parse error still
+	point at the original source.
+	"""
+
+	lOut = []
+	i = 0
+	n = len(sText)
+	bInStr = False
+
+	while i < n:
+		c = sText[i]
+
+		if bInStr:
+			lOut.append(c)
+			if c == '\\' and i + 1 < n:
+				lOut.append(sText[i+1])  # escaped char, can't end the string
+				i += 2
+				continue
+			if c == '"':
+				bInStr = False
+			i += 1
+			continue
+
+		if c == '"':
+			bInStr = True
+			lOut.append(c)
+			i += 1
+			continue
+
+		if sText.startswith('//', i):
+			while i < n and sText[i] != '\n':
+				lOut.append(' ')
+				i += 1
+			continue
+
+		if sText.startswith('/*', i):
+			j = sText.find('*/', i + 2)
+			if j < 0:
+				raise ValueError("unterminated /* comment at char %d"%i)
+			for ch in sText[i:j+2]:
+				lOut.append('\n' if ch == '\n' else ' ')
+			i = j + 2
+			continue
+
+		lOut.append(c)
+		i += 1
+
+	# Comments are gone now, so a trailing comma is a comma followed only by
+	# whitespace and then a closing bracket.  Second pass, still skipping
+	# strings since "a, ]" is legal string content.
+	lChars = lOut
+	bInStr = False
+	i = 0
+	n = len(lChars)
+	while i < n:
+		c = lChars[i]
+		if bInStr:
+			if c == '\\':
+				i += 2
+				continue
+			if c == '"':
+				bInStr = False
+		elif c == '"':
+			bInStr = True
+		elif c == ',':
+			j = i + 1
+			while j < n and lChars[j] in ' \t\r\n':
+				j += 1
+			if j < n and lChars[j] in '}]':
+				lChars[i] = ' '
+		i += 1
+
+	return ''.join(lChars)
+
+# ########################################################################## #
+
+def noDupKeys(lPairs):
+	d = {}
+	for sKey, val in lPairs:
+		if sKey in d:
+			raise ValueError("duplicate key '%s'"%sKey)
+		d[sKey] = val
+	return d
+
+# ########################################################################## #
+
+def main(lArgs):
+
+	if len(lArgs) not in (2, 3) or lArgs[1] in ('-h', '--help'):
+		sys.stderr.write(__doc__)
+		return 3
+
+	sIn = lArgs[1]
+	sOut = lArgs[2] if len(lArgs) == 3 else None
+
+	try:
+		with open(sIn) as f:
+			sText = f.read()
+		obj = json.loads(stripExtensions(sText), object_pairs_hook=noDupKeys)
+	except (OSError, ValueError) as e:
+		# JSONDecodeError is a ValueError and its message carries line/col
+		sys.stderr.write("ERROR: %s: %s\n"%(sIn, e))
+		return 5
+
+	sJson = json.dumps(obj, indent='\t') + '\n'
+
+	if sOut is None:
+		sys.stdout.write(sJson)
+		return 0
+
+	sTmp = sOut + '.tmp'
+	try:
+		with open(sTmp, 'w') as f:
+			f.write(sJson)
+		os.replace(sTmp, sOut)
+	except OSError as e:
+		sys.stderr.write("ERROR: %s: %s\n"%(sOut, e))
+		if os.path.exists(sTmp):
+			os.remove(sTmp)
+		return 5
+
+	return 0
+
+# ########################################################################## #
+if __name__ == '__main__':
+	sys.exit(main(sys.argv))

@@ -1,0 +1,78 @@
+{
+	// Das Federated Catalog (FedCat) Node Definition
+	//
+	//   SourceSet (0.7)
+	//
+	// A catalog whose children all provide the same data via different
+	// sources (das2 stream, das3 stream, ...).  Clients pick one child,
+	// typically by its 'provides' MIME types.  The coords and data members
+	// summarize what every child offers so a browser can show the dataset
+	// without loading the sources themselves.  Shape follows what dasflex
+	// emits (util/catalog.py).
+
+	"$schema":"http://json-schema.org/draft/2020-12/schema",
+
+	// Relative ids: $ref targets resolve against wherever this file was
+	// fetched from, so the published set works from any host or checkout
+	"$id":"sourceset.json",
+
+	"$ref":"node.json",  // All nodes have these properties
+
+	"title":"A set of data sources that provide the same data",
+
+	"type":"object",
+
+	"properties":{
+		"type":{"const":"SourceSet"},
+
+		"catalog":{
+			"type":"object",
+			"additionalProperties":{"$ref":"catalog.json#/$defs/Child"}
+		},
+
+		"separator":{
+			"type":["null", "string"], "maxLength":16, "pattern":"[:/\\.,;]+",
+			"default":"/"
+		},
+
+		// Summary of the coordinate and data dimensions, keyed by dimension
+		// name, copied up from the children's interface sections
+		"coords":{"$ref":"#/$defs/DimSummary"},
+		"data":{"$ref":"#/$defs/DimSummary"},
+
+		// Usually just the science contacts
+		"contacts":{
+			"type":"array", "items":{
+				"type":"object",
+				"properties":{
+					"type":{"type":"string"},
+					"name":{"type":"string"},
+					"email":{"type":"string"}
+				},
+				"required":["name","type"]
+			}
+		}
+	},
+
+	"required":["catalog"],
+
+	"unevaluatedProperties": false,
+
+	"$defs":{
+		"DimSummary":{
+			"type":"object",
+			"additionalProperties":{
+				"type":"object",
+				"properties":{
+					"label":{"type":"string"},
+
+					// Min and max, as ISO-8601 strings for time dimensions
+					"validRange":{
+						"type":"array", "minItems":2, "maxItems":2,
+						"items":{"type":["string","number"]}
+					}
+				}
+			}
+		}
+	}
+}

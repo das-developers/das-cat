@@ -1,23 +1,28 @@
 {
 	// Das Federated Catalog (FedCat) Node Definition
 	//
-	//   Catalog (0.5)
+	//   Catalog (0.7)
 	//
 	// This defines a simple, recursive container for catalog nodes and node
 	// references.
 	
 	"$schema":"http://json-schema.org/draft/2020-12/schema",
 
-	// Default baseURL: https://das2.org/schema/cat-0.7/
-	"$id":"catalog.json5",
+	// Relative ids: $ref targets resolve against wherever this file was
+	// fetched from, so the published set works from any host or checkout
+	"$id":"catalog.json",
 
-	"$ref":"node.json5",  // All nodes have these properties
+	"$ref":"node.json",  // All nodes have these properties
 
 	"title":"A potentially recursive collection of das FedCat nodes",
 
 	"type":"object",
 
 	"properties":{
+		// Pinned so the child oneOf below can tell a full Catalog from a
+		// SourceSet, both of which have a 'catalog' member
+		"type":{"const":"Catalog"},
+
 		"catalog":{
 			"type":"object",
 
@@ -51,16 +56,7 @@
 			// requiring server side support code. This is the purpose of the
 			// federated catalog system.
 			
-			"additionalProperties":{
-
-				"oneOf":[
-					{"$ref":"#"},                  // <-- recursive catalogs
-					{"$ref":"reference.json5"},    // <-- node reference
-					{"$ref":"httpstreamsrc.json5"} // <-- data source
-				]
-
-			}
-
+			"additionalProperties":{"$ref":"#/$defs/Child"}
 		},
 		"separator":{
 			"type":["null", "string"], "maxLength":16, "pattern":"[:/\\.,;]+",
@@ -70,5 +66,19 @@
 
 	"required":["catalog"],
 
-	"unevaluatedProperties": false // <-- temporary
+	"unevaluatedProperties": false, // <-- temporary
+
+	"$defs":{
+		// What may appear as a value under 'catalog'.  Shared with
+		// sourceset.json, which can't simply $ref this whole file because
+		// unevaluatedProperties above would reject its extra members.
+		"Child":{
+			"oneOf":[
+				{"$ref":"#"},                  // <-- recursive catalogs
+				{"$ref":"sourceset.json"},     // <-- same data, several sources
+				{"$ref":"reference.json"},     // <-- node reference
+				{"$ref":"httpstreamsrc.json"}  // <-- data source
+			]
+		}
+	}
 }
