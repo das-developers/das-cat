@@ -1,0 +1,38 @@
+{
+	// Das Federated Catalog (FedCat) Common Properties for all nodes
+	//
+	//   Node (0.2)
+	//
+	// This is essentially a virtual class, no real catalog object uses this
+	// directly.
+	
+	"$schema":"http://json-schema.org/draft/2020-12/schema",
+
+	// Default baseURL: https://das2.org/schema/cat-0.7/
+	"$id":"node.json5",
+
+	"$ref":"catobj.json5",  // All nodes are catalog objects
+
+	"title":"Node",
+	"description":"All JSON nodes have these properties",
+	"type":"object",
+	"properties":{
+
+		// The schema that this node definition supposedly follows
+		"$schema":{"type":"string", "format":"uri", "pattern": "^https?://"},
+
+		// The version of a catalog node type.  Different versions of the same
+		// type must serve the same function in the global catalog
+		"version":{
+			"type":"string",
+			"pattern":"^[0-9][0-9]{0,2}\\.[0-9][0-9]{0,2}(\\.[0-9][0-9]{0,2})?$"
+		},
+
+		// The URI token this node want's to have when included in a path.
+		// this is used for bottom-up generation of catalogs.  There is no
+		// requirement that the container use this as the key for the node
+		// but usually it does.
+		"token":{"type":"string", "pattern":"^[a-z_][a-z0-9_]{0,32}$"},
+
+	}
+}
