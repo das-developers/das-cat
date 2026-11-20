@@ -1,0 +1,355 @@
+#!/usr/bin/env python3
+
+# This is a test script for a single JHU, APL dataset.  It could be expanded
+# into a general writer
+
+import sys
+import requests
+import json
+import das2
+
+perr = sys.stderr.write
+pout = sys.stdout.write
+
+sServer = 'http://datashop.elasticbeanstalk.com/hapi'
+sDataSetId = 'CHEMS_PHA_BOX_FLUXES_FULL_TIME_RES'
+sInfoUrl = '%s/info?id=%s'%(sServer, sDataSetId)
+
+def _findParameter(sParam, lParameters):
+	"""Looks through a parameters list looking for the one with a
+	'name' property that equals sParam
+	"""
+	for dParam in lParameters:
+		if dParam['name'] == sParam:
+			return dParam
+	
+	return None
+	
+
+res = requests.get(sInfoUrl)
+if res.status_code != requests.codes.ok:
+	perr("Couldn't get hapi info request from %s\n"%sURL)
+	sys.exit(17)
+		
+sJson = res.text
+
+dInfo = json.loads(sJson)
+#perr(dInfo.keys())
+
+# Should probaly redo the triple list below as a list of tuples
+lCoordUnits = []
+lCoordNames = []
+lCoordDesc = []
+
+lDataNames = []
+nMaxBins = 0
+sMaxBinData = None
+
+i = 0
+for dParam in dInfo['parameters']:
+	
+	i += 1
+	perr("%03d: %s"%(i, dParam['name']))
+	
+	if 'bins' in dParam:
+		for dBin in dParam['bins']:
+		
+			n = 0
+			if 'centers' in dBin:
+				n = len(dBin['centers'])
+			elif 'ranges' in dBin:
+				n = len(dBin['ranges'])
+			if n > 0:
+				perr("  yvals: %d, units %s"%(n, dBin['units']))
+			
+			if dBin['units'] not in lCoordUnits:
+				lCoordUnits.append(dBin['units'])
+				lCoordNames.append(dBin['name'])
+				lCoordDesc.append(None)
+				
+			lDataNames.append(dParam['name'])
+		
+			if n > nMaxBins:
+				nMaxBins = n
+				sMaxBinData = dParam['name']
+		
+	else:
+		perr("Assuming 1-D item %s (%s) is a coordinate"%(
+			dParam['name'], dParam['description'])
+		)
+		lCoordNames.append(dParam['name'])
+		
+		# JHU has the coordinates and description backwards for
+		# some of thier many columns.  Swap them if it looks like
+		# an error:
+		sUnits = dParam['units']
+		sDesc = None
+		if 'description' in dParam: sDesc = dParam['description']
+		
+		if sDesc != None:
+			if len(sUnits) > len(sDesc):
+				sTmp = sUnits
+				sUnits = sDesc
+				sDesc = sTmp
+		
+		lCoordUnits.append(sUnits)
+		lCoordDesc.append(sDesc)
+		
+	perr('\n')
+
+perr("Coordinates are:  %s\n"%(lCoordNames))
+
+sTitle = sDataSetId
+if 'description' in dInfo: sTitle = dInfo['description']
+
+# The output datasource object
+sSrcName = 'HAPI/%s Source'%dInfo['HAPI'] 
+sDataSetLower = sDataSetId.lower()
+dSrc = {
+	'type':'HttpStreamSrc', 
+	'version':"0.5",
+	'name':sSrcName, 
+	'title':sTitle,
+	'path_uri':'tag:das2.org,2012:site:/jhuapl/cassini/mimi/%s/hapi'%sDataSetLower
+}
+
+# The output collection object
+sConvention = 'hapi/%s'%dInfo['HAPI']
+dColl = {
+	'type':'Collection',
+	'version':"0.5",
+	'name': sDataSetId,
+	'title': sTitle,
+	'path_uri':'tag:das2.org,2012:site:/jhuapl/cassini/mimi/%s'%sDataSetLower,
+	'sources':{
+		'hapi':{
+			'convention':sConvention,
+			'name':sSrcName,
+			'type':'HttpStreamSrc',
+			'urls':[
+				"http://das2.org/catalog/das/site/jhuapl/cassini/mimi/%s/hapi.json"%sDataSetLower
+			]
+		}
+	}
+}
+
+
+sContact = "unknown"
+if 'contact' in dInfo:  sContact = dInfo['contact']
+dSrc['tech_contacts'] = [ {'name':sContact} ]
+dColl['sci_contacts'] = [ {'name':sContact} ]
+
+# Transmission Info
+dSrc['convention'] = sConvention
+dSrc['authentication'] = {'required':False}
+dSrc['base_urls'] = [
+	"%s/data?id=%s&include=header"%(sServer, sDataSetId)
+]
+
+if 'sampleStartDate' in dInfo: sBeg = dInfo['sampleStartDate']
+else: sEnd = dInfo['startDate']
+
+if 'sampleStopDate' in dInfo: sEnd = dInfo['sampleStopDate']
+else: 
+	dtBeg = das2.DasTime(sBeg)
+	dtBeg.adjust(0,0,1)
+	sEnd = str(dtBeg)
+
+# For the example, only output a single parameter, JHU data typically has
+# hundreds of parameters
+
+
+dSrc['examples'] = {
+	"example":{
+		'http_params':{
+			'time.min':sBeg,
+			'time.max':sEnd
+		},
+		'name':"Example %s"%sMaxBinData,
+		'url':'%s/data?id=%s&include=header&time.min=%s&time.max=%s&parameters=%s'%(
+		       sServer, sDataSetId, sBeg, sEnd, sMaxBinData)
+	}
+}
+
+dSrc['http_params'] = {
+	'time.min':{
+		"name":"Min Time",
+		"required":True,
+		"title":"Minimum time value to stream",
+		"type":"isotime",
+		"units":"UTC"
+	},
+	'time.max':{
+		"name":"Min Time",
+		"required":True,
+		"title":"Minimum time value to stream",
+		"type":"isotime",
+		"units":"UTC"
+	},
+	'parameters':{
+		'type':'flag_set',
+		'title':'Data and Coordinate Columns to output',
+		# Going to make this a required output because there are 100's of 
+		# columns, you really don't want them all 
+		'required':True,
+		'flag_sep':',',
+		'flags':{}
+	}
+}
+
+dFlags = dSrc['http_params']['parameters']['flags']
+
+# Handle the output flags, start with what look like coordinates
+
+# We always have time...
+dCoordVars = {
+	'time':{
+		"minimum":{"value":sBeg, "set":{"param":"time.min", "required":True}},
+		"maximum":{"value":sEnd, "set":{"param":"time.max", "required":True}},
+		"units":"UTC",
+		"valid_min":dInfo['startDate'],
+		"valid_max":dInfo['stopDate'],
+		"name":"Epoch"
+	}
+}
+dSrc['coordinates'] = dCoordVars
+
+# Add in coordinates that are specified in the bins section, ignore 'Epoch'
+# since that's the name of the time variable.
+
+iFlag = 0
+for i in range(len(lCoordNames)):
+	sCoord = lCoordNames[i]
+	sId = sCoord.lower()
+	
+	if sId == 'epoch': continue
+
+	dParam = _findParameter(sCoord, dInfo['parameters'])
+	
+	# If this coordinate is not in the parameter list that means it comes from
+	# the bins area, output it but don't associate it with a flag.
+	if dParam == None:
+		dCoordVars[sId] = {
+			'name':lCoordNames[i],
+			'units':lCoordUnits[i]
+		}
+		if lCoordDesc[i]: dCoordVars[sId]['title'] = lCoordDesc[i]	
+		
+	else:
+		sFlag = "%03d"%iFlag
+		iFlag += 1
+		
+		# Don't use units or descriptions form the parameter array there is
+		# a bug in some of them
+
+		dCoord = {
+			'name':sCoord,
+			'units':lCoordUnits[i],
+			'enabled':{
+				'value':False,
+				'set':{'value':True, 'param':'parameters', 'flag':sFlag}
+			}
+		}
+		
+		if lCoordDesc[i]: 
+			# No use in recording redundant information
+			if lCoordDesc[i] != dParam['name']:
+				dCoord['title'] = lCoordDesc[i]
+			
+		dCoordVars[sId] = dCoord
+		dFlag = {
+			'description':'Enable %s Output'%sCoord,
+			'value':sCoord
+		}
+		dFlags[sFlag] = dFlag
+
+dDataVars = {}
+dSrc['data'] = dDataVars
+
+bFirstData = True
+for sData in lDataNames:
+	sId = sData.lower()
+	dParam = _findParameter(sData, dInfo['parameters'])
+	
+	sFlag = "%03d"%iFlag
+	iFlag += 1
+	
+	if bFirstData: 
+		bEnabled = True
+		bFirstData = False
+	else:
+		bEnabled = False
+	
+	dData = {
+		'name':sData,
+		'units':dParam['units'],
+		'enabled':{
+			'value':bEnabled,
+			'set':{'value':True, 'param':'parameters', 'flag':sFlag}
+		}
+	}
+	if 'description' in dParam:
+		# No use in recording redundant information
+		if dParam['description'] != dParam['name']:
+			dData['title'] = dParam['description']
+	
+	dDataVars[sId] = dData
+	dFlag = {
+		'description':'Enable %s Output'%sData,
+		'value':sData
+	}
+	dFlags[sFlag] = dFlag
+	
+
+# Generate a format block that is not settable.  We probably need to 
+# move this out of options
+
+dSrc['format'] = {
+	'default':{
+		'name':'HAPI 1.0 Stream',
+		'mime':'application/vnd.hapi'
+	}
+}
+
+	
+# Grab the coordinates and data name, title, units, valid_max, valid_min
+# and put it in the collection area.  If units are settable just take the
+# default
+
+dCollCoords = {}
+dColl['coordinates'] = dCollCoords
+
+for sCoord in dSrc['coordinates']:
+	dCoord = dSrc['coordinates'][sCoord]
+	dCopy = {}
+	for sProp in ('name','title','units','valid_max','valid_min'):
+		if sProp in dCoord:
+			dCopy[sProp] = dCoord[sProp]
+	dCollCoords[sCoord] = dCopy
+
+
+dCollData = {}
+dColl['data'] = dCollData
+
+for sData in dSrc['data']:
+	dData = dSrc['data'][sData]
+	dCopy = {}
+	for sProp in ('name','title','units','valid_max','valid_min'):
+		if sProp in dData:
+			dCopy[sProp] = dData[sProp]
+	dCollData[sData] = dCopy
+	
+
+perr("Writting: 'hapi.json'\n")
+fSrc = open('hapi.json', 'w')
+sSrc = json.dumps(dSrc, ensure_ascii=False, indent="  ", sort_keys=True)
+fSrc.write(sSrc)
+fSrc.close()
+
+perr("Writting: '%s.json'\n"%sDataSetLower)
+fColl = open(sDataSetLower + '.json', 'w')
+sColl = json.dumps(dColl, ensure_ascii=False, indent="  ", sort_keys=True)
+fColl.write(sColl)
+fColl.close()
+
+	

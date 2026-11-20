@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright 2018 Chris Piker
+# Copyright 2018,2026 Chris Piker
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to
@@ -22,7 +22,7 @@
 #
 # (MIT License)
 
-# Independent CGI script das2 catalog client, does not depend on other das2
+# Standalone CGI script federated catalog client, does not depend on other das
 # libraries.
 
 import sys
@@ -79,7 +79,7 @@ def _missingKeyError(sKey, sUrl):
 	pout(
 '''<p class="error">Format error in node from <a href="%s">%s</a>, 
 key <b>%s</b> is missing.</p>
-'''%(sKey, sUrl))
+'''%(sKey, sKey, sUrl))
 	return None
 
 
@@ -174,6 +174,8 @@ def _getNode(lAttempted, lPathTo, sUrl, sPath, sWanted):
 		if res.status_code != requests.codes.ok:
 			return None
 		dNode = json.loads(res.text)
+		if ('name' not in dNode) and ('label' in dNode):
+			dNode['name'] = dNode['label']
 	except Exception as e:
 		#pout("Failed to get %s, reason: %s<br><br>\n"%(sUrl, str(e)))
 		return None
@@ -297,7 +299,14 @@ def getNode(sWanted):
 			dNode['_url'] = sWanted
 			dNode['_path'] = ""           # I did not walk a catalog to get here
 			                              # path information not available
-													
+			
+			# Handle newer catalogs that have a label, but no name
+			# the name property should be used to refer to the path
+			# token in the upper level category. Older catalogs are
+			# confused ;-) 
+			#if ('name' not in dNade) and ('label' in dnode):
+			#	dNode['name'] = dNode['label']
+												
 			return (dNode, lPathTo, lAttempted)
 
 		except Exception as e:
@@ -340,8 +349,12 @@ def getDirectSubs(dNode, sListKey):
 				if res.status_code != requests.codes.ok:
 					continue
 				dSubNode = json.loads(res.text)
+				
+				#if ('name' not in dSubNode) and ('label' in dSubNode):
+				#	dSubNode['name'] = dSubNode['label']
+				
 			except Exception as e:
-				pass   # Complain here?
+				continue   # Complain here?
 
 			# Slide in the source URL and path we took so it stays attached
 			dSubNode['_url'] = sUrl
@@ -374,7 +387,10 @@ def prnBrowseBar(lPathTo, dNode):
 		else:
 			pout('  <li>&gt; <a href="%s">%s</a></li>'%(lPathTo[i][2], sName))
 
-	pout('  <li> &gt; %s</li>'%dNode['name'])
+	if 'label' in dNode: sLabel = dNode['label']
+	else: sLabel = dNode['name']
+		
+	pout('  <li> &gt; %s</li>'%sLabel)
 	pout('</ul>')
 
 #############################################################################
@@ -399,7 +415,9 @@ def prnCatalog(dNode):
 	pout('<ul>')
 	for sKey in lKeys:
 		sSubUrl = catPathToBrowseUrl(dNode['_path'] + sSep + sKey)
-		if 'name' in dSub[sKey]:
+		if 'label' in dSub[sKey]:
+			sName = dSub[sKey]['label']
+		elif 'name' in dSub[sKey]:
 			sName = dSub[sKey]['name']
 		else:
 			sName = sKey
@@ -408,12 +426,16 @@ def prnCatalog(dNode):
 
 		if 'title' in dSub[sKey]:
 			sTitle = dSub[sKey]['title']
+		elif 'description' in dSub[sKey]:
+			sTitle = dSub[sKey]['description']
 		else:
 			sTitle = "An untitled %s"%dSub[sKey]['type']
 
 		sClass = "cat_cat"
-		if dSub[sKey]['type'] == 'Collection':
+		if dSub[sKey]['type'] in ('Collection', 'HttpStreamSrc', 'SourceSet'):
 			sClass = "type_stream"
+		elif dSub[sKey]['type'] == 'Das2DSDF':
+			sClass = "type_legacy"
 
 		pout('<li class="%s"><a href="%s">%s</a> - %s<br></li>'%(sClass, sSubUrl, sName, sTitle))
 
@@ -698,6 +720,8 @@ def _inputItemEnum(dParams, dItem, sMsg, sCtrlId):
 
 		sCtrlVal = dMap['value']
 		if 'name' in dMap:  sCtrlVal = dMap['name']
+		elif 'label' in dMap: sCtrlVal = dMap['label']
+		elif 'title' in dMap: sCtrlVal = dMap['title']
 
 		pout('   <option value="%s" %s>%s</option>'%(sVal, sSelected, sCtrlVal))
 
@@ -826,7 +850,8 @@ def prnOptGroupForm(sCtrlPre, dParams, sGroup, dGroup, sSrcUrl, bVar=False):
 	# Weed out all the props that aren't settable
 	lSettable = []
 	for sProp in lProps:
-		if 'set' in dGroup[sProp]: lSettable.append(sProp)
+		if isinstance(dGroup[sProp], dict) and ('set' in dGroup[sProp]):
+			lSettable.append(sProp)
 	lProps = lSettable
 
 	for iProp in range(len(lProps)):
@@ -1060,10 +1085,10 @@ def prnHttpSource(dSrc, bSubSec=False):
 		if _isTrue(dProto['authentication'], 'required'):
 			pout('<p><i><span class="error">Resticted data source</span>.</i>')
 			if 'REALM' in dProto['authentication']:
-				 pout('You will be asked to authentication to the realm "' +\
-				      '<b>%s</b>" on submit.</p>'%dProto['authentication']['realm'])
+				 pout('You will be asked to authenticate to the realm "' +\
+				      '<b>%s</b>" on download.</p>'%dProto['authentication']['realm'])
 			else:
-				pout("You will be asked to authentication on submit.</p>")
+				pout("You will be asked to authenticate on download.</p>")
 
 	# Print the examples
 	if 'examples' in dProto:
@@ -1715,6 +1740,8 @@ def main(form):
 	prnBrowseBar(lPathTo, dNode)
 
 	if dNode['type'] == 'Catalog':
+		prnCatalog(dNode)
+	elif dNode['type'] == 'SourceSet':
 		prnCatalog(dNode)
 	elif dNode['type'] == 'Collection':
 		prnCollection(dNode)
