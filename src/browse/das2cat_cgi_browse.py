@@ -22,35 +22,43 @@
 #
 # (MIT License)
 
-# Standalone CGI script federated catalog client, does not depend on other das
-# libraries.
+# Standalone CGI script federated catalog client.  Does not depend on other
+# das libraries, or on anything outside the python standard library.
+#
+# Reads Catalog 0.5, SourceSet 0.2 and HttpStreamSrc 0.7 nodes.
+#
+# A source page needs no javascript.  Its form comes back to this script,
+# which turns the settings into the request URL and redirects the browser
+# to the data server.  The rules for that are in doc/httpstreamsrc.md.  The
+# program that defines them is das2C (das3/source.c), and the section
+# "Request building" below follows DasSrc_check() and DasSrc_reqUrl() there
+# step by step, so that a fix in one can be carried to the other.
+# test/browse_url_check.py compares the two over a tree of nodes.
 
 import sys
-from os.path import basename as bname
+import os
+import re
+import json
+import html
+import traceback
+import urllib.request
+
+from urllib.parse import parse_qsl, quote, urlencode
+
+g_lOut = []
 
 def pout(thing):
-	s = "%s\n"%thing
-	sys.stdout.buffer.write(s.encode('utf-8'))
-
+	g_lOut.append("%s\n"%thing)
 
 def perr(thing):
 	s = "%s\n"%thing
 	sys.stderr.buffer.write(s.encode('utf-8'))
 
+def esc(thing):
+	"""Node text is not ours.  Everything from a node goes through here on
+	its way into the page, attribute values included."""
+	return html.escape("%s"%thing, quote=True)
 
-# Get header out the door before anything can go wrong
-pout("Content-type: text/html; charset=utf-8\r\n\r")
-pout("<!DOCTYPE html>")
-pout("<html>")
-
-import os
-import cgi
-import cgitb
-
-cgitb.enable()
-
-import requests
-import json
 
 # Toggle the hierarchy we wish to show with this copy of the browse tool
 #g_sTree = 'test'
@@ -59,9 +67,10 @@ g_sTree = 'site'
 #############################################################################
 # Builtin defaults (update for your site)
 
-# Prefer http, it uses less overhead and this is public information anyway
+# These name the root node file itself.  A directory URL only works on a
+# server set up to hand out index.json for it.
 g_lCatRoots = [
-	"http://das2.org/catalog",
+	"https://das2.org/catalog/index.json",
 	"https://raw.githubusercontent.com/das-developers/das-cat/master/cat/index.json"
 	#"http://das2.org/cat_test/index.json"
 	# alternate root catalog mirror sites for reliablilty go here
@@ -73,13 +82,16 @@ g_sDefDas2SiteTag = 'tag:das2.org,2012:%s'%g_sTree
 g_sStyleSheet = "://das2.org/cat_resource/style.css"
 g_sLogo       = "://das2.org/cat_resource/das2logo_rv.png"
 
+# Seconds to wait on any one catalog file
+g_nTimeout = 20
+
 
 #############################################################################
 def _missingKeyError(sKey, sUrl):
 	pout(
-'''<p class="error">Format error in node from <a href="%s">%s</a>, 
+'''<p class="error">Format error in node from <a href="%s">%s</a>,
 key <b>%s</b> is missing.</p>
-'''%(sKey, sKey, sUrl))
+'''%(esc(sUrl), esc(sUrl), esc(sKey)))
 	return None
 
 
@@ -107,23 +119,12 @@ def scriptUrl():
 		if sProto == 'https://':
 			nPort = 443
 
-	if (sProto == 'http://' and nPort != 80) or (sProto == 'https//' and nPort != 443):
+	if (sProto == 'http://' and nPort != 80) or (sProto == 'https://' and nPort != 443):
 		sPort = ':%d' % nPort
 
 	g_sScriptUrl = "%s%s%s%s"%(sProto, os.getenv('SERVER_NAME'), sPort,
 	                           os.getenv('SCRIPT_NAME'))
 	return g_sScriptUrl
-
-#############################################################################
-def _isTrue(d, key):
-	if key not in d: return False
-
-	if d[key] == True: return True
-	if d[key] == False: return False
-
-	if d[key].lower() in ('true','1','yes'):
-		return True
-	return False
 
 
 #############################################################################
@@ -158,36 +159,75 @@ def pathInfoToCatId(sPathInfo):
 
 
 #############################################################################
+# Reading nodes
+
+class Num(str):
+	"""A JSON number, kept as the text the node has.  What a node says is
+	sent to servers and compared with protocol lists as text, and 1.0 read
+	as a float and written again is not always 1.0."""
+	pass
+
+def getJson(sUrl):
+	"""Get one node.
+
+	Returns:
+		The node as a dictionary, or None if it could not be read for any
+		reason.
+	"""
+	# urlopen() would read file: URLs too, and node URLs can come from
+	# anywhere once a person may type one in the resolve box
+	if not sUrl.lower().startswith(('http://', 'https://')):
+		return None
+	try:
+		with urllib.request.urlopen(sUrl, timeout=g_nTimeout) as f:
+			sText = f.read().decode('utf-8')
+		dNode = json.loads(sText, parse_int=Num, parse_float=Num)
+	except Exception as e:
+		return None
+
+	if not isinstance(dNode, dict) or not isinstance(dNode.get('type'), str):
+		return None
+
+	# Newer nodes have a label, older ones a name
+	if ('name' not in dNode) and ('label' in dNode):
+		dNode['name'] = dNode['label']
+	return dNode
+
+def _subKey(dNode):
+	"""The member of a node that lists its children, None if it has none"""
+	for sKey in ('catalog', 'sources'):   # 'sources' is the Collection of 2018
+		if isinstance(dNode.get(sKey), dict): return sKey
+	return None
+
+def _separator(dNode):
+	sSep = '/'
+	if 'separator' in dNode:
+		sSep = dNode['separator']
+		if sSep == None:
+			sSep = ""
+	return sSep
+
+
+#############################################################################
 # Get Node definition and path information by Id
 
 def _getNode(lAttempted, lPathTo, sUrl, sPath, sWanted):
-	
+
 	if sUrl not in lAttempted:
 		lAttempted.append(sUrl)
 	else:
 		# We have a loop, break it here
-		pout("Loop detected in catalog, at %s, needs to be fixed<br><br>"%sUrl)
+		pout("Loop detected in catalog, at %s, needs to be fixed<br><br>"%esc(sUrl))
 		return None
 
-	try:
-		res = requests.get(sUrl)
-		if res.status_code != requests.codes.ok:
-			return None
-		dNode = json.loads(res.text)
-		if ('name' not in dNode) and ('label' in dNode):
-			dNode['name'] = dNode['label']
-	except Exception as e:
-		#pout("Failed to get %s, reason: %s<br><br>\n"%(sUrl, str(e)))
+	dNode = getJson(sUrl)
+	if dNode == None:
 		return None
-
 
 	# Slide in the catalog path and the source URL so it stays attached
 	dNode['_url'] = sUrl
-	dNode['_path'] = sPath	
+	dNode['_path'] = sPath
 
-	#pout("<p>Looking for '%s', I am at '%s'</p>"%(sWanted, lPathTo))
-	#return None
-	
 	if (sPath == sWanted) or (sPath[:-1] == sWanted) or (sPath == sWanted[:-1]):
 		# This is the node you're looking for, note that the root catalog's
 		# _path is None, so setting None for the sWanted will match the root
@@ -199,32 +239,23 @@ def _getNode(lAttempted, lPathTo, sUrl, sPath, sWanted):
 		return None
 
 	# This is an ancester of the node you're looking for check the catalog
-	sCatElement = 'catalog'
-	if dNode['type'] == 'Collection':
-		sCatElement = 'sources'
-
-	if not sCatElement in dNode:
+	sCatElement = _subKey(dNode)
+	if sCatElement == None:
 		return None   # Don't have a catalog
 
 	dCat = dNode[sCatElement]
-
-	sSep = '/'
-	if 'separator' in dNode:
-		sSep = dNode['separator']
-		if sSep == None:
-			sSep = ""
+	sSep = _separator(dNode)
 
 	# For each sub item append it's path to mine and see if the requested
 	# path starts with total child string
 	for sKey in dCat:
 		sSubPath = "%s%s%s"%(sPath, sSep, sKey)
 
-		#pout("<p>Looking for %s, testing %s</p>\n"%(sWanted, sSubPath))
 		if not sWanted.startswith(sSubPath):
 			continue
 
 		dCatEnt = dCat[sKey]        # This is the one, try all the urls
-		if not 'urls' in dCatEnt:
+		if not isinstance(dCatEnt, dict) or ('urls' not in dCatEnt):
 			continue
 
 		for sUrl in dCatEnt['urls']:
@@ -233,15 +264,15 @@ def _getNode(lAttempted, lPathTo, sUrl, sPath, sWanted):
 			# other hierarchies aren't the focus of this browse tool
 			if sPath.startswith(g_sDefDas2SiteTag):
 				lPathTo.append(
-					(dNode['name'], dNode['title'], catPathToBrowseUrl(sPath) )
+					(dNode.get('name', ''), dNode.get('title', ''), catPathToBrowseUrl(sPath) )
 				)
-				
+
 				dSubNode = _getNode(lAttempted, lPathTo, sUrl, sSubPath, sWanted)
 				if dSubNode != None:
 					return dSubNode
-				
+
 				lPathTo.pop()
-				
+
 			else:
 				dSubNode = _getNode(lAttempted, lPathTo, sUrl, sSubPath, sWanted)
 				if dSubNode != None:
@@ -252,24 +283,23 @@ def _getNode(lAttempted, lPathTo, sUrl, sPath, sWanted):
 ############################################################################
 # We're stateless so we'll always have to navigate from the top down.  A real
 # app would cache nodes along the way making subsequent lookups faster.
-# libdas2 does this automatically
+# das2C does this automatically
 
 def getNode(sWanted):
 	"""Get a catalog node item and return items along the path to it.
-	
-	The basic resolution is that: 
-	
+
+	The basic resolution is that:
+
 	   1. Each node that is loaded is supplied with it's name by it's parent.
-		
+
 		2. To form child nodes the separator is combined with the calalog entry
 		   and passed to the sub-node loader.
-	
-	
+
+
 	arguments:
-		sWanted - The virtual path that is desired, these look like 
+		sWanted - The virtual path that is desired, these look like
 		          "tag:das2.org,2012:site:/uiowa" (or test:/) or a direct
-                          URL to a JSON file, for ex:
-                             file:///home/janed/source.json, http://... 
+		          URL to a JSON file, for ex: http://...
 	returns:
 		(dNode, lPathTo, lUrls )
 
@@ -282,55 +312,42 @@ def getNode(sWanted):
 		lUrls - A list of Catalog URLs used to arrive at this infomation, mostly
 		        for diagnostic purposes
 	"""
-	#pout("<p>Getting ID: %s</p>"%sWanted)
 	lAttempted = []
 	lPathTo = []
 
 	sLow = sWanted.lower()
-	if sLow.startswith('http') or sLow.startswith('https'):
+	if sLow.startswith('http'):
 		lAttempted.append(sWanted)
 
 		# just go get it, path information will be empty
-		try:
-			res = requests.get(sWanted)
-			if res.status_code != requests.codes.ok:
-				return (None, [], lAttempted)
-			dNode = json.loads(res.text)
-			dNode['_url'] = sWanted
-			dNode['_path'] = ""           # I did not walk a catalog to get here
-			                              # path information not available
-			
-			# Handle newer catalogs that have a label, but no name
-			# the name property should be used to refer to the path
-			# token in the upper level category. Older catalogs are
-			# confused ;-) 
-			#if ('name' not in dNade) and ('label' in dnode):
-			#	dNode['name'] = dNode['label']
-												
-			return (dNode, lPathTo, lAttempted)
-
-		except Exception as e:
-			#pout("Failed to get %s, reason: %s<br><br>\n"%(sUrl, str(e)))
-			pass
+		dNode = getJson(sWanted)
+		if dNode == None:
+			return (None, [], lAttempted)
+		dNode['_url'] = sWanted
+		dNode['_path'] = ""           # I did not walk a catalog to get here
+		                              # path information not available
+		return (dNode, lPathTo, lAttempted)
 
 	else:
-		sPath = "" 
+		sPath = ""
 		for sUrl in g_lCatRoots:
 			dNode = _getNode(lAttempted, lPathTo, sUrl, sPath, sWanted)
 			if dNode != None:
-				#pout("<p>Path is %s</p>"%lPathTo)
 				return (dNode, lPathTo, lAttempted)
 
 	return (None, [], lAttempted)
 
 ############################################################################
 
-def getDirectSubs(dNode, sListKey):
+def getDirectSubs(dNode, sListKey, tTypes=None):
 	"""Get sub-nodes of a node.  Not used at part of normal getNode traversal.
 
 	Args:
 		dNode - The node for which sub-items are desired
 		sListKey - The key to the json object that lists the sub-nodes
+		tTypes - If given, only get sub-nodes the listing says are one of
+		         these types.  Not everything listed is a node, a das2 DSDF
+		         for one is not.
 	returns:
 		A dictionary of direct sub-nodes which may be empty if no sub-nodes are
 		present
@@ -339,32 +356,24 @@ def getDirectSubs(dNode, sListKey):
 	if sListKey not in dNode: return dRet
 
 	dSubs = dNode[sListKey]
+	sSep = _separator(dNode)
 
 	for sKey in dSubs:
 		dCatEnt = dSubs[sKey]
+		if not isinstance(dCatEnt, dict): continue
+		if (tTypes is not None) and (dCatEnt.get('type') not in tTypes): continue
 
-		for sUrl in dCatEnt['urls']:
-			try:
-				res = requests.get(sUrl)
-				if res.status_code != requests.codes.ok:
-					continue
-				dSubNode = json.loads(res.text)
-				
-				#if ('name' not in dSubNode) and ('label' in dSubNode):
-				#	dSubNode['name'] = dSubNode['label']
-				
-			except Exception as e:
+		for sUrl in dCatEnt.get('urls', []):
+			dSubNode = getJson(sUrl)
+			if dSubNode == None:
 				continue   # Complain here?
 
-			# Slide in the source URL and path we took so it stays attached
+			# Slide in the source URL and path we took so it stays attached.
+			# A node read by its URL has no path, and neither do its children
 			dSubNode['_url'] = sUrl
-			sSep = '/'
-			if 'separator' in dNode:
-				sSep = dNode['separator']
-			if sSep == None:
-				sSep = ""
-				
-			dSubNode['_path'] = "%s%s%s"%(dNode['_path'], sSep, sKey)
+			dSubNode['_path'] = ""
+			if dNode['_path']:
+				dSubNode['_path'] = "%s%s%s"%(dNode['_path'], sSep, sKey)
 			dRet[sKey] = dSubNode
 			break
 
@@ -376,86 +385,90 @@ def prnBrowseBar(lPathTo, dNode):
 	"""lPathTo a list of (Name, Title, Browse_URL) triplets leading to dNode
 	"""
 	if len(lPathTo) == 0:
-		#pout('<p class="error">lPathTo is empty</p>')
 		return
 
 	pout('  <ul id="catnav">')
 	for i in range(0, len(lPathTo)):
 		sName = lPathTo[i][0].rstrip('/')
 		if i == 0:
-			pout('  <li><a href="%s">%s</a></li>'%(lPathTo[i][2], sName))
+			pout('  <li><a href="%s">%s</a></li>'%(esc(lPathTo[i][2]), esc(sName)))
 		else:
-			pout('  <li>&gt; <a href="%s">%s</a></li>'%(lPathTo[i][2], sName))
+			pout('  <li>&gt; <a href="%s">%s</a></li>'%(esc(lPathTo[i][2]), esc(sName)))
 
 	if 'label' in dNode: sLabel = dNode['label']
-	else: sLabel = dNode['name']
-		
-	pout('  <li> &gt; %s</li>'%sLabel)
+	else: sLabel = dNode.get('name', '')
+
+	pout('  <li> &gt; %s</li>'%esc(sLabel))
 	pout('</ul>')
+
+#############################################################################
+def prnIdentifiers(dNode, bResolveLink=True):
+	"""Where this page came from, at the bottom of each kind of page"""
+	pout('<div class="identifers">')
+	sPath = esc(dNode['_path'])
+	if bResolveLink and dNode['_path']:
+		sPath = '<a href="%s?%s">%s</a>'%(
+			esc(scriptUrl()), esc(urlencode([('resolve', dNode['_path'])])), sPath
+		)
+	pout('<br><br>Catalog Path: %s &nbsp; <br>Read From: <a href="%s">%s</a>'%(
+	     sPath, esc(dNode['_url']), esc(dNode['_url'])))
+	pout('</div>')
 
 #############################################################################
 def prnCatalog(dNode):
 
 	dSub = dNode['catalog']
-	
-	sSep = "/"
-	if 'separator' in dNode:
-		sSep = dNode['separator']
-		if sSep == None: 	sSep = ""
+	sSep = _separator(dNode)
 
 	if 'title' in dNode:
-		pout("<h3>%s</h3>"%dNode['title'])
-		
+		pout("<h3>%s</h3>"%esc(dNode['title']))
+
 	if 'description' in dNode:
-		pout("<p>%s<br><br></p>"%dNode['description'])
+		pout("<p>%s<br><br></p>"%esc(dNode['description']))
 
 	lKeys = list(dSub.keys())
 	lKeys.sort()
-	#pout('<div id="indent30_div">')
 	pout('<ul>')
 	for sKey in lKeys:
+		dEnt = dSub[sKey]
+		if not isinstance(dEnt, dict): continue
 		sSubUrl = catPathToBrowseUrl(dNode['_path'] + sSep + sKey)
-		if 'label' in dSub[sKey]:
-			sName = dSub[sKey]['label']
-		elif 'name' in dSub[sKey]:
-			sName = dSub[sKey]['name']
+		if 'label' in dEnt:
+			sName = esc(dEnt['label'])
+		elif 'name' in dEnt:
+			sName = esc(dEnt['name'])
 		else:
-			sName = sKey
+			sName = esc(sKey)
 		if len(sName) < 2:
 			sName = " &nbsp; %s &nbsp;"%sName
 
-		if 'title' in dSub[sKey]:
-			sTitle = dSub[sKey]['title']
-		elif 'description' in dSub[sKey]:
-			sTitle = dSub[sKey]['description']
+		sType = dEnt.get('type', 'node')
+		if 'title' in dEnt:
+			sTitle = dEnt['title']
+		elif 'description' in dEnt:
+			sTitle = dEnt['description']
 		else:
-			sTitle = "An untitled %s"%dSub[sKey]['type']
+			sTitle = "An untitled %s"%sType
 
 		sClass = "cat_cat"
-		if dSub[sKey]['type'] in ('Collection', 'HttpStreamSrc', 'SourceSet'):
+		if sType in ('Collection', 'HttpStreamSrc', 'SourceSet'):
 			sClass = "type_stream"
-		elif dSub[sKey]['type'] == 'Das2DSDF':
+		elif sType == 'Das2DSDF':
 			sClass = "type_legacy"
 
-		pout('<li class="%s"><a href="%s">%s</a> - %s<br></li>'%(sClass, sSubUrl, sName, sTitle))
+		pout('<li class="%s"><a href="%s">%s</a> - %s<br></li>'%(
+			sClass, esc(sSubUrl), sName, esc(sTitle)))
 
 	pout('</ul>')
-	#pout('</div>')
 
-	pout('<div class="identifers">')
-	sResolve = "%s?resolve=%s"%(scriptUrl(), dNode['_path'])
-	pout('<br><br>Catalog Path: <a href="%s">%s</a> &nbsp; <br>Read From: <a href="%s">%s</a></a>'%(
-	     sResolve, dNode['_path'], dNode['_url'], dNode['_url']))
-	pout('</div>')
+	prnIdentifiers(dNode)
 
 	pout('<hr class="code_sep">')
 
 	sURI = dNode['_path']
 	sURI = sURI.replace('tag:das2.org,2012:','')
 
-	if ('catalog' in dNode) and (len(list(dNode['catalog'].keys())) > 0):
-		lKeys = list(dNode['catalog'].keys())
-		lKeys.sort()
+	if len(lKeys) > 0:
 		sSubNode = "subnode = node['%s']"%lKeys[0]
 	else:
 		sSubNode = "# Catalog has no sub nodes"
@@ -472,13 +485,13 @@ def prnCatalog(dNode):
    # Pretty print node content
    s = json.dumps(node.props, ensure_ascii=False, indent="  ", sort_keys=True)
    print(s)
-   
+
    # List and access sub-nodes
    node.keys()
    %s
-   
+
 </code></pre></blockquote>
-'''%(sURI,sSubNode))
+'''%(esc(sURI), esc(sSubNode)))
 	pout('</div>')
 
 	pout('<button class="accordian">Using this node with C99</button>')
@@ -496,16 +509,827 @@ def prnCatalog(dNode):
    fputs(sOut, stdout);
 
 </code></pre></blockquote>
-'''%dNode['_path'])
+'''%esc(dNode['_path']))
 	pout('</div>')
 
+
 #############################################################################
+# Request building: a source node and a set of settings to a URL
 #
+# Names here follow das3/source.c in das2C.  A requisition is a list of
+# (property key, value text) pairs in the order they were said, keys being
+# 'coords.time.min', 'data.ex.enabled', 'formats.das2.text', 'options.gain'.
+
+def _scalar(v):
+	"""A JSON string, number or boolean as text, None for anything else"""
+	if v is True: return 'true'
+	if v is False: return 'false'
+	if isinstance(v, str): return str(v)
+	return None
+
+def _strieq(a, b):
+	return a.lower() == b.lower()
+
+def _split(sVal):
+	"""The items of a list value.  Items are trimmed of blanks and may come
+	out empty, blanks alone are no items."""
+	if sVal.strip(' ') == '': return []
+	return [s.strip(' ') for s in sVal.split(',')]
+
+def _noValue(sVal, bList):
+	"""True for a value that says nothing"""
+	if bList: sVal = sVal.lstrip(' ')
+	return sVal == ''
+
+def _sameItems(sA, sB):
+	(lA, lB) = (_split(sA), _split(sB))
+	if len(lA) != len(lB): return False
+	lB = [s.lower() for s in lB]
+	return all(s.lower() in lB for s in lA)
+
+def _parseBool(s):
+	"""True, False, or None if s is not a word for either"""
+	if s is None: return None
+	if s.lower() in ('true', 'yes', 'on', '1', 't', 'y'): return True
+	if s.lower() in ('false', 'no', 'off', '0', 'f', 'n'): return False
+	return None
+
+g_dTypeNames = {
+	'boolean':'bool', 'bool':'bool', 'integer':'int', 'int':'int',
+	'real':'real', 'double':'real', 'float':'real',
+	'isotime':'time', 'time':'time', 'datetime':'time',
+	'enum':'enum', 'string':'text', 'text':'text'
+}
+
+def _typeByName(s):
+	if not isinstance(s, str): return None
+	return g_dTypeNames.get(s.lower())
+
+def _str(d, sKey):
+	"""A string member of a dictionary, else None"""
+	v = d.get(sKey)
+	return str(v) if (isinstance(v, str) and not isinstance(v, Num)) else None
+
+
+class SrcProp(object):
+	"""One member of a group's 'props'.  A property with a set block that
+	names a protocol parameter is a control, 'set' is then not None."""
+
+	def __init__(self, grp, sName, d, dParams):
+		self.grp = grp
+		self.name = sName
+		self.d = d
+		if grp.name: self.key = '%s.%s.%s'%(grp.sec, grp.name, sName)
+		else: self.key = '%s.%s'%(grp.sec, sName)
+
+		# "multi": true, or [fewest, most] items.  hi None is no limit.
+		(self.multi, self.lo, self.hi) = (False, 1, 1)
+		m = d.get('multi')
+		if (m is True) or isinstance(m, list):
+			(self.multi, self.lo, self.hi) = (True, 0, None)
+			try:
+				(nLo, nHi) = (int(m[0]), int(m[1]))
+				if (len(m) == 2) and (0 <= nLo <= nHi) and (nHi > 0):
+					(self.lo, self.hi) = (nLo, nHi)
+			except (TypeError, ValueError, IndexError):
+				pass
+
+		# The default.  A list is kept as its items joined with commas, and
+		# an empty one is no default
+		v = d.get('value')
+		if self.multi:
+			l = [_scalar(x) for x in (v if isinstance(v, list) else [v])]
+			l = [s for s in l if s is not None]
+			self.value = ','.join(l) if l else None
+		else:
+			self.value = _scalar(v)
+
+		self.set = None
+		self.param = None
+		self.dParam = {}
+		self.required = False
+		self.enum = []    # item values
+		self.items = []   # item dictionaries, in step with enum
+		dSet = d.get('set')
+		if isinstance(dSet, dict) and (_str(dSet, 'param') is not None):
+			self.set = dSet
+			self.param = dSet['param']
+			if isinstance(dParams.get(self.param), dict):
+				self.dParam = dParams[self.param]
+			self.required = (dSet.get('required') is True) or (self.dParam.get('required') is True)
+			if isinstance(dSet.get('enum'), list):
+				for item in dSet['enum']:
+					s = _scalar(item.get('value') if isinstance(item, dict) else item)
+					if s is None: continue
+					self.enum.append(s)
+					self.items.append(item if isinstance(item, dict) else {})
+
+		self.type = self._resolveType()
+		if self.multi and (self.type == 'bool'):
+			(self.multi, self.lo, self.hi) = (False, 1, 1)   # on or off has nothing to list
+			self.value = _scalar(v)
+
+	def _resolveType(self):
+		"""Preference order: a set enum list, the property's type, a boolean
+		default, a flag toggle, the protocol parameter's type, the shape of
+		the value, then text."""
+		if self.enum: return 'enum'
+		sType = _typeByName(self.d.get('type'))
+		if (sType is not None) and (sType != 'enum'): return sType
+		if isinstance(self.d.get('value'), bool): return 'bool'
+		if self.set and not self.multi and (_str(self.set, 'flag') is not None): return 'bool'
+		sType = _typeByName(self.dParam.get('type'))
+		if (sType is not None) and (sType != 'enum'): return sType
+		if isinstance(self.d.get('value'), Num): return 'real'
+		return 'text'
+
+	def isEnable(self):
+		return self is self.grp.enable
+
+
+class SrcGroup(object):
+	"""A coordinate, a data variable, a format, or the options"""
+
+	def __init__(self, sSec, sName, d, dParams):
+		self.sec = sSec
+		self.name = sName
+		self.d = d
+		self.key = '%s.%s'%(sSec, sName) if sName else sSec
+		self.props = []
+		self.enable = None   # the 'enabled' toggle
+		self.xor = None      # the exclusive set this group is a member of
+		dProps = d.get('props')
+		if not isinstance(dProps, dict): return
+		for (sProp, dProp) in dProps.items():
+			if not isinstance(dProp, dict): continue
+			if not (('value' in dProp) or ('set' in dProp) or ('type' in dProp)): continue
+			p = SrcProp(self, sProp, dProp, dParams)
+			self.props.append(p)
+			if (sProp.lower() in ('enabled', 'enable')) and (self.enable is None):
+				self.enable = p
+				self.xor = _str(dProp, 'xorGroup')
+
+	def label(self):
+		return self.d.get('label') or self.name or self.sec
+
+
+class Source(object):
+	"""The parts of an HttpStreamSrc 0.7 node used to make requests"""
+
+	def __init__(self, dNode):
+		dProto = dNode.get('protocol')
+		if not isinstance(dProto, dict): dProto = {}
+		self.baseUrls = [s for s in dProto.get('baseUrls', []) if isinstance(s, str)]
+		self.params = dProto.get('httpParams')
+		if not isinstance(self.params, dict): self.params = {}
+
+		dIface = dNode.get('interface')
+		if not isinstance(dIface, dict): dIface = {}
+		self.iface = dIface
+
+		# Groups in presentation order: time first for coordinates, otherwise
+		# as the node lists them.  Options are one group with no name.
+		self.groups = []
+		for sSec in ('coords', 'data', 'formats'):
+			dSec = dIface.get(sSec)
+			if not isinstance(dSec, dict): continue
+			lNames = list(dSec.keys())
+			if sSec == 'coords':
+				lNames = [s for s in lNames if s.lower() == 'time'] + \
+				         [s for s in lNames if s.lower() != 'time']
+			for sName in lNames:
+				if isinstance(dSec[sName], dict):
+					self.groups.append(SrcGroup(sSec, sName, dSec[sName], self.params))
+		if isinstance(dIface.get('options'), dict):
+			self.groups.append(SrcGroup('options', '', dIface['options'], self.params))
+
+		self.props = [p for g in self.groups for p in g.props]
+		self.byKey = dict([(p.key, p) for p in self.props])
+
+		self.examples = dIface.get('examples')
+		if not isinstance(self.examples, list): self.examples = []
+
+	def section(self, sSec):
+		return [g for g in self.groups if g.sec == sSec]
+
+
+def exampleReq(dExample):
+	"""An example's settings as a requisition.  Setting paths look like
+	'coords/time/props/min', keys like 'coords.time.min'."""
+	lReq = []
+	dSettings = dExample.get('settings') if isinstance(dExample, dict) else None
+	if not isinstance(dSettings, dict): return lReq
+	for (sPath, v) in dSettings.items():
+		sKey = '.'.join([s for s in sPath.split('/') if s != 'props'])
+		if isinstance(v, list):
+			l = [_scalar(x) for x in v]
+			l = [s for s in l if s is not None]
+			if not l: continue
+			lReq.append((sKey, ','.join(l)))
+		elif _scalar(v) is not None:
+			lReq.append((sKey, _scalar(v)))
+	return lReq
+
+
+# Exclusive sets.  Groups whose enable toggles carry the same "xorGroup"
+# name are radio buttons.  A node writes each member as an ordinary boolean
+# that knows nothing of the others, so what a requisition says of them is
+# settled here once:
+#
+#   - The last member a requisition switches on is on, the others are off,
+#     whatever they default to and whatever was said of them before.
+#   - If it switches none on, the node's defaults stand, less any member it
+#     switches off.
+
+class _Xor(object):
+	def __init__(self):
+		self.state = None   # None: not in a set, else True for on
+		self.said = None    # the requisition's last word on the toggle
+		self.defOn = False  # on in the node
+		self.at = 0         # the entry that said it
+
+def _xorStates(src, lMatch):
+	"""lMatch is a requisition with properties in place of keys, None for a
+	key that names no property.  Returns {group: _Xor}."""
+	dX = {}
+	for g in src.groups:
+		x = _Xor()
+		if g.xor is not None:
+			x.defOn = (_parseBool(g.enable.value) is True)
+			x.state = x.defOn
+		dX[g] = x
+
+	for (i, (p, sVal)) in enumerate(lMatch):
+		if (p is None) or (dX[p.grp].state is None) or not p.isEnable(): continue
+		x = dX[p.grp]
+		if sVal == '': x.said = None                # took it back
+		elif _parseBool(sVal) is None: continue     # the check refuses it
+		else: x.said = _parseBool(sVal)
+		x.at = i
+
+	for g in src.groups:
+		x = dX[g]
+		if x.state is None: continue
+		bWinner = False
+		bMe = (x.said is True)
+		for h in src.groups:
+			y = dX[h]
+			if (h is g) or (y.said is not True) or (h.xor != g.xor): continue
+			bWinner = True
+			if y.at > x.at: bMe = False
+		if bMe: x.state = True
+		elif bWinner or (x.said is False): x.state = False
+	return dX
+
+def _xorIdle(dX, p):
+	"""A property that has no say in this request: any but the toggle of a
+	member that is off"""
+	return (dX[p.grp].state is False) and not p.isEnable()
+
+def _propSays(p):
+	"""What to call a property when talking to a person"""
+	sGrp = p.grp.d.get('label') or p.grp.name
+	sProp = p.d.get('label') or p.name
+	if p.isEnable(): return "'%s'"%(sGrp or sProp)
+	if p.grp.sec == 'options': return "'%s'"%sProp
+	return "'%s %s'"%(sGrp, sProp)
+
+# Numbers as C reads them.  int() and float() take more: 1_000, ' 7 '.
+g_reInt = re.compile(r'^\s*[+-]?[0-9]+$')
+g_reReal = re.compile(r'^\s*[+-]?([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?$')
+
+def _checkOne(p, sVal):
+	"""Why one value, or one item of a list, can't be used, else None"""
+	if p.type == 'bool':
+		if _parseBool(sVal) is None:
+			return "'%s' is not a boolean value for %s, use true or false"%(sVal, _propSays(p))
+	elif p.type == 'enum':
+		if not any(_strieq(s, sVal) for s in p.enum):
+			return "'%s' is not an allowed value for %s, choose one of: %s"%(
+				sVal, _propSays(p), ', '.join(p.enum))
+	elif p.type == 'int':
+		if not g_reInt.match(sVal):
+			return "'%s' is not an integer value for %s"%(sVal, _propSays(p))
+	elif p.type == 'real':
+		if not g_reReal.match(sVal):
+			return "'%s' is not a real value for %s"%(sVal, _propSays(p))
+	# Times are left to the server.  das2C parses them, and takes many more
+	# forms than are worth repeating in a stand-in.
+	return None
+
+def _checkValue(p, sVal):
+	if not p.multi: return _checkOne(p, sVal)
+
+	lItems = _split(sVal)
+	for (i, sItem) in enumerate(lItems):
+		if sItem == '':
+			return "'%s' has an empty item, %s takes values separated by single commas"%(
+				sVal, _propSays(p))
+		sWhy = _checkOne(p, sItem)
+		if sWhy: return sWhy
+		# Enum items are matched without regard to case, free text goes to
+		# the server as typed
+		for sPrev in lItems[:i]:
+			if (_strieq(sItem, sPrev) if p.enum else (sItem == sPrev)):
+				return "'%s' is given twice for %s"%(sItem, _propSays(p))
+
+	# No items is nothing selected, which is not a count to bound
+	n = len(lItems)
+	if (n > 0) and ((n < p.lo) or ((p.hi is not None) and (n > p.hi))):
+		if p.hi is None:
+			return "%s takes at least %d values, %d given"%(_propSays(p), p.lo, n)
+		if p.lo == p.hi:
+			return "%s takes %d values, %d given"%(_propSays(p), p.lo, n)
+		return "%s takes %d to %d values, %d given"%(_propSays(p), p.lo or 1, p.hi, n)
+	return None
+
+def checkReq(src, lReq):
+	"""Hold a requisition to the node, as DasSrc_check() does.
+
+	Returns:
+		(lOk, lWhy, dX): the entries that stand as (property, value) pairs,
+		the reasons the others do not, and the exclusive set states.
+	"""
+	lMatch = [(src.byKey.get(sKey), sVal) for (sKey, sVal) in lReq]
+	dX = _xorStates(src, lMatch)
+	lOk = []
+	lWhy = []
+	lPresent = []
+
+	for (u, (p, sVal)) in enumerate(lMatch):
+		if p is None:
+			lWhy.append("No property named '%s' in this source"%lReq[u][0])
+			continue
+		if p.set is None:
+			lWhy.append("%s is a fixed property of this source and cannot be set"%_propSays(p))
+			continue
+		lPresent.append(p)
+
+		# A setting of a format that is not the one chosen, or of any member
+		# of an exclusive set that is off.  Sending it would be a request no
+		# form could have made; dropping it would hide that the user and the
+		# request disagree.
+		if _xorIdle(dX, p):
+			if _noValue(sVal, p.multi):
+				lOk.append((p, sVal))
+			else:
+				lWhy.append("%s is a setting of '%s', which is not selected"%(
+					_propSays(p), p.grp.label()))
+			continue
+
+		# Radio buttons have no "none"
+		x = dX[p.grp]
+		if (x.said is False) and (x.at == u) and x.defOn and p.isEnable() and \
+		   not any((dX[h].state is True) and (h.xor == p.grp.xor) for h in src.groups):
+			lWhy.append("%s cannot be switched off by itself, one of the '%s' "
+			            "choices is always on"%(_propSays(p), p.grp.xor))
+			continue
+
+		if _noValue(sVal, p.multi):
+			if p.required and (p.value is None):
+				lWhy.append("%s is required, give it a value"%_propSays(p))
+			else:
+				lOk.append((p, sVal))
+			continue
+
+		sWhy = _checkValue(p, sVal)
+		if sWhy:
+			lWhy.append(sWhy)
+			continue
+		lOk.append((p, sVal))
+
+	# required controls nobody mentioned
+	for p in src.props:
+		if (p.set is None) or not p.required or (p.value is not None) or (p in lPresent):
+			continue
+		if _xorIdle(dX, p): continue   # asked for when chosen
+		lWhy.append("%s is required, give it a value"%_propSays(p))
+
+	return (lOk, lWhy, dX)
+
+
+# The output parameter list.  A flag set parameter collects one piece per
+# flag sent and is joined with its flagSep when the URL is built, not as
+# controls are visited, because a flag with a subSep gathers elements from
+# controls anywhere in the node into one piece.
+#
+# Pieces are kept in the order the parameter's "flags" object lists the
+# flags, not the order controls are visited in, so that what is sent is a
+# matter of the protocol section alone.
+#
+# A parameter that is not a flag set takes several values the same way:
+# with its own subSep it is a single merged piece, with "repeat" every
+# value is a piece and each goes out as its own NAME=VALUE pair.
+
+class _Piece(object):
+	def __init__(self, dMerge, nRank, sVal, sSuffix):
+		self.merge = dMerge    # the flag's entry or the parameter's, None when not merged
+		self.rank = nRank      # the flag's place among the parameter's flags
+		self.val = sVal        # prefix then element(s)
+		self.suffix = sSuffix  # what closes the piece once every element is in
+
+class _Param(object):
+	def __init__(self, sName):
+		self.name = sName
+		self.val = None        # plain value, None when only pieces
+		self.flagSep = None
+		self.repeat = False    # pieces are separate pairs, not one joined value
+		self.pieces = []
+
+	def join(self):
+		sSep = ' ' if self.flagSep is None else self.flagSep
+		s = self.val or ''
+		for piece in self.pieces:
+			if len(s) > 0: s += sSep
+			s += piece.val + (piece.suffix or '')
+		return s
+
+class _Out(object):
+	def __init__(self):
+		self.params = []
+
+	def find(self, sName):
+		for prm in self.params:
+			if prm.name == sName: return prm
+		return None
+
+	def get(self, sName):
+		prm = self.find(sName)
+		if prm is None:
+			prm = _Param(sName)
+			self.params.append(prm)
+		return prm
+
+	def set(self, sName, sVal):
+		prm = self.get(sName)
+		prm.val = sVal
+		prm.pieces = []
+		prm.repeat = False
+
+	def addFlag(self, sName, sFlagSep, dFlag, nRank, sPrefix, sSuffix, sSubSep, sElem):
+		"""Send a flag.  With sSubSep, a second element for the same flag
+		joins the first piece instead of starting another."""
+		prm = self.get(sName)
+		if sFlagSep is not None: prm.flagSep = sFlagSep
+
+		if sSubSep is not None:
+			for piece in prm.pieces:
+				if piece.merge is dFlag:
+					piece.val = "%s%s%s"%(piece.val, sSubSep, sElem)
+					return
+
+		# after every piece of the same or an earlier flag
+		nAt = len(prm.pieces)
+		while (nAt > 0) and (prm.pieces[nAt - 1].rank > nRank): nAt -= 1
+		prm.pieces.insert(nAt, _Piece(
+			dFlag if (sSubSep is not None) else None, nRank, (sPrefix or '') + sElem, sSuffix
+		))
+
+def _inProtoEnum(dTarget, sVal):
+	"""The protocol's own list of what may follow a flag's prefix, or be the
+	value of a parameter.  Compared as text and exactly, the server will.
+	An entry with no list takes anything."""
+	lVals = dTarget.get('enum')
+	if not isinstance(lVals, list): return True
+	return any(_scalar(v) == sVal for v in lVals)
+
+def _notInProtoEnum(p, sVal, sFlag):
+	if sFlag:
+		s = "%s would send '%s', which flag '%s' under protocol parameter %s does not " \
+		    "list in its enum"%(_propSays(p), sVal, sFlag, p.param)
+	else:
+		s = "%s would send '%s', which protocol parameter %s does not list in its " \
+		    "enum"%(_propSays(p), sVal, p.param)
+	if p.enum: s += ", the node is broken"
+	return s
+
+def _flagEntry(p, sFlag):
+	dFlags = p.dParam.get('flags')
+	if not isinstance(dFlags, dict) or not isinstance(dFlags.get(sFlag), dict): return None
+	return dFlags[sFlag]
+
+def _joinTarget(p):
+	"""What a control's value is joined into, if anything: the entry of a
+	flag with a subSep, or of a parameter of its own with one.
+
+	A joined value is one value as far as the server can tell, '-hfr ABEx'
+	or 'read.data=a,b', so its parts are sent together or not at all."""
+	dT = p.dParam
+	sFlag = _str(p.set, 'flag')
+	if sFlag is not None:
+		dT = _flagEntry(p, sFlag)
+		if dT is None: return None
+	if (_str(dT, 'subSep') is None) or (dT.get('repeat') is True): return None
+	return dT
+
+def _translateOne(p, sVal, out):
+	"""One control's value to protocol parameters, by its set block.
+	Returns None, or why it could not be done."""
+	dSet = p.set
+	sFlag = _str(dSet, 'flag') or ''
+	sPVal = _scalar(dSet.get('pval'))
+	bSlot = (sFlag != '') and (p.type != 'bool')
+
+	if isinstance(dSet.get('enum'), list):
+		for item in dSet['enum']:
+			dItem = item if isinstance(item, dict) else {}
+			sItem = _scalar(dItem.get('value') if isinstance(item, dict) else item)
+			if (sItem is None) or not _strieq(sItem, sVal): continue
+			if _scalar(dItem.get('pval')) is not None: sPVal = _scalar(dItem['pval'])
+			elif sPVal is None: sPVal = sItem
+			if _str(dItem, 'flag') is not None:
+				sFlag = dItem['flag']
+				bSlot = False     # the item picked a flag, it's a switch
+			break
+
+	elif p.type == 'bool':
+		bUser = (_parseBool(sVal) is True)
+		trig = dSet.get('value')
+		if isinstance(trig, bool) and (bUser != trig): return None
+		if (sPVal is None) and (sFlag == ''):
+			sPVal = 'true' if bUser else 'false'
+		# A fixed string or a flag is sent for one state, and a block that
+		# does not say which means on.  Off would otherwise send the very
+		# string that means on.
+		elif not isinstance(trig, bool) and not bUser: return None
+
+	if sFlag != '':
+		dF = _flagEntry(p, sFlag)
+		if dF is None:
+			return "Flag '%s' for %s is not defined under protocol parameter %s, " \
+			       "the node is broken"%(sFlag, _propSays(p), p.param)
+		sSubSep = _str(dF, 'subSep')
+		bRepeat = (dF.get('repeat') is True)
+		if p.multi and bSlot and ((sSubSep is None) == (not bRepeat)):
+			# Joined or repeated is a different request to the server, so the
+			# node has to say which
+			return "%s holds a list, so flag '%s' under protocol parameter %s must have " \
+			       "exactly one of subSep and repeat, the node is broken"%(
+			       _propSays(p), sFlag, p.param)
+		if bRepeat: sSubSep = None
+
+		if bSlot:
+			sFVal = sPVal if (sPVal is not None) else sVal
+		elif sSubSep is not None:
+			# Every switch on the flag would send the same flag value, so the
+			# element has to come from the switch
+			if sPVal is None:
+				return "Flag '%s' under protocol parameter %s joins elements, but %s gives " \
+				       "no pval for its element, the node is broken"%(sFlag, p.param, _propSays(p))
+			sFVal = sPVal
+		else:
+			sFVal = _scalar(dF.get('value'))
+			if sFVal is None: sFVal = sFlag
+
+		# A plain switch sends the flag's own text, there is nothing to look
+		# up; anything that follows a prefix is held to the list
+		if (bSlot or (sSubSep is not None)) and not _inProtoEnum(dF, sFVal):
+			return _notInProtoEnum(p, sFVal, sFlag)
+
+		sSep = _str(p.dParam, 'flagSep')
+		if sSep is None: sSep = ' '
+		nRank = list(p.dParam['flags'].keys()).index(sFlag)
+		out.addFlag(p.param, sSep, dF, nRank, _str(dF, 'prefix'), _str(dF, 'suffix'), sSubSep, sFVal)
+		return None
+
+	# A parameter of its own.  One that says how several values travel
+	# collects them, from a list or from any number of controls; without
+	# that the last value set is the value.
+	sSubSep = _str(p.dParam, 'subSep')
+	bRepeat = (p.dParam.get('repeat') is True)
+	if p.multi and ((sSubSep is None) == (not bRepeat)):
+		return "%s holds a list, so protocol parameter %s must have exactly one of " \
+		       "subSep and repeat, the node is broken"%(_propSays(p), p.param)
+	sSend = sPVal if (sPVal is not None) else sVal
+	if not _inProtoEnum(p.dParam, sSend):
+		return _notInProtoEnum(p, sSend, None)
+
+	if bRepeat:
+		out.addFlag(p.param, None, None, 0, None, None, None, sSend)
+		out.find(p.param).repeat = True
+	elif sSubSep is not None:
+		out.addFlag(p.param, None, p.dParam, 0, None, None, sSubSep, sSend)
+	else:
+		out.set(p.param, sSend)
+	return None
+
+def _translate(p, sVal, out):
+	"""A control's value to protocol parameters.  A list goes one item at a
+	time: enumerated items in the node's order, so a selection is sent one
+	way however it was picked, others as given."""
+	if not p.multi: return _translateOne(p, sVal, out)
+
+	lItems = _split(sVal)
+	if p.enum:
+		for sEnum in p.enum:
+			if not any(_strieq(s, sEnum) for s in lItems): continue
+			sWhy = _translateOne(p, sEnum, out)
+			if sWhy: return sWhy
+	else:
+		for sItem in lItems:
+			if sItem == '': continue
+			sWhy = _translateOne(p, sItem, out)
+			if sWhy: return sWhy
+	return None
+
+def _valueFor(lOk, dX, p):
+	"""The value a requisition gives a property: the last entry for it.  An
+	empty one takes back what came before.  None when the requisition
+	leaves the property alone.  The toggles of an exclusive set give what
+	was settled for the set and not what was said of each."""
+	sVal = None
+	for (q, s) in lOk:
+		if q is p: sVal = None if _noValue(s, p.multi) else s
+
+	bState = dX[p.grp].state
+	if (bState is None) or not p.isEnable(): return sVal
+	b = _parseBool(sVal if (sVal is not None) else p.value)
+	if (b is not None) and (b == bState): return sVal
+	return 'true' if bState else 'false'
+
+def _sameAsDefault(p, sVal):
+	if p.value is None: return False
+	if p.multi: return _sameItems(sVal, p.value)
+	if p.type == 'bool':
+		(bA, bB) = (_parseBool(sVal), _parseBool(p.value))
+		return (bA is not None) and (bB is not None) and (bA == bB)
+	return _strieq(sVal, p.value)
+
+def _urlEncode(sVal):
+	# das2C leaves these plain so that times stay readable
+	return quote(sVal, safe="-._~:/@,=")
+
+def reqUrl(src, lOk, dX, nBase=0):
+	"""Entries that passed checkReq() to a URL, as DasSrc_reqUrl() does.
+
+	Returns:
+		(sUrl, None) or (None, sWhy)
+	"""
+	if nBase >= len(src.baseUrls):
+		return (None, "This source has %d base URL(s), there is no number %d"%(
+			len(src.baseUrls), nBase))
+
+	# Two members of an exclusive set on, which only the node can do
+	for (i, g) in enumerate(src.groups):
+		if dX[g].state is not True: continue
+		for h in src.groups[i+1:]:
+			if (dX[h].state is True) and (h.xor == g.xor):
+				return (None, "This source has both '%s' and '%s' of the exclusive set '%s' "
+				        "on by default, the node is broken"%(g.label(), h.label(), g.xor))
+
+	# Joined values first: which of them does this request send at all?  One
+	# is sent when any control feeding it is off its default or is required.
+	# Then every control feeding it sends, defaults included.  '-hfr Ew'
+	# does not mean "sensor Ew, bands as usual" to a server, it means no
+	# bands, so the default bands have to travel with it.
+	lLive = []
+	lCtrls = [p for p in src.props if (p.set is not None) and not _xorIdle(dX, p)]
+	for p in lCtrls:
+		dT = _joinTarget(p)
+		if dT is None: continue
+		sVal = _valueFor(lOk, dX, p)
+		if sVal is not None: bSends = p.required or not _sameAsDefault(p, sVal)
+		else: bSends = p.required and (p.value is not None)
+		if bSends and not any(dT is d for d in lLive): lLive.append(dT)
+
+	out = _Out()
+	for p in lCtrls:
+		dT = _joinTarget(p)
+		bLive = (dT is not None) and any(dT is d for d in lLive)
+
+		sVal = _valueFor(lOk, dX, p)
+		bDefault = False
+		if sVal is None:
+			if (not p.required and not bLive) or (p.value is None): continue
+			sVal = p.value
+			bDefault = True
+
+		# A required default fills a hole, it does not replace what another
+		# control already put in a shared parameter.  Part of a joined value
+		# replaces nothing, it adds.
+		if bDefault and not bLive and (out.find(p.param) is not None): continue
+
+		# A value equal to the default carries no information unless the
+		# server insists on hearing it, or it is part of a joined value that
+		# is going out anyway
+		if not bDefault and not p.required and not bLive and _sameAsDefault(p, sVal): continue
+
+		# A switch adds its element to a joined value in one state only, on
+		# unless its set block says otherwise
+		if bLive and (p.type == 'bool'):
+			trig = p.set.get('value')
+			if (_parseBool(sVal) is True) != (trig if isinstance(trig, bool) else True): continue
+
+		sWhy = _translate(p, sVal, out)
+		if sWhy: return (None, sWhy)
+
+	# Protocol parameters the node marks required, whatever supplies them
+	for (sName, dParam) in src.params.items():
+		if not isinstance(dParam, dict) or (dParam.get('required') is not True): continue
+		if out.find(sName) is not None: continue
+		lSetBy = [_propSays(p) for p in src.props if p.param == sName]
+		if lSetBy:
+			return (None, "A value for %s is required"%(' or '.join(lSetBy)))
+		return (None, "Required parameter %s is missing and nothing in this source's "
+		        "interface sets it, the node is broken"%sName)
+
+	sUrl = src.baseUrls[nBase]
+	sJoin = '&' if ('?' in sUrl) else '?'
+	for prm in out.params:
+		# one pair, or one per piece for a parameter that repeats
+		lVals = [piece.val for piece in prm.pieces] if prm.repeat else [prm.join()]
+		for sVal in lVals:
+			sUrl += "%s%s=%s"%(sJoin, prm.name, _urlEncode(sVal))
+			sJoin = '&'
+	return (sUrl, None)
+
+
+#############################################################################
+# Forms.  Controls are named for the property they set, so a query string
+# is a requisition, and an example's settings written as a query string
+# fill in the form.  Names starting with '_' are the form's own:
+#
+#   _form        This came from the form, so a checkbox that is missing
+#                was left unchecked
+#   _xor.NAME    The radio buttons of exclusive set NAME, the value is the
+#                key of the toggle switched on
+#   _baseN       Send the browser to the data, using base URL N
+#   _show        Print the data URLs instead
+
+def queryReq(src, lQuery):
+	"""The query string of a source page as a requisition"""
+	dQuery = {}
+	for (sKey, sVal) in lQuery:
+		dQuery.setdefault(sKey, []).append(sVal)
+	bForm = ('_form' in dQuery)
+
+	lReq = []
+	for p in src.props:
+		if p.set is None: continue
+
+		if p.key in dQuery:
+			# Checkboxes of a list arrive as one pair each
+			if p.multi: lReq.append((p.key, ','.join(dQuery[p.key])))
+			else: lReq.append((p.key, dQuery[p.key][-1].strip()))
+
+		elif p.isEnable() and (p.grp.xor is not None) and (('_xor.%s'%p.grp.xor) in dQuery):
+			if dQuery['_xor.%s'%p.grp.xor][-1] == p.key: lReq.append((p.key, 'true'))
+
+		elif bForm and (p.type == 'bool'):
+			lReq.append((p.key, 'false'))
+
+		elif bForm and p.multi:
+			lReq.append((p.key, ''))
+
+	# Keys that name nothing, so that a mistyped link is not quietly a
+	# request for something else
+	for (sKey, sVal) in lQuery:
+		if not sKey.startswith('_') and (sKey != 'resolve') and (sKey not in src.byKey):
+			lReq.append((sKey, sVal))
+
+	if not bForm: return lReq
+
+	# Without javascript the controls of a format that is not selected are
+	# still in the form, and are sent.  A browser with them disabled would
+	# not, so they are dropped here.
+	dX = _xorStates(src, [(src.byKey.get(sKey), sVal) for (sKey, sVal) in lReq])
+	return [
+		(sKey, sVal) for (sKey, sVal) in lReq
+		if (sKey not in src.byKey) or not _xorIdle(dX, src.byKey[sKey])
+	]
+
+
+class FormState(object):
+	"""What each control of a form shows: the node's defaults with a
+	requisition laid over them"""
+
+	def __init__(self, src, lReq):
+		self.src = src
+		lMatch = [(src.byKey.get(sKey), sVal) for (sKey, sVal) in lReq]
+		self.dX = _xorStates(src, lMatch)
+		self.dVal = {}
+		for (p, sVal) in lMatch:
+			if p is not None: self.dVal[p] = sVal
+
+	def text(self, p):
+		sVal = self.dVal.get(p)
+		if (sVal is None) or _noValue(sVal, p.multi): sVal = p.value
+		return sVal or ''
+
+	def isOn(self, p):
+		if p.isEnable() and (self.dX[p.grp].state is not None):
+			return self.dX[p.grp].state
+		return _parseBool(self.text(p)) is True
+
+	def items(self, p):
+		return [s.lower() for s in _split(self.text(p))]
+
 
 def _hostSimpleName(sBase):
 	sLow = sBase.lower()
-	if sLow.startswith('https'):  sLow = sLow[8:]
-	elif sLow.startswith('http'): sLow = sLow[7:]
+	if sLow.startswith('https://'):  sLow = sLow[8:]
+	elif sLow.startswith('http://'): sLow = sLow[7:]
+	if len(sLow) == 0: return sBase
 
 	sLow = sLow[0].upper() + sLow[1:]
 
@@ -517,1084 +1341,425 @@ def _hostSimpleName(sBase):
 	if n != -1: return sLow[:n]
 	return sLow
 
-def _setHidden(dBaseUrls):
-	"""Go through the base URLs see if they have any keys already set, if so
-		we'll need hidden form parameters to cover those as well
-	"""
-	dHidden = {}
-	for sUrl in dBaseUrls:
-		n = sUrl.find('?')
-		if n == -1: continue
+def _propLabel(p):
+	if 'label' in p.d: return p.d['label']
+	return p.name[0].upper() + p.name[1:]
 
-		lQuery = sUrl[n+1:].split('&')
-		for sPair in lQuery:
-			lPair = [s.strip() for s in sPair.split("=")]
-			if (len(lPair) > 1) and lPair[0] not in dHidden:
-				dHidden[lPair[0]] = lPair[1]
+def _propUnits(p):
+	"""The units of a property, or of the group it is a property of"""
+	if 'units' in p.d: return p.d['units']
+	if p.name.lower() in ('min', 'max'):
+		for q in p.grp.props:
+			if (q.name == 'units') and q.value: return q.value
+	return None
 
-	for sKey in dHidden:
-		pout('<input type="hidden" name="%s" value="%s">'%(sKey, dHidden[sKey]))
+def _propNote(p, bTitle=True):
+	"""Text that follows a control: its range and what it is for"""
+	lOut = []
+	lRange = p.set.get('range')
+	if isinstance(lRange, list) and (len(lRange) == 2):
+		lOut.append('(%s to %s)'%(esc(lRange[0]), esc(lRange[1])))
+	if bTitle and ('title' in p.d):
+		lOut.append('- %s'%esc(p.d['title']))
+	return ' '.join(lOut)
 
+def _prnCtrl(p, state, bTitle=True):
+	"""Print the control for one property"""
+	sKey = esc(p.key)
+	sLabel = esc(_propLabel(p))
+	sUnits = _propUnits(p)
+	sTip = ''
+	if 'description' in p.d: sTip = ' title="%s"'%esc(p.d['description'])
 
-def _inputVarTextAspect(dParams, dVar, sAspect, sCtrlId):
-	"""Create a text entry field for a variable aspect such as 'minimum' or 
-	'resolution'.  In addition to the given aspect the 'units' aspect is 
-	inspected so this function isn't unsable for general options.
+	if p.isEnable() and (p.grp.xor is not None):
+		pout('<label%s><input type="radio" name="_xor.%s" value="%s"%s> <b>%s</b></label>'%(
+			sTip, esc(p.grp.xor), sKey, ' checked' if state.isOn(p) else '', esc(p.grp.label())
+		))
+		if 'title' in p.grp.d: pout('- %s'%esc(p.grp.d['title']))
 
-	Args:
-		dParams: The http_params dictionary.  The control ID will be listed here
-			if a control is generated.
-		dVar: The dictionary for the overall variable
-		sAspect: The dictionary key for the aspect, ex: 'maximum'
-		sCtrlId: The id to use for the generated control, if any.
+	elif p.type == 'bool':
+		if p.isEnable():   # Output this variable, or not
+			sLabel = 'Output <b>%s</b>'%esc(p.grp.label())
+			sNote = ('- %s'%esc(p.grp.d['title'])) if ('title' in p.grp.d) else ''
+		else:
+			sLabel = '<b>%s</b>'%sLabel
+			sNote = _propNote(p, bTitle)
+		pout('<label%s><input type="checkbox" name="%s" value="true"%s> %s</label> %s'%(
+			sTip, sKey, ' checked' if state.isOn(p) else '', sLabel, sNote
+		))
 
-	Returns:
-		0 if no control was created, 1 otherwise
-	"""
-			
-	if sAspect not in dVar: return 0
-	dAspect = dVar[sAspect]
-	
-	if 'set' not in dAspect: return 0
-	
-	dSet = dAspect['set']
-				
-	if 'units' in dAspect:  sUnits = dAspect['units']
-	elif 'units' in dVar:   sUnits = dVar['units']['value']
-	sUnitLbl = " (%s)"%sUnits
-	sAspectLbl = sAspect[0].upper() + sAspect[1:]
+	elif (p.type == 'enum') and p.multi:
+		pout('<span%s><b>%s</b> %s</span><br>'%(sTip, sLabel, _propNote(p, bTitle)))
+		lOn = state.items(p)
+		for (sItem, dItem) in zip(p.enum, p.items):
+			sItemTip = ''
+			if 'title' in dItem: sItemTip = ' title="%s"'%esc(dItem['title'])
+			pout('<label%s> &nbsp; <input type="checkbox" name="%s" value="%s"%s> %s</label>'%(
+				sItemTip, sKey, esc(sItem), ' checked' if (sItem.lower() in lOn) else '',
+				esc(dItem.get('label', sItem))
+			))
 
-	pout('<label for="%s">%s%s</label>'%(sCtrlId, sAspectLbl, sUnitLbl))
-	sReq = ""
-	if ('required' in dSet) and dSet['required']: sReq = 'required'
-	sValue = ""
-	if 'value' in dAspect: sValue = dAspect['value']
-	
-	# Guess a good input size based off the units
-	nSize=8
-	if sUnits.lower() == 'utc': nSize=18
+	elif p.type == 'enum':
+		pout('<label%s><b>%s</b>'%(sTip, sLabel))
+		pout('<select name="%s">'%sKey)
+		sCur = state.text(p).lower()
+		# Something that sends nothing: no choice made, or a default the
+		# list does not have
+		if sCur not in [s.lower() for s in p.enum]:
+			pout('   <option value="" selected>%s</option>'%esc(state.text(p)))
+		elif (p.value is None) and not p.required:
+			pout('   <option value=""></option>')
+		for (sItem, dItem) in zip(p.enum, p.items):
+			sText = dItem.get('label', sItem)
+			if ('title' in dItem) and ('label' not in dItem):
+				sText = "%s - %s"%(sItem, dItem['title'])
+			pout('   <option value="%s"%s>%s</option>'%(
+				esc(sItem), ' selected' if (sItem.lower() == sCur) else '', esc(sText)
+			))
+		pout('</select></label> %s'%_propNote(p, bTitle))
 
-	pout('<input size="%d" id="%s" type="text" value="%s" %s>'%(
-		nSize, sCtrlId, sValue, sReq)
-	)
-	
-	if 'flag' in dSet:
-		dParams[ dSet['param'] ]['flags'][ dSet['flag'] ]['_inCtrlId'] = sCtrlId
 	else:
-		dParams[ dSet['param'] ]['_inCtrlId'] = sCtrlId
-	
-	return 1 
-	
-def _inputItemBoolean(dParams, dItem, sMsg, sCtrlId):
-	"""Create a boolean checkbox for an item with a boolean value with a 'set'
-	member.
+		sCur = state.text(p)
+		nSize = 8
+		if p.type == 'time': nSize = 18
+		elif p.multi or (p.type == 'text'): nSize = 24
+		nSize = min(max(nSize, len(sCur) + 2), 75)
+		if sUnits and (sUnits.lower() != 'utc'): sLabel = '%s (%s)'%(sLabel, esc(sUnits))
 
-	This control generator is useful for both variables and options as it does
-	not inspect the contained option group.  Typically this is used with the
-	variable 'enable' aspect or for boolean options.
+		# The browser can hold a form back for an empty box, which is only
+		# right if the box counts in every request the form can make
+		sReq = ''
+		if p.required and (p.value is None) and (p.grp.xor is None): sReq = ' required'
 
-	Args:
-		dParams: The 'http_params' dictionary
-		dItem: The dictionary describing the boolean property to set
-		sMsg: The message to use to lable the check box
-		sCtrlId: The control ID to assign if a control is made
+		pout('<label%s>%s <input type="text" name="%s" size="%d" value="%s"%s></label> %s'%(
+			sTip, sLabel, sKey, nSize, esc(sCur), sReq, _propNote(p, bTitle)
+		))
 
-	Returns:
-		0 if a control was not created, 1 otherwise
-	"""
+def _prnGroupForm(grp, state):
+	"""Print the controls of one group.  Returns the number printed."""
+	lCtrls = [p for p in grp.props if p.set is not None]
+	if len(lCtrls) == 0: return 0
 
-	if 'set' not in dItem: return 0
-	
-	sChecked = ""
-	if ('value' in dItem) and dItem['value'] == True: sChecked = "checked"
-	
-	pout('<input type="checkbox" id="%s" %s>'%(sCtrlId, sChecked))
-	pout('<label for="%s">%s</label>'%(sCtrlId, sMsg))
-	
-	# If the default is 
-	
-	dSet = dItem['set']
-	if 'flag' in dSet:
-		dParams[ dSet['param'] ]['flags'][ dSet['flag'] ]['_inCtrlId'] = sCtrlId
-		dParams[ dSet['param'] ]['flags'][ dSet['flag'] ]['_inIfCtrlVal'] = dSet['value']
+	if grp.sec == 'options':
+		for p in lCtrls:
+			pout('<p>')
+			_prnCtrl(p, state)
+			pout('</p>')
+		return len(lCtrls)
+
+	# Variables and formats.  The toggle leads, or the group's name does.
+	# Range properties share the first line, in the usual order.
+	tOneLiner = ('min', 'max', 'res', 'inter')
+	lFirst = [p for sName in tOneLiner for p in lCtrls if p.name == sName]
+	lRest = [p for p in lCtrls if (p not in lFirst) and not p.isEnable()]
+
+	pout('<p>')
+	if (grp.enable is not None) and (grp.enable.set is not None):
+		_prnCtrl(grp.enable, state)
 	else:
-		dParams[ dSet['param'] ]['_inCtrlId'] = sCtrlId	
-		dParams[ dSet['param'] ]['_inIfCtrlVal'] = dSet['value']
-	return 1
-
-		
-def _inputItemEnum(dParams, dItem, sMsg, sCtrlId):
-	"""Create a select list control for an enum item with a 'set' member.
-	
-	This control generator is useful for both variables and options as it does
-	not inspect the contained option group.  One example where this is useful is
-	selecting the output units for the Voyager Spectrum Analyzer data.
-
-	Args:
-		dParms: The 'http_params' dictionary
-		dItem: The dictionary describing the item to set.  The set method for
-			this item must have an 'enum' sub-member.
-	
-	The flag to set cascades.  If it's in the root of 'set', then all entries
-	in the enum set the same flag.  If it's in an individual item listing then
-	each selection can set a different flag.
-
-	"""
-	if 'set' not in dItem: return 0
-	dSet = dItem['set']
-	if 'enum' not in dSet: return 0
-
-	# We save the field ID in the value but display the new value.  
-	# Case example follows from voyager.
-	#
-	# The input option control selects among different flag values.
-	#
-	# "units" : {
-	#   "value": "V/m",
-	#   "set": {
-	#      "param":"params",
-	#      "enum":[
-	#          {"value":"raw", "flag":"00"},
-	#          {"value":"V**2 m**-2 Hz**-1", "flag":"01"},
-	#          /* or if setting whole value */
-	#          {"value":"V**2 m**-2 Hz**-1", "pval":"SD"},
-	#      ]
-	#   }
-	# }
-	#
-	# The input option control puts a value directly in the flag,
-	# so _inIfCtrlVal is not set.  Instead _inIfNotCtrlVal is set.
-	# 
-	# "channel" : {
-	#			"title": "Spectrum analyzer channel to output",
-	#			"value": "all",
-	#			"set" : { 
-	#				"param":"params", 
-	#				"flag":"07",
-	#				"enum" : [
-	#					{"value":"10.0Hz"},
-	#					{"value":"17.8Hz"},
-	#					{"value":"31.1Hz"},
-	#					{"value":"56.2Hz"},
-	#					{"value":"100Hz"},
-	#					{"value":"178Hz"},
-	#					{"value":"311Hz"},
-	#					{"value":"562Hz"},
-	#					{"value":"1.00kHz"},
-	#					{"value":"1.78kHz"},
-	#					{"value":"3.11kHz"},
-	#					{"value":"5.62kHz"},
-	#					{"value":"10.0kHz"},
-	#					{"value":"17.8kHz"},
-	#					{"value":"31.1kHz"},
-	#					{"value":"56.2kHz"}
-	#				]
-	#			}
-	#		}
-   #   }
-	
-	pout(sMsg)
-	pout('<select id=%s>'%sCtrlId)
-	
-	
-	# If the current value is not in the enum, put it here without mapping 
-	# information so it can't be sent
-	bAddDefault = True
-	for dMap in dSet['enum']:
-		if dMap['value'] == dItem['value']: 
-			bAddDefault = False
-			break
-	
-	if bAddDefault:
-		sCtrlVal = dItem['value']
-		if 'name' in dItem:  sCtrlVal = dItem['name']
-		pout('   <option value="" selected>%s</option>'%sCtrlVal)
-		
-	for dMap in dSet['enum']:
-	
-		sSelected = ""
-		if dMap['value'] == dItem['value']: sSelected = "selected"
-		if 'pval' in dMap: sVal = dMap['pval']
-		elif 'flag' in dMap: sVal = dMap['flag']
-		else: sVal = dMap['value']
-
-		sCtrlVal = dMap['value']
-		if 'name' in dMap:  sCtrlVal = dMap['name']
-		elif 'label' in dMap: sCtrlVal = dMap['label']
-		elif 'title' in dMap: sCtrlVal = dMap['title']
-
-		pout('   <option value="%s" %s>%s</option>'%(sVal, sSelected, sCtrlVal))
-
-		if 'param' in dMap: sParam = dMap['param']
-		elif 'param' in dSet: sParam = dSet['param']
-		
-		# Save the control id's in the flag_set, but since we are saving the same
-		# control id in multiple members also as an '_ifCtrlVal' item as well.	
-		if 'flag' in dMap:
-			dParams[ dSet['param'] ]['flags'][ dMap['flag'] ]['_inCtrlId'] = sCtrlId
-			dParams[ dSet['param'] ]['flags'][ dMap['flag'] ]['_inIfCtrlVal'] = sVal
-		elif 'flag' in dItem:
-			dParams[ dSet['param'] ]['flags'][ dItem['flag'] ]['_inCtrlId'] = sCtrlId
-		else:
-			dParams[ dSet['param'] ]['_inCtrlId'] = sCtrlId
-			dParams[ dSet['param'] ]['_inIfCtrlVal'] = sVal
+		pout('<b>%s:</b> &nbsp;'%esc(grp.label()))
+	for p in lFirst:
+		_prnCtrl(p, state, False)
+	for p in lRest:
+		pout('<br> &nbsp; ')
+		_prnCtrl(p, state)
+	pout('</p>')
+	return len(lCtrls)
 
 
-	pout('</select>')
-	
-	
-def _prnVarForm(sCtrlPre, dParams, sVarId, dVar):
-	"""Output non-submittable HTML form controls for the configurable aspects
-	of a variable and record the control IDs alongside the http get params
-	they modify.
+def _prnContacts(dNode, sKind, sMsg):
+	"""Print the names of the contacts of one kind"""
+	lNames = []
+	lContacts = dNode.get('contacts')
+	if isinstance(lContacts, list):
+		for d in lContacts:
+			if isinstance(d, dict) and (d.get('type') == sKind) and ('name' in d):
+				lNames.append(d['name'].strip())
+	if len(lNames) > 0:
+		pout("<p>%s <b>%s</b>.</p>"%(sMsg, esc(", ".join(lNames))))
+
+
+def prnHttpSource(dSrc, lQuery=None, bSubSec=False):
+	""" Print an http source: what it is, its examples and a form that
+	requests data from it.
 
 	Args:
-		sCtrlPre: A prefix to add to all generated control IDs
+		dSrc: The node, with '_url' and '_path' added
 
-		dParams:  The 'http_params' dictionary from the HttpStreamSrc catalog 
-			object.  Control IDs will be inserted into parameter dictionaries
-			under the key 'ctrl_id'.  Note that parameters with the type 'enum'
-			or 'flag_set' will have 'ctrl_id' added into the individual flags
-			or items.
-		
-		sVarId: The object id for this variable in the 'coordinates' or 'data'
-			dictionaries
+		lQuery: The (name, value) pairs of the page's query string.  Settings
+			among them fill in the form.
 
-		dVar: The variable dictionary
-
-	Returns:
-		The number of non-sumbittable controls created.
+		bSubSec: True if this source is one part of a larger page
 	"""
-	nCtrls = 0
 
-	if 'title' in dVar:  sTitle = dVar['title']
-	elif 'name' in dVar: sTitle = dVar['name']
-	
-	if 'name' in dVar: sName = dVar['name']
-	else: sName = sVarId[0].upper() + sVarId[1:]
-	
-	# If this variable has text aspects, label them up front
-	lAspects = ('minimum', 'maximum', 'resolution', 'interval')
-	bLabelRow = False
-	for sAspect in lAspects:
-		if (sAspect in dVar) and ('set' in dVar[sAspect]):
-			bLabelRow = True
-			break
-
-	if bLabelRow: pout("<p><b>%s: &nbsp;</b>"%sName)
-	else: pout('<p>')
-	
-	# Right now I'm assuming the type of field for each aspect, should look
-	# at the 'set' statement to get this info
-	
-	for i in range(len(lAspects)):
-		sCtrlId = "%s_%s_%s"%(sCtrlPre, sVarId, lAspects[i])
-		nCtrls += _inputVarTextAspect(dParams, dVar, lAspects[i], sCtrlId)
-
-	if 'enabled' in dVar:
-		sCtrlId = "%s_%s_enabled"%(sCtrlPre, sVarId)
-		sMsg = "Enable <b>%s</b>"%sName
-		if 'title' in dVar: sMsg = "%s - %s"%(sMsg, dVar['title'])
-		_inputItemBoolean(dParams, dVar['enabled'], sMsg, sCtrlId)
-		
-	if 'units' in dVar:
-		sCtrlId = "%s_%s_units"%(sCtrlPre, sVarId)
-		_inputItemEnum(dParams, dVar['units'], "Set %s Units"%sName, sCtrlId)
-	
-	pout("</p>")
-
-	return nCtrls
-
-def prnOptGroupForm(sCtrlPre, dParams, sGroup, dGroup, sSrcUrl, bVar=False):
-	"""Run through all the options in a group making output controls for each
-	settable property
-
-	Args:
-		sCtrlPre (str): The prefix to assign to control IDs
-		
-		dParams (str): The 'http_params' dictionary
-		
-		sGroup (str): The name of the group
-		
-		dGroup (dict): The group dictionary
-		
-		bVar (bool): This group represents the options for a single coordinate or
-			data variable.  Certian display options are enable for variable 
-			groups, such a putting mix,max,resolution in a single line and looking
-			around for units strings.
-	"""
-	nCtrls = 0
-	
-	lProps = list(dGroup.keys())
-	lProps.sort()
-
-	# Get the group name
-	sGrpName = sGroup
-	if 'name' in dGroup: sGrpName = dGroup['name']
-	
-	# Any option name can be used, but some are recognized as having particular 
-	# meanings, especially in the context of a variable.  If this is a variable
-	# make sure min,max,res,int are presented in that order.
-	tOneLiner = ('minimum','maximum','resolution','interval')
-	sGrpUnits = None
-	if bVar:
-		lFirst = []
-		lRest = []
-		for sKey in tOneLiner:
-			if sKey in lProps: lFirst.append(sKey)
-		for sKey in lFirst: lProps.remove(sKey)	
-		lProps = lFirst + lProps
-		
-		if 'units' in lProps: sGrpUnits = dGroup['units']['value']
-	
-	# Weed out all the props that aren't settable
-	lSettable = []
-	for sProp in lProps:
-		if isinstance(dGroup[sProp], dict) and ('set' in dGroup[sProp]):
-			lSettable.append(sProp)
-	lProps = lSettable
-
-	for iProp in range(len(lProps)):
-		sProp = lProps[iProp]
-		dProp = dGroup[sProp]
-		curval = None
-		
-		sPropUnits = None
-		if 'units' in dProp: sPropUnits = dProp['units']
-		elif sGrpUnits: sPropUnits = sGrpUnits
-		
-		# Note: The type of curval is unknown at this point
-		if 'value' in dProp: curval = dProp['value']
-		else:
-			_missingKeyError('%s:%s:value'%(sGroup, sProp), sSrcUrl)
-			return 0
-		
-		if 'set' not in dProp:
-			#pout("%s: %s &nbsp"%(sProp, curval))
-			continue
-			
-		# make a row prefix
-		if not bVar:
-			if iProp == 0: pout("<p>")
-			else: pout("</p>\n<p>")
-		else:
-			if iProp == 0: pout("<p><b>%s: &nbsp;</b>"%sGrpName)
-			
-			# if this isn't a classical one-liner, start a new row 
-			if sProp not in tOneLiner: pout("<br> &nbsp; ")
-			
-		dSet = dProp['set']
-			
-		if 'name' in dProp: sName = dProp['name']
-		else: sName = sProp[0].upper() + sProp[1:]
-			
-
-		sCtrlId = "%s_%s_%s"%(sCtrlPre, sGroup, sProp)
-		
-		if 'flag' in dSet: sCtrlVal = dSet['flag']
-		elif 'pval' in dSet: sCtrlVal = dSet['pval']
-		else: sCtrlVal = "%s"%curval
-		
-		# There are three basic types of controls: 
-		#
-		#     check boxes, text boxes, select boxes.  
-		# 
-		# Determine what kind to make here.  Instances where there are only two
-		# values that can be selected (the initial value, and the set) use
-		# select boxes.
-		
-		sType = 'unk'
-		if isinstance(curval, bool): sType = 'bool'
-		elif 'enum' in dSet:  sType = 'select'
-		elif 'value' in dSet: sType = 'select'
-		else: sType = 'text'
-		
-		if sType == 'bool':
-			sInfo = sProp
-			if bVar and (sProp == "enabled"):
-				sName = "Output"
-				if 'title' in dGroup: sInfo = dGroup['title']
-				elif 'name' in dGroup: sInfo = dGroup['name']
-				else: sInfo = sGroup
-			else:
-				if 'title' in dProp: sInfo = dProp['title']
-				elif 'name' in dProp: sInfo = dProp['name']
-			
-			sChecked = ""
-			if curval == True: sChecked = "checked"
-				
-			pout('<input type="checkbox" id="%s" value="%s" %s><b>%s</b> - %s'%(
-			     sCtrlId, sCtrlVal, sChecked, sName, sInfo)
-			)
-			
-			# Save off the control information
-			if 'flag' in dSet:
-				dParams[ dSet['param'] ]['flags'][ dSet['flag'] ]['_inCtrlId'] = sCtrlId
-			else:
-				dParams[ dSet['param'] ]['_inCtrlId'] = sCtrlId
-	
-			
-		elif sType == 'select':
-			if 'title'  in dProp:  sMsg = dProp['title']
-			elif 'name' in dProp: sMsg = dProp['name']
-			else:                 sMsg = sProp[0].upper() + sProp[1:]
-			
-			if 'enum' in dSet:  # True enums... 
-				_inputItemEnum(dParams, dProp, sMsg, sCtrlId)
-				
-			else:
-				# Effective enum, binary choice
-				pout(sMsg)
-				pout('<select id=%s>'%sCtrlId)
-				pout('  <option value="" selected>%s</option>'%curval)
-				
-				if 'pval' in dSet: sVal = dSet['pval']
-				elif 'flag' in dSet: sVal = dSet['flag']
-				else: sVal = dSet['value']
-				
-				pout('  <option value="%s">%s</option>'%(sVal, dSet['value']))
-				pout('</select>')
-				
-				# Save off the control information, with an if check for the
-				# select value
-				if 'flag' in dSet:
-					dParams[ dSet['param'] ]['flags'][ dSet['flag'] ]['_inCtrlId'] = sCtrlId
-					dParams[ dSet['param'] ]['flags'][ dSet['flag'] ]['_inIfCtrlVal'] = sVal
-				else:
-					dParams[ dSet['param'] ]['_inCtrlId'] = sCtrlId
-					dParams[ dSet['param'] ]['_inIfCtrlVal'] = sVal
-								
-		else:		
-			if bVar:
-				if sPropUnits: pout('%s (%s)'%(sName, sPropUnits))
-				else: pout('%s '%sName)
-			else:
-				pout('<b>%s</b>: '%sName)
-			
-			
-			if 'title' in dProp:
-				pout('<label for="%s">%s</label>'%(sCtrlId, dProp['title']))
-				
-			if 'description' in dProp:
-				lDesc = dProp['description'].split('\n')
-				sDesc = '<br>\n'.join(lDesc)
-				pout('<p>%s</p>'%sDesc)
-				
-			nSize = 8
-			if sPropUnits and sPropUnits.lower() == 'utc': nSize = 16
-			elif len(sCtrlVal) > 90: nSize = 75
-			else: nSize = int( len(sCtrlVal)*0.7)
-			
-			sReq = ""
-			if ('required' in dSet) and dSet['required']: sReq = 'required'
-			
-			pout('<input type="text" id="%s" size="%d" value="%s" %s>'%(
-				sCtrlId, nSize, sCtrlVal, sReq))
-			
-			# Save off the control information
-			if 'flag' in dSet:
-				dParams[ dSet['param'] ]['flags'][ dSet['flag'] ]['_inCtrlId'] = sCtrlId
-			else:
-				dParams[ dSet['param'] ]['_inCtrlId'] = sCtrlId
-			
-		nCtrls += 1
-		
-	
-	pout("</p>")
-	
-	return nCtrls
-
-
-def _getAction(sBase):
-	"""Get action from base url.  Basically return the URL with no GET params"""
-	n = sBase.find('?')
-	if n != -1: return sBase[:n]
-	else: return sBase
-
-
-def prnHttpSource(dSrc, bSubSec=False):
-	""" Print an http source, this is complicated
-
-	Handling input forms.
-	
-	This would be reativily straight forward, except we need form controls that
-	generate partial get values.  (I'm looking at you das2 'params' and hapi
-	'parameters'.)  To make life even *more* fun, sometimes servers screw up if
-	an empty parameter is sent (I'm looking at you das2 'resolution' and hapi 
-	'parameters').  So in addition we have to have a way to remove the 'name'
-	attribute from parameters that otherwise would get kicked out the door.
-	
-	If these protocols (and others) were created in the spirit of HTML this
-	wouldn't be needed, but alas, not everyone wants to make life easy for
-	browser client developers, so here's the plan...
-	
-	Basic form handling works like this
-
-	1. 'coordinates', 'data', and 'options' are parsed.  All controls are
-	   generated without a name so they cannot be transmitted.
-	
-	2. All controls are generated with an ID, that has the form:
-	  
-	   basename(_path) + "_" + [coord|data|opt ] + "_" + [varID|optCat] + 
-	                       "_" + [var_aspect|opt_setting ]
-	
-	   This insures all controls have a unique ID even if multiple http get
-	   sources are combined into a single page.
-	
-	3. As each control is created it adds it's control ID to the relavent 
-	   parameter in 'http_params'.  If the parameter is a FLAG_SET, or ENUM
-	   then the control ID is added to the flag entry instead of the top level. 
-	
-	4. After all fake controls are generated, 'http_params' is parsed and all
-	   'http_params' with a control ID attached are created as hidden text 
-	   entry forms that are themselves fake (have no name).  The 
-	   to-potentially-be-submitted controls are created with the following
-	   ids:
-	
-     	basename(_path) + http_params name
-	
-	5. An onSubmit function and is generated for the form with the following 
-	   name:
-	
-	     basename(_path) + "_OnSubmit"
-	
-	   and the http_parmas element is added as a variable.  When called 
-	   onSubmit inspects the controls registered in 'http_params' and sets
-	   new control values.  Finnally the output controls that have data 
-	   values are given a name so that they can be submitted.
-	"""
-	
 	sSrcUrl = dSrc['_url']
+	if lQuery is None: lQuery = []
+	dQuery = dict(lQuery)
+
+	# A node read by its URL has no page of its own to come back to, the
+	# resolver has to find it again
+	bWalked = (len(dSrc['_path']) > 0)
+	sAction = catPathToBrowseUrl(dSrc['_path']) if bWalked else scriptUrl()
 
 	if bSubSec:
-		pout('<a href="%s">View this source only</a>'%catPathToBrowseUrl(dSrc['_path']))
+		if bWalked:
+			pout('<a href="%s">View this source only</a>'%esc(sAction))
+	elif 'title' in dSrc:
+		pout("<h3>%s</h3>"%esc(dSrc['title']))
 
-	if 'tech_contacts' in dSrc:
-		pout("<p>Technical problems using this data source should be "
-		     "directed to: <b>")
-		lTmp = [d['name'].strip() for d in dSrc['tech_contacts']]
-		pout(", ".join(lTmp))
-		pout("</b>.</p>")
+	if not bSubSec and ('description' in dSrc):
+		pout("<p>%s</p>"%esc(dSrc['description']))
 
-	if 'protocol' not in dSrc:
+	_prnContacts(dSrc, 'technical',
+		"Technical problems using this data source should be directed to:")
+
+	dProto = dSrc.get('protocol')
+	if not isinstance(dProto, dict):
 		return _missingKeyError('protocol', sSrcUrl)
-	else:
-		dProto = dSrc['protocol']
 
-	if 'authentication' in dProto:
-		if _isTrue(dProto['authentication'], 'required'):
-			pout('<p><i><span class="error">Resticted data source</span>.</i>')
-			if 'REALM' in dProto['authentication']:
-				 pout('You will be asked to authenticate to the realm "' +\
-				      '<b>%s</b>" on download.</p>'%dProto['authentication']['realm'])
-			else:
-				pout("You will be asked to authenticate on download.</p>")
+	if 'baseUrls' not in dProto:
+		if 'base_urls' in dProto:
+			pout('<p class="error">This node is written in the layout used before '
+			     'HttpStreamSrc version 0.7, which this browser no longer reads.  '
+			     'The node itself is <a href="%s">here</a>.</p>'%esc(sSrcUrl))
+			return None
+		return _missingKeyError('protocol:baseUrls', sSrcUrl)
 
-	# Print the examples
-	if 'examples' in dProto:
+	if not isinstance(dSrc.get('interface'), dict):
+		return _missingKeyError('interface', sSrcUrl)
+
+	dAuth = dProto.get('authorization')
+	if isinstance(dAuth, dict) and (dAuth.get('required') is True):
+		pout('<p><i><span class="error">Resticted data source</span>.</i>')
+		if 'realm' in dAuth:
+			pout('You will be asked to authenticate to the realm "'
+			     '<b>%s</b>" on download.</p>'%esc(dAuth['realm']))
+		else:
+			pout("You will be asked to authenticate on download.</p>")
+
+	src = Source(dSrc)
+	lReq = queryReq(src, lQuery)
+	state = FormState(src, lReq)
+
+	# They asked for data, or for the URL of it.  If the settings made a URL
+	# and the browser is still here, then it is to be shown.
+	lBaseKeys = [s for s in dQuery if s.startswith('_base')]
+	if ('_show' in dQuery) or lBaseKeys:
+		(lOk, lWhy, dX) = checkReq(src, lReq)
+		lUrls = []
+		if not lWhy:
+			for i in range(len(src.baseUrls)):
+				(sUrl, sWhy) = reqUrl(src, lOk, dX, i)
+				if sWhy:
+					lWhy.append(sWhy)
+					break
+				lUrls.append(sUrl)
+		if lWhy:
+			pout('<p class="error">No request was made:</p>\n<ul>')
+			for sWhy in lWhy: pout('<li class="error">%s</li>'%esc(sWhy))
+			pout('</ul>')
+		else:
+			pout('<p>These settings request:</p>\n<ul>')
+			for sUrl in lUrls: pout('<li><a href="%s">%s</a></li>'%(esc(sUrl), esc(sUrl)))
+			pout('</ul>')
+
+	# Print the examples.  Each fills in the form, so that what it asks for
+	# can be seen, and changed, before anything is downloaded.
+	if len(src.examples) > 0:
 		pout("<p>Example queries:")
-		lExamples = list(dProto['examples'].keys())
-		lExamples.sort()
-		for sExample in lExamples:
-			dExample = dProto['examples'][sExample]
-			sTmp = sExample
-			if 'name' in dExample:	sTmp = dExample['name']
-			if 'title' in dExample: sTmp = dExample['title']
-			pout('<a href="%s">%s</a> &nbsp;'%(dExample['url'], sTmp))
+		for dExample in src.examples:
+			if not isinstance(dExample, dict): continue
+			lExReq = exampleReq(dExample)
+			if not bWalked: lExReq = [('resolve', sSrcUrl)] + lExReq
+			sTmp = dExample.get('label') or dExample.get('title') or 'Example'
+			sTip = ''
+			if 'title' in dExample: sTip = ' title="%s"'%esc(dExample['title'])
+			pout('<a href="%s?%s"%s>%s</a> &nbsp;'%(
+				esc(sAction), esc(urlencode(lExReq)), sTip, esc(sTmp)))
 		pout("</p>")
 
-	# Leave the form action blank, we'll set it depending on which submit
-	# button is used.
-	sBaseUri = bname(dSrc['_path'])
-	sFormId = "%s_download"%sBaseUri
-	pout('<form id="%s">'%sFormId)
+	pout('<form action="%s" method="get">'%esc(sAction))
+	pout('<input type="hidden" name="_form" value="1">')
+	if not bWalked:
+		pout('<input type="hidden" name="resolve" value="%s">'%esc(sSrcUrl))
 
-	# Go through the base URLs see if they have any keys already set, if so
-	# we'll need hidden form parameters to cover those as well
-	if 'base_urls' not in dProto:
-		return _missingKeyError('protocol:base_urls', dSrc['_url'])
-	
-	_setHidden(dProto['base_urls'])
+	for (sSec, sLegend) in (
+		('coords', 'Coordinate Options'), ('data', 'Data Options'),
+		('formats', 'Output Format'), ('options', 'Additional Options')
+	):
+		lGroups = [g for g in src.section(sSec) if any(p.set is not None for p in g.props)]
+		if len(lGroups) == 0: continue
 
-	dParams = None
-	if 'http_params' in dProto: dParams = dProto['http_params']
-	nSettables = 0
-	
-	if 'interface' not in dSrc:
-		return _missingKeyError('interface', dSrc['_url'])
-	else:
-		dIface = dSrc['interface']
-	
-	# Handle setting coord options, always do time first if it's present
-	if dParams and ('coordinates' in dIface):
-		# Find out if any coordinates provide subselect
-		dCoords = dIface['coordinates']
-		bSubSet = False
-		bEnable = False
-		lMod = []
-		
-		# Gather all settable coordinates
-		for sCoord in dCoords:
-			for sAspect in dCoords[sCoord]:
-				if sAspect in ('name','title','description'): continue
-				for sKey in dCoords[sCoord][sAspect]:
-					if sKey.startswith('set'):
-						if sCoord not in lMod: lMod.append(sCoord)
-							
-		# If the data are sub-settable by at least one property make the fieldset
-		# indicate that
-		if len(lMod) > 0:
-			pout('<fieldset><legend><b>Coordinate Options:</b></legend>')
-			
-			sStyle = ''
-			if len(lMod) > 12: sStyle = 'class="srcopts_scroll_div"'
-			pout('<div %s>'%sStyle)
+		pout('<fieldset><legend><b>%s:</b></legend>'%sLegend)
+		nCtrls = sum(len([p for p in g.props if p.set is not None]) for g in lGroups)
+		pout('<div %s>'%('class="srcopts_scroll_div"' if (nCtrls > 12) else ''))
+		for grp in lGroups:
+			_prnGroupForm(grp, state)
+		pout('</div>')
+		pout('</fieldset>')
 
-			lMod.sort()
-			if 'time' in lMod:
-				lMod.remove('time')
-				lMod.sort()
-				lMod = ['time'] + lMod
-			for sCoord in lMod:
-				# Function below writes control IDs into dParams
-				nSettables += prnOptGroupForm(
-					sBaseUri, dParams, sCoord, dCoords[sCoord], sSrcUrl, True
-				)
+	# What comes back
+	lFormats = []
+	for grp in src.section('formats'):
+		if state.dX[grp].state is False: continue
+		if (grp.enable is not None) and (grp.xor is None) and not state.isOn(grp.enable): continue
+		lMime = grp.d.get('mimeTypes')
+		if isinstance(lMime, list) and (len(lMime) > 0):
+			lFormats.append('%s (<tt>%s</tt>)'%(esc(grp.label()), esc(lMime[0])))
+	if len(lFormats) == 1:
+		pout("<p>Output will be a %s unless changed via format options</p>"%lFormats[0])
 
-			pout("</div>")
-			pout('</fieldset>')
-	
-	# Handle setting data options.  There's no limit to these, but try to 
-	# inteligently group them.  If a particular data var has a lot of 
-	# options then group by data var.  Otherwise throw everything in one
-	# group.
-	
-	if dParams and ('data' in dIface):
-		dData = dIface['data']
-		bEnable = False
-		bUnits = False
-		lMod = []
-		
-		# See if the any of the data items have settable parameters
-		nDatOpts = 0
-		lModVars = []
-		for sVar in dData:
-			for sAspect in dData[sVar]:
-				for sKey in dData[sVar][sAspect]:
-					if sKey.startswith('set'):
-						if sVar not in lModVars: lModVars.append(sVar)
-						nDatOpts += 1
-						break
-				
-		if nDatOpts > 0:
-			pout('<fieldset><legend><b>Data Options:</b></legend>')
-			
-			sStyle = ''
-			if nDatOpts > 12: sStyle = 'class="srcopts_scroll_div"'
-			pout('<div %s>'%sStyle)
-			
-			lModVars.sort()
-			for sVar in lModVars:
-				nSettables += prnOptGroupForm(
-					sBaseUri, dParams, sVar, dData[sVar], sSrcUrl, True
-				)
-
-			pout("</div>")
-			pout("</fieldset>")
-
-		
-		#for sData in dData:
-		#	for sAspect in ('units','enabled'):
-		#		if sAspect in dData[sData]:
-		#			for sKey in dData[sData][sAspect]:
-		#				if sKey.startswith('set'):
-		#					if sAspect == 'enabled':	bEnable = True
-		#					else: bUnits = True
-		#					if sData not in lMod: lMod.append(sData)
-		#			
-		#if bEnable or bUnits:
-		#
-		#	if bEnable:
-		#		pout('<fieldset><legend><b>Toggle Data Output:</b></legend>')
-		#	else:
-		#		pout('<fieldset><legend><b>Set Data Units:</b></legend>')
-		#	
-		#	sStyle = ''
-		#	if len(lMod) > 12: sStyle = 'class="srcopts_scroll_div"'
-		#	pout('<div %s>'%sStyle)
-		#
-		#	# Probably need to return id's to use in javascript here
-		#	lMod.sort()
-		#	for sData in lMod:
-		#		nSettables += _prnVarForm(sBaseUri, dParams, sData, dData[sData])
-		#		
-		#	pout("</div>")
-		#	pout("</fieldset>")
-	
-	# Handle setting general options
-	if dParams and ('options' in dIface):
-		dOptions = dIface['options']
-
-		lOptions = list(dOptions.keys())
-		
-		lMod = []
-		for sProperty in lOptions:
-			if 'set' in dOptions[sProperty]:
-				if sProperty not in lMod: lMod.append(sProperty)
-
-		if len(lMod) > 0:				
-			pout("<fieldset><legend><b>Additional Options:</b></legend>")
-				
-			nSettables += prnOptGroupForm(
-				sBaseUri, dParams, 'options', dOptions, sSrcUrl
-			)
-	
-			pout("</fieldset>")
-
-	# Stage 4, inspect http_params and output hidden controls with no name.
-	if dParams and (nSettables > 0):
-		nSettables = 0
-		for sParam in dParams:
-			dParam = dParams[sParam]
-			if 'type' not in dParam: continue
-
-			bOut = False
-			if dParam['type'] == 'flag_set':
-				if 'flags' not in dParam: continue
-				
-				for sFlag in dParam['flags']:
-					dFlag = dParam['flags'][sFlag]
-					if '_inCtrlId' in dFlag:
-						bOut = True
-						break
-			elif dParam['type'] == 'enum':
-				if 'items' not in dParam: continue
-				
-				for sItem in dParam['items']:
-					dItem = dParam['items'][sItem]
-					if '_inCtrlId' in dItem:
-						bOut = True
-						break
-			else:
-				if '_inCtrlId' in dParam: bOut = True
-
-			if bOut:
-				sCtrlId = "%s_%s"%(sBaseUri, sParam)
-				pout('<input type="hidden" id="%s">'%sCtrlId)
-				dParam['_outCtrlId'] = sCtrlId
-
-
-		# Stage 5, write the javascript that will be used on submit
-		sFuncName = "%s_onSubmit"%sBaseUri
-		sJson = json.dumps(dParams, ensure_ascii=False, indent=2, sort_keys=True)
-		sNamePrefix = "%s_"%sBaseUri
-		pout("""
-<script>
-function %s(sActionUrl) {
-	var dParams = %s;
-	
-	// Strip this from outgoing control id's, to get the output control
-	// name.  It was added to keep out controls from different forms separate.
-	var sNamePre = "%s";
-
-	for(var sParam in dParams){
-		dParam = dParams[sParam]
-		
-		if(!("_outCtrlId" in dParam)) continue;
-		var ctrlOut = document.getElementById(dParam["_outCtrlId"]);
-		var sOutName = dParam["_outCtrlId"].replace(sNamePre, "");
-		
-		// Flagset parameters, the most complicated ones
-		if( ('type' in dParam) && (dParam['type'] == 'flag_set')){
-		
-			if( !('flags' in dParam) ) continue;
-			
-			var dFlags = dParams[sParam]['flags'];
-			var sOutVal = "";
-			var sOutSep = " ";
-			if( 'flag_sep' in dParam) sOutSep = dParam['flag_sep'];
-			
-			for(var sFlag in dFlags){
-				var dFlag = dFlags[sFlag];
-				if( !('_inCtrlId' in dFlag) ) continue;
-				
-				var ctrlIn = document.getElementById(dFlag["_inCtrlId"]);
-				
-				// Check to see if we only add the output flag when the input
-				// has a certian value
-				if( '_inIfCtrlVal' in dFlag ){
-					if(ctrlIn.type == 'checkbox'){
-					
-						// If the state of the checkbox matches the send state then add the
-						// parameter.  This might mean than NOT checked sends a value.
-						if(dFlag['_inIfCtrlVal'] ==  ctrlIn.checked){
-							if((sOutSep.length > 0)&&(sOutVal.length > 0)) sOutVal += sOutSep;
-							sOutVal += dFlag['value'];
-						}
-					}
-					else{
-						if( ctrlIn.value == dFlag['_inIfCtrlVal']){
-							if((sOutSep.length > 0)&&(sOutVal.length > 0)) sOutVal += sOutSep;
-							sOutVal += dFlag['value'];
-						}
-					}
-				}
-				else{
-					// So the input sets the whole flag only set the output if something
-					// has changed.
-					if(ctrlIn.type == 'checkbox'){
-						if( ctrlIn.checked == true){
-							if((sOutSep.length > 0)&&(sOutVal.length > 0)) sOutVal += sOutSep;
-							if('prefix' in dFlag) sOutVal += dFlag['prefix'];
-							sOutVal += dFlag['value'];
-						}
-					}
-					else{
-						if( ctrlIn.value.length > 0){
-							if((sOutSep.length > 0)&&(sOutVal.length > 0)) sOutVal += sOutSep;
-							if('prefix' in dFlag) sOutVal += dFlag['prefix'];
-							sOutVal += ctrlIn.value;					
-						} 
-					}
-				}
-			}
-			
-			// Set control name and value if value changed
-			if(sOutVal.length > 0){
-				ctrlOut.name = sOutName;
-				ctrlOut.value = sOutVal;
-			}
-		}
-		
-		// TODO: Enum parameters
-		//else if ('type' in dParam) and (dParam['type'] == 'enum')){
-		//
-		//
-		//
-		//}
-		
-		// Generic parameters
-		else {
-			
-			if(!("_inCtrlId" in dParam)) continue;
-			var ctrlIn = document.getElementById(dParam["_inCtrlId"]);
-			
-			// Check boxes...
-			if(ctrlIn.getAttribute("type") == "checkbox"){
-				if(ctrlIn.checked == true){
-					// Text fields
-					ctrlOut.value = ctrlIn.value;
-					ctrlOut.name = sOutName;
-				}
-			} 
-			else {
-				if(ctrlIn.value.length > 0){
-					// Text fields
-					ctrlOut.value = ctrlIn.value;
-					ctrlOut.name = sOutName;
-				}
-			}
-		}
-	}
-
-	document.getElementById("%s").action = sActionUrl;
-}
-</script>
-	"""%(sFuncName, sJson, sNamePrefix, sFormId))
-
-		# Make one submit function per base url
-		if ('format' in dSrc) and ('default' in dSrc['format']) and \
-		   ('mime' in dSrc['format']['default']):
-			sMime = dSrc['format']['default']['mime']
-			pout("<p>Output will be <tt>%s</tt> unless changed via format options</p>"%(sMime))
-			
-		for sBase in dProto['base_urls']:
-			pout('<input type="submit" value="Get from %s"'%_hostSimpleName(sBase) +\
-		     	' onclick=\'%s("%s");\'>'%(sFuncName, _getAction(sBase) ))
-
+	# One submit button per mirror.  A node that was not reached through
+	# the catalog gets none: this script would then send browsers wherever
+	# a file anyone can write says to.
+	if bWalked:
+		for i in range(len(src.baseUrls)):
+			pout('<input type="submit" name="_base%d" value="Get from %s">'%(
+				i, esc(_hostSimpleName(src.baseUrls[i]))))
+	pout('<input type="submit" name="_show" value="Show URL">')
 	pout('</form>')
 
-	pout('<div class="identifers">')
-	pout('<br><br>Catalog Path: %s &nbsp; <br>Read From: &nbsp; <a href="%s">%s</a></a>'%(
-	     dSrc['_path'], dSrc['_url'], dSrc['_url']))
-	
-	if 'uris' in dSrc and len(dSrc['uris']) > 0:
-		pout('<br>Permanent IDs:')
-		dSrc['uris'].sort()
-		for sUri in dSrc['uris']: pout(" &nbsp; <i>%s</i>"%sUri)
-	
-	pout('</div>')	
-		  
+	prnIdentifiers(dSrc, False)
+
 	pout('<hr class="datasrc_sep">')
 
 
+def sourceRedirect(dSrc, lQuery):
+	"""If a source page's query asks for data, and the settings are good,
+	return the URL to send the browser to.  None if a page is to be shown
+	instead, which is where problems with the settings are reported."""
+	lBase = [sKey for (sKey, sVal) in lQuery if sKey.startswith('_base')]
+	if (len(lBase) == 0) or (len(dSrc['_path']) == 0): return None
+	try:
+		nBase = int(lBase[0][len('_base'):])
+	except ValueError:
+		return None
+
+	dProto = dSrc.get('protocol')
+	if not isinstance(dProto, dict) or not isinstance(dSrc.get('interface'), dict):
+		return None
+
+	src = Source(dSrc)
+	(lOk, lWhy, dX) = checkReq(src, queryReq(src, lQuery))
+	if lWhy: return None
+	(sUrl, sWhy) = reqUrl(src, lOk, dX, nBase)
+	if sUrl is None: return None
+
+	# It is about to be a header line
+	if not sUrl.lower().startswith(('http://', 'https://')): return None
+	if any((ord(c) < 0x21) or (ord(c) > 0x7e) for c in sUrl): return None
+	return sUrl
+
+
 #############################################################################
-def prnFileAgg(dNode):
-	pout("<h2>I'm a file aggregation</h2>")
-	pout("<pre>")
-	sOut = json.dumps(dNode, ensure_ascii=False, indent="  ", sort_keys=True)
-	pout(sOut)
-	pout("</pre>")
 
-
-
-#############################################################################
-
-g_lSrcOrder = ['das2/2.3', 'das2/2.2', 'votable', 'hapi']
-
-def _srcSortKeyFunc(dSrc):
-	if 'convention' in dSrc:
-		for i in range(len(g_lSrcOrder)):
-			if dSrc['convention'].lower().startswith(g_lSrcOrder[i]):
-				return i
-	return len(g_lSrcOrder)
-
-def prnCollection(dNode):
+def prnSourceSet(dNode):
+	"""Print a SourceSet, a dataset and the ways to get it.  The Collection
+	nodes of 2018 are printed by this as well, as far as they go."""
 
 	if 'title' in dNode:
-		pout("<h3>Collection: %s</h3>"%dNode['title'])
+		pout("<h3>%s</h3>"%esc(dNode['title']))
 
 	if 'description' in dNode:
-		pout("<p>%s<br><br></p>"%dNode['description'])
-		
-	if 'usage' in dNode:
+		pout("<p>%s<br><br></p>"%esc(dNode['description']))
+
+	dUsage = dNode.get('usage')
+	if isinstance(dUsage, dict):
 		pout("<p>\n")
-		if 'policy' in dNode['usage']:
-			pout('Usage Policy: <b class="error">%s</b> <br>'%dNode['usage']['policy'])
-		if 'extern' in dNode['usage']:
-			pout('Please read <a href="%s">%s<a> before using these data.\n'%(
-			     dNode['usage']['extern'], dNode['usage']['extern']))
+		if 'policy' in dUsage:
+			pout('Usage Policy: <b class="error">%s</b> <br>'%esc(dUsage['policy']))
+		if 'extern' in dUsage:
+			pout('Please read <a href="%s">%s</a> before using these data.\n'%(
+			     esc(dUsage['extern']), esc(dUsage['extern'])))
 		pout("</p>\n")
 
-	if 'sci_contacts' in dNode:
-		pout("<p>Questions about the nature and usefulness of this data set "
-		     "should be directed to: <b>")
-		lTmp = [d['name'].strip() for d in dNode['sci_contacts']]
-		pout(", ".join(lTmp))
-		pout("</b>.</p>")
+	_prnContacts(dNode, 'scientific',
+		"Questions about the nature and usefulness of this data set should be directed to:")
 
-	
-	if 'coordinates' in dNode:
-		pout("<p>Coordinates for these data include:")
+	for (sSec, sMsg) in (
+		('coords', 'Coordinates for these data include:'),
+		('data', 'Data items in this collection include:')
+	):
+		dVars = dNode.get(sSec)
+		if not isinstance(dVars, dict) or (len(dVars) == 0): continue
 
+		pout("<p>%s"%sMsg)
 		sStyle = "indent30_div"
-		if len(dNode['coordinates']) > 12: sStyle = "indent30_scroll_div"
-
+		if len(dVars) > 12: sStyle = "indent30_scroll_div"
 		pout('<div class="%s">'%sStyle)
-		
-		lCoords = list(dNode['coordinates'].keys())
-		#Make sure time is first
-		if 'time' in lCoords:
-			lCoords.remove('time')
-			lCoords.sort()
-			lCoords = ['time'] + lCoords
-		
-		for sCoord in lCoords:
-			dCoord = dNode['coordinates'][sCoord]
-			if 'name' in dCoord:
-				sOut = "<b>%s</b>"%dCoord['name']
-			else:
-				sOut = "<b>%s</b>"%sCoord
 
-			if 'units' in dCoord: sOut += " (%s)"%dCoord['units']
-			if ('valid_min' in dCoord) and dCoord['valid_min']:
-				sOut += " from <b>%s</b>"%dCoord['valid_min']
-			if ('valid_max' in dCoord) and dCoord['valid_max']:
-				if ('valid_min' in dCoord) and dCoord['valid_min']:
-					sOut += " to "
-				else:
-					sOut += "up to "
-				sOut += "<b>%s</b>"%dCoord['valid_max']
+		lVars = list(dVars.keys())
+		if 'time' in lVars:    # Make sure time is first
+			lVars.remove('time')
+			lVars = ['time'] + lVars
 
-			if 'title' in dCoord:
-				sOut += " - %s"%dCoord['title']
+		for sVar in lVars:
+			dVar = dVars[sVar]
+			if not isinstance(dVar, dict): continue
+			sOut = "<b>%s</b>"%esc(dVar.get('label') or dVar.get('name') or sVar)
+			if isinstance(dVar.get('units'), str): sOut += " (%s)"%esc(dVar['units'])
+
+			lRange = dVar.get('validRange')
+			if isinstance(lRange, list) and (len(lRange) == 2):
+				sOut += " from <b>%s</b> to <b>%s</b>"%(esc(lRange[0]), esc(lRange[1]))
+
+			if 'title' in dVar:
+				sOut += " - %s"%esc(dVar['title'])
 
 			pout("%s<br>"%sOut)
 		pout('</div></p>')
 
-	if 'data' in dNode:
-		pout("<p>Data items in this collection include:")
-		sStyle = "indent30_div"
-		if len(dNode['data']) > 12: sStyle = "indent30_scroll_div"
-		pout('<div class="%s">'%sStyle)
-
-		lData = list(dNode['data'].keys())
-		lData.sort()
-		for sData in lData:
-			dData = dNode['data'][sData]
-			if 'name' in dData:
-				sOut = "<b>%s</b>"%dData['name']
-			else:
-				sOut = "<b>%s</b>"%sData
-			if 'units' in dData: sOut += " (%s)"%dData['units']
-			if ('minimum' in dData) and dData['minimum']:
-				sOut += " from <b>%s</b>"%dData['minimum']
-			if ('maximum' in dData) and dData['maximum']:
-				if ('minimum' in dData) and dData['minimum']:
-					sOut += " to "
-				else:
-					sOut += "up to "
-				sOut += "<b>%s</b>"%dData['maximum']
-
-			if 'title' in dData:
-				sOut += " - %s"%dData['title']
-
-			pout("%s<br>"%sOut)
-		pout('</div></p>')
-
-	if 'EPNcore' in dNode:
-		pout('<h4 class="obscore"> EPN-Core Metadata</h3>')
+	if isinstance(dNode.get('EPNcore'), dict):
+		pout('<h4 class="obscore"> EPN-Core Metadata</h4>')
 		pout('<p class="obscore">')
 		l = list(dNode['EPNcore'].keys())
 		l.sort()
 		for s in l:
 			pout('<span class="obscore">%s:&nbsp;<b>%s</b></span> &nbsp; &nbsp; &nbsp; '%(
-			     s, dNode['EPNcore'][s]))
+			     esc(s), esc(dNode['EPNcore'][s])))
 		pout('</p>')
 
+	# The ways to get the data.  Each is listed here by the SourceSet, with
+	# a label for the kind of access it is.  Only the kinds this script has
+	# a form for are read.
+	sSubKey = _subKey(dNode)
+	dEntries = dNode[sSubKey] if sSubKey else {}
+	dSubs = getDirectSubs(dNode, sSubKey, ('HttpStreamSrc',)) if sSubKey else {}
 
-	dSubs = getDirectSubs(dNode, "sources")
-
-	if len(dSubs) == 0:
+	if len(dEntries) == 0:
 		pout("<p>Unfortunately, no sources are listed for this data collection</p>")
 		return
 
-	# Provide access source methods, in the following order:
-	#   HttpStreamSrc:
-	#     das2/2.3 das2/2.2, votables, hapi, das1 then anything else
-	#   FileAggreation:
-
-	lSrcs = []
-	for sSrc in dSubs: lSrcs.append(dSubs[sSrc])
-	lSrcs.sort(key=_srcSortKeyFunc)
-
-	for dSrc in lSrcs:
-		sTmp = dSrc['type']
-		if 'convention' in dSrc: sTmp = dSrc['convention']
-		elif 'name' in dSrc: sTmp = dSrc['name']
+	for sKey in dEntries:
+		dEnt = dEntries[sKey]
+		if not isinstance(dEnt, dict): continue
+		sType = dEnt.get('type') or 'unknown'
+		sTmp = dEnt.get('label') or dEnt.get('name')
+		if not sTmp and (sKey in dSubs): sTmp = dSubs[sKey].get('name')
 
 		pout('<div class="datasrc_div">')
-		pout("<h3><span>Access via %s</span></h3>"%sTmp)
+		pout("<h3><span>Access via %s</span></h3>"%esc(sTmp or sType))
+		if 'description' in dEnt:
+			pout("<p>%s</p>"%esc(dEnt['description']))
 
-		if dSrc['type'] == 'HttpStreamSrc':
-			prnHttpSource(dSrc, True)
-		elif dSrc['type'] == 'FileAggregation':
-			prnFileAgg(dSrc)
+		if sKey in dSubs:
+			prnHttpSource(dSubs[sKey], None, True)
 		else:
-			pout("""
-<p>Data source type <b>%s</b> is unknown.  If this is a useful source type and
-not just a catalog error contact the maintainer of this das2 catalog browse
-client to request an upgrade.</p>
-"""%dSrc['type'] )
+			if sType == 'HttpStreamSrc':
+				pout('<p class="error">The node for this source could not be read.</p>')
+			else:
+				pout("<p>This browser has no form for sources of type <b>%s</b>.</p>"%esc(sType))
+			lUrls = dEnt.get('urls')
+			if isinstance(lUrls, list) and (len(lUrls) > 0):
+				pout('<div class="identifers">Listed at: ')
+				for sUrl in lUrls:
+					pout('<a href="%s">%s</a> &nbsp; '%(esc(sUrl), esc(sUrl)))
+				pout('</div>')
+			pout('<hr class="datasrc_sep">')
 		pout("</div>")
 
-	
-	pout('<div class="identifers">')
-	sResolve = "%s?resolve=%s"%(scriptUrl(), dNode['_path'])
-	pout('<br><br>Catalog Path: <i><a href="%s">%s</a></i> &nbsp; <br>Read From: <a href="%s">%s</a></a>'%(
-	     sResolve, dNode['_path'], dNode['_url'], dNode['_url']))
-	pout('</div>')
-	
+	prnIdentifiers(dNode)
+
 	pout('<hr class="code_sep">')
 
 
@@ -1622,21 +1787,30 @@ for (i = 0; i < acc.length; i++) {
 
 #############################################################################
 def prnFooter():
+	# The signature is the web server's own text, already HTML
 	pout('''
 <div class="footer">
   <div>More information about das2 can be found at:
   <a href="http://das2.org/">http://das2.org/</a>.</div>
   <div>%s</div>
-  <div><a href="https://saturn.physics.uiowa.edu/svn/das2/clients/devel/browse">
+  <div><a href="https://github.com/das-developers/das-cat">
   Download the code for this catalog client</a></div>
-</div>'''%os.getenv('SERVER_SIGNATURE')
+</div>'''%(os.getenv('SERVER_SIGNATURE') or '')
 	)
 	pout("</body>\n</html>")
 
 #############################################################################
 # Main
 
-def main(form):
+def main(lQuery):
+	"""Build the page in g_lOut.
+
+	Args:
+		lQuery: The query string as (name, value) pairs, in order
+
+	Returns:
+		None for a page, or the URL to redirect the browser to.
+	"""
 
 	sScript = scriptUrl()
 	if sScript.startswith("https"):
@@ -1645,6 +1819,34 @@ def main(form):
 		sProto = "http"
 
 	sTree = g_sTree[0].upper() + g_sTree[1:]
+
+	# What ID do they want to know about, can be given as a query id or as
+	# path info, or just a direct URL that skips the whole resolution stage
+	sPath = dict(lQuery).get('resolve', '').strip()
+
+	if len(sPath) > 0:
+		# We can get direct urls via the resolver, so check for that
+		if sPath.lower().startswith('http'):
+			(dNode, lPathTo, lTried) = getNode(sPath)
+		else:
+			sPath = sPath.lower()
+			if not sPath.startswith('tag:'):
+				sPath = "%s:/%s"%(g_sDefDas2SiteTag, sPath)
+
+			(dNode, lPathTo, lTried) = getNode(sPath)
+	else:
+		sPathInfo = ''
+		if os.getenv("PATH_INFO"):
+			sPathInfo = os.getenv("PATH_INFO")
+		sPath = pathInfoToCatId(sPathInfo)
+
+		(dNode, lPathTo, lTried) = getNode(sPath)
+
+	# A form on a source page that worked out sends the browser on its way
+	if (dNode != None) and (dNode['type'] == 'HttpStreamSrc'):
+		sUrl = sourceRedirect(dNode, lQuery)
+		if sUrl != None:
+			return sUrl
 
 	pout("""
 <head>
@@ -1665,7 +1867,7 @@ def main(form):
 	<h2>%s Catalog Browser</h2>
 	</div>
 	<div class="hdr_right">
-'''%(scriptUrl(), sProto, g_sLogo, sTree))
+'''%(esc(scriptUrl()), sProto, g_sLogo, sTree))
 
 	if g_sTree == 'site':
 		pout('''
@@ -1680,35 +1882,6 @@ def main(form):
 </div>
 ''')
 
-
-	# What ID do they want to know about, can be given as a query id or as
-	# path info, or just a direct URL that skips the whole resolution stage
-	sPath = form.getfirst('resolve', '').strip()
-	sPath = sPath.lower()
-
-	if len(sPath) > 0:
-		# We can get direct urls via the resolver, so check for that
-		if sPath.startswith('http'):
-			(dNode, lPathTo, lTried) = getNode(sPath)
-
-			if dNode != None:
-				sPath = dNode['_path']
-			else:
-				sPath = None
-		else:
-			if not sPath.startswith('tag:'):
-				sPath = "%s:/%s"%(g_sDefDas2SiteTag, sPath)
-
-			(dNode, lPathTo, lTried) = getNode(sPath)
-	else:
-		sPathInfo = ''
-		if os.getenv("PATH_INFO"):
-			sPathInfo = os.getenv("PATH_INFO")
-		sPath = pathInfoToCatId(sPathInfo)
-
-		(dNode, lPathTo, lTried) = getNode(sPath)
-
-
 	pout('''
 <form action="%s" >
 <div class="resolver">
@@ -1717,16 +1890,16 @@ def main(form):
   <input type="submit" value="Resolve" >
 </div>
 </form>
-'''%(scriptUrl(), sPath))
+'''%(esc(scriptUrl()), esc(sPath)))
 
 	pout('<div class="main">')
 
 	if dNode == None:
-		pout("<p>Catalog node <b>%s</b> doesn't exist</p>"%sPath)
+		pout("<p>Catalog node <b>%s</b> doesn't exist</p>"%esc(sPath))
 		pout("<p>Lookup path follows:</p>\n<ul>")
 
 		for i in range(0, len(lTried)):
-			sUrl = lTried[i]
+			sUrl = esc(lTried[i])
 			if i == (len(lTried) - 1):
 				pout('<li><a href="%s">%s</a> &lt;-- trail ends here</li>'%(sUrl, sUrl))
 			else:
@@ -1735,24 +1908,22 @@ def main(form):
 		pout("</ul>")
 		pout("</div>")
 		prnFooter()
-		return 13
+		return None
 
 	prnBrowseBar(lPathTo, dNode)
 
-	if dNode['type'] == 'Catalog':
+	if dNode['type'] in ('SourceSet', 'Collection'):
+		prnSourceSet(dNode)
+	elif (dNode['type'] == 'Catalog') and isinstance(dNode.get('catalog'), dict):
 		prnCatalog(dNode)
-	elif dNode['type'] == 'SourceSet':
-		prnCatalog(dNode)
-	elif dNode['type'] == 'Collection':
-		prnCollection(dNode)
 	elif dNode['type'] == 'HttpStreamSrc':
-		prnHttpSource(dNode)
+		prnHttpSource(dNode, lQuery)
 	else:
-		pout("<h2>Unknown node type %s</h2>"%dNode['type'])
+		pout("<h2>Unknown node type %s</h2>"%esc(dNode['type']))
 		pout("<p>Raw catalog entry displayed below</p>")
 		pout("<pre>")
 		sOut = json.dumps(dNode, ensure_ascii=False, indent="  ", sort_keys=True)
-		pout(sOut)
+		pout(esc(sOut))
 		pout("</pre>")
 
 	pout("</div>")
@@ -1761,12 +1932,32 @@ def main(form):
 
 	prnFooter()
 
-	return 0
+	return None
 
 ##############################################################################
-# Stub main for cgi
+# Stub main for cgi.  The page is built whole and then sent, because a
+# source page may turn out to be a redirect.  The price is that a failure
+# has to be caught here to be seen at all.
 
-form = cgi.FieldStorage()
+def cgiMain():
+	sHdr = "Content-Type: text/html; charset=utf-8\r\n\r\n<!DOCTYPE html>\n<html>\n"
+	try:
+		lQuery = parse_qsl(os.getenv('QUERY_STRING') or '', keep_blank_values=True)
+		sUrl = main(lQuery)
+		if sUrl != None:
+			sOut = "Status: 302 Found\r\nLocation: %s\r\n\r\n"%sUrl
+		else:
+			sOut = sHdr + ''.join(g_lOut)
+	except Exception as e:
+		perr(traceback.format_exc())
+		sOut = "Status: 500 Internal Server Error\r\n%s" \
+		       "<body><h2>The catalog browser failed</h2>\n<p>%s: %s</p>\n" \
+		       "<p>The server's error log has the details.</p></body>\n</html>\n"%(
+		       sHdr, esc(type(e).__name__), esc(e))
+
+	sys.stdout.buffer.write(sOut.encode('utf-8'))
+	return 0
 
 # Return values don't matter in CGI programming.  That's unfortunate
-main(form)
+if __name__ == '__main__':
+	cgiMain()

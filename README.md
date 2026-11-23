@@ -66,3 +66,5 @@ how to write one and the checks it must pass.
     test/validate_tree.py OUT_DIR          # every node against the schemas
     test/url_check.py urls TREE            # what each example sends (needs
                                            # das_fetch from das2C)
+    test/browse_url_check.py TREE          # the browse page asks for the same
+                                           # (needs das_fetch too)
