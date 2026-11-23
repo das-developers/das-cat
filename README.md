@@ -7,6 +7,7 @@ Contains the upper few nodes of the federated das2 data source catalog.  Redunda
 |---|---|
 | `cat/` | Catalog nodes, strict JSON.  URLs inside published nodes point here, so paths under `cat/` should not move. |
 | `schema/` | JSON Schemas for catalog nodes, strict JSON, one directory per node type and one file per version of it. |
+| `doc/` | What the schemas can not say: how a reader turns a node and a set of choices into a request. |
 | `src/` | Everything authored or run: schema sources, import scripts, the catalog browse CGI. |
 | `test/` | Validation scripts, importer unit tests and example nodes. |
 
@@ -41,6 +42,10 @@ A published schema file is frozen.  Later edits may fix typos or
 descriptions, but they do not change which nodes pass or fail.  Any
 change of that kind is a new version of that type, in a new file beside
 the old one.  Versions after 0.9 go to 1.0, not 0.10.
+
+A schema says which nodes are well formed.  What a source node means,
+which URL a set of choices becomes, is in `doc/httpstreamsrc.md`.
+Programs that write nodes and programs that read them follow it.
 
 To validate nodes, run `make validate` from the repository root (needs
 network access the first time, to build a Python venv).

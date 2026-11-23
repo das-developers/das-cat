@@ -872,15 +872,29 @@ class TestRun(TmpCase):
 		dOther = self.read('out/test/mission/other/das2.json')
 		self.assertEqual(dOther['protocol']['baseUrls'], [g_sB + '?server=dataset&dataset=Mission/Other'])
 
+		# new files are created, not updated
+		sSrcFile = os.path.join(self.sDir, 'out/test/mission/inst/survey/das2.json')
+		self.assertTrue(self.hdlr.has('INFO', 'Created %s'%sSrcFile))
+		self.assertFalse(self.hdlr.has('INFO', 'Updated'))
+
 		# a second run changes nothing and says so
-		tStat = os.stat(os.path.join(self.sDir, 'out/test/mission/inst/survey/das2.json')).st_mtime_ns
+		tStat = os.stat(sSrcFile).st_mtime_ns
 		self.assertEqual(self.run_import(dSrv, ['-e', 'Mission/em', '-m', g_sB, g_sA, '/']), 0)
-		self.assertEqual(tStat, os.stat(os.path.join(self.sDir, 'out/test/mission/inst/survey/das2.json')).st_mtime_ns)
+		self.assertEqual(tStat, os.stat(sSrcFile).st_mtime_ns)
+		self.assertFalse(self.hdlr.has('INFO', 'Created'))
+		self.assertFalse(self.hdlr.has('INFO', 'Updated'))
+
+		# a changed DSDF updates the files that follow from it, no others
+		dSrv[g_sA]['Mission/Inst/Survey'] = dict(g_dSurvey, description='Now retitled')
+		self.assertEqual(self.run_import(dSrv, ['-e', 'Mission/em', '-m', g_sB, g_sA, '/']), 0)
+		self.assertTrue(self.hdlr.has('INFO', 'Updated %s'%sSrcFile))
+		self.assertFalse(self.hdlr.has('INFO', 'Created'))
 
 	def test_no_op_and_subtree(self):
 		dSrv = {g_sA: {'Mission/Inst/Survey':g_dSurvey, 'Mission/Inst/Simple':g_dSimple, 'Other/Thing':g_dSimple}}
 		self.assertEqual(self.run_import(dSrv, ['-n', g_sA, '/']), 0)
 		self.assertFalse(os.path.exists(os.path.join(self.sDir, 'out')))
+		self.assertTrue(self.hdlr.has('INFO', 'Would have created'))
 
 		# OUT_DIR is where the SRV_PATH node goes, nothing above it is written
 		self.assertEqual(self.run_import(dSrv, [g_sA, 'Mission/Inst'], 'sub'), 0)
@@ -955,7 +969,12 @@ class TestRun(TmpCase):
 		# the example followed the move, and the set summary has the variables
 		self.assertEqual(dSrc['interface']['examples'][0]['settings']['data/p12v/props/enabled'], True)
 		self.assertEqual(sorted(self.read('out/test/m/hsk.json')['data']), ['n5v', 'p12v'])
-		self.assertTrue(self.hdlr.has('INFO', 'applied override'))
+		# the override is reported by the node file it changed
+		self.assertTrue(self.hdlr.has('INFO', 'Customized %s with %s'%(
+			os.path.join(self.sDir, 'out/test/m/hsk/das2.json'),
+			os.path.join(sOvr, 'M', 'Hsk.json5'))))
+		self.assertFalse(self.hdlr.has('INFO', 'Customized %s'%os.path.join(
+			self.sDir, 'out/test/m/simple/das2.json')))
 
 	def test_override_guards(self):
 		dSrv = {g_sA: {'M/Hsk':g_dHsk}}
