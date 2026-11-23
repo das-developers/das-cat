@@ -1,7 +1,7 @@
 {
 	// Das Federated Catalog (FedCat) Node Definition
 	//
-	//   Reference (0.7)
+	//   Reference, an entry in a catalog that points at a node
 	//
 	// This node type is a placeholder.  It provides the location of some 
 	// other full node that may be placed into the node hierarchy in place
@@ -19,8 +19,9 @@
 
 	"$schema":"http://json-schema.org/draft/2020-12/schema",
 
-	// Relative ids: $ref targets resolve against wherever this file was
-	// fetched from, so the published set works from any host or checkout
+	// Sources refer to each other by file name.  The build copies what a
+	// schema uses into the published file (src/scripts/schema_bundle.py), and
+	// gives that file its version as its id.
 	"$id":"reference.json",
 
 	"$ref":"catobj.json",  // All references are catalog objects
@@ -40,8 +41,19 @@
 		// documentation as well.
 		"externalDesc":{"type":"array", "items":{"$ref":"#/$defs/Url"}},
 		
-		// The MIME type of the referenced node
-		"MIME":{"type":"string", "maxLength":64, "default":"application/json"},
+		// The MIME type of the referenced node itself (not of the data it
+		// provides).  Lower case is what dasflex and the importer write.
+		"mime":{"type":"string", "maxLength":64, "default":"application/json"},
+		"MIME":{"type":"string", "maxLength":64, "deprecated":true},
+
+		// For references to data sources: the stream MIME types the source
+		// can output.  Clients choose among a SourceSet's children by these
+		// without loading each child.
+		"provides":{"type":"array", "items":{"type":"string", "maxLength":64}},
+
+		// For references to data sources: the role of this source among its
+		// siblings, e.g. "primary-stream"
+		"purpose":{"type":"string", "maxLength":32},
 
 		// Where to find definitions of the node
 		"locations":{"type":"array", "items":{"$ref":"#/$defs/Location"} },

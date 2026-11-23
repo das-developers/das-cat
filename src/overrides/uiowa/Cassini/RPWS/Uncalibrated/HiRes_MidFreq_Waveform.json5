@@ -1,0 +1,51 @@
+{
+	// Cassini RPWS mid frequency (WBR) waveforms.
+	//
+	// The DSDF lists two outputs (item_00, item_01: Ex and Ew) and two
+	// params that each turn one off, 'no_Ex | Do not output the Ex
+	// Antenna | --Ex=false'.  That is variable selection with the sense
+	// inverted, so each param becomes the 'enabled' toggle of its data
+	// variable: on by default, and turning it off sends the flag.  What
+	// is sent does not change, only which state of the control sends it.
+	//
+	// remove and add rather than move, because the meaning flips: an
+	// example setting 'no_Ex: true' would have to become 'enabled: false',
+	// which a move can't do.  The DSDF has no examples with params today;
+	// if one appears the importer stops on it.
+	//
+	// Checked live on planet, 2026-11-22, 2008-223T09:06:00 to 09:06:20,
+	// an interval recorded on Ex: with Ew off the reply is the same 0.9 MB
+	// as with nothing asked, with Ex off it is a header and no data.
+	//
+	// The 'rate' option stays an option here.  It picks the 10 kHz or
+	// 80 kHz receiver band, which is arguably a choice about the
+	// frequency coordinate of a waveform that has none; left for a
+	// curator who knows what the 2018 catalog's frequency.band was for.
+	//
+	// The reader's arguments for it are --10khz and --80khz.  The
+	// importer keeps those in the protocol section and offers 10khz and
+	// 80khz, but the DSDF title still spells the argument, "default
+	// --10khz".  The title is reworded and the default it states is
+	// written as the value.  A request that says nothing gets that rate,
+	// and choosing it sends nothing, as before.  Not confirmed live that
+	// no argument and --10khz return the same data; the DSDF says so.
+
+	"dataset": "Cassini/RPWS/Uncalibrated/HiRes_MidFreq_Waveform",
+	"dsdf": "sha256:2711b21e5ed9186f",
+	"ops": [
+		{"op": "test", "path": "/protocol/httpParams/params/flags/no_Ex/value", "value": "--Ex=false"},
+		{"op": "test", "path": "/protocol/httpParams/params/flags/no_Ew/value", "value": "--Ew=false"},
+
+		{"op": "add", "path": "/interface/data/Ex/props/enabled",
+		 "value": {"type": "boolean", "value": true, "set": {"param": "params", "flag": "no_Ex", "value": false}}},
+		{"op": "add", "path": "/interface/data/Ew/props/enabled",
+		 "value": {"type": "boolean", "value": true, "set": {"param": "params", "flag": "no_Ew", "value": false}}},
+		{"op": "remove", "path": "/interface/options/props/no_Ex"},
+		{"op": "remove", "path": "/interface/options/props/no_Ew"},
+
+		{"op": "test", "path": "/interface/options/props/rate/title", "value": "Sample rate to output, default --10khz"},
+		{"op": "test", "path": "/interface/options/props/rate/set/enum/0/value", "value": "10khz"},
+		{"op": "replace", "path": "/interface/options/props/rate/title", "value": "Sample rate to output"},
+		{"op": "replace", "path": "/interface/options/props/rate/value", "value": "10khz"},
+	]
+}

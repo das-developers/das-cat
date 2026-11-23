@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Convert the JSON5 subset used by das-cat sources to strict JSON.
 
-Usage: json5_to_json INPUT [OUTPUT]
+Usage: json5_to_json.py INPUT [OUTPUT]
 
 Handles exactly two JSON5 extensions: comments (// and /* */) and trailing
 commas.  Anything else JSON5 allows (single quotes, unquoted keys, hex

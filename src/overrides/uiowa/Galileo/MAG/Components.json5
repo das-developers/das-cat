@@ -1,0 +1,59 @@
+{
+	// Galileo magnetometer, field components.
+	//
+	// The DSDF lists three outputs, item_00..02: Br, B_phi and B_theta,
+	// and one param, 'coords | Output coordinate frame, default SYS3,
+	// Jupiter System III | @ | option: IRC JSE'.
+	//
+	// Two things a conversion table can't see:
+	//
+	// 1. The three outputs are the components of one vector, and their
+	//    names are the System III ones.  In another frame the same three
+	//    columns are other components.  So the data variable is 'B', one
+	//    vector, and no component is named as if it were always there.
+	//
+	// 2. An option called 'coords' is a choice about that variable: the
+	//    frame its components are given in.  It becomes data/B/props/frame
+	//    (rules.md 4), keeping the DSDF's title, which reads well as it
+	//    is.  The option section is then empty and goes.
+	//
+	// The frame has three choices, and the DSDF's list has two.  SYS3 is
+	// what the reader gives when no frame is asked for, so it has no
+	// argument and is not in the protocol's enum.  It is written as
+	// the default, which is never sent, and that is the one case where an
+	// interface choice may be missing from the protocol's list.
+	//
+	// What is sent does not change: frame=JSE sends 'JSE' as coords=JSE
+	// did, and the one example sets no frame.
+	//
+	// Not known to me: the component names the reader uses for IRC and
+	// JSE, and whether the stream labels them.  The variable's title
+	// names only what the DSDF does.  NOT checked live.
+
+	"dataset": "Galileo/MAG/Components",
+	"dsdf": "sha256:966d1f215706cc0b",
+	"ops": [
+		{"op": "test", "path": "/protocol/httpParams/params/flags/coords/prefix", "value": ""},
+		{"op": "test", "path": "/protocol/httpParams/params/flags/coords/enum", "value": ["IRC", "JSE"]},
+		{"op": "test", "path": "/interface/data", "value": {"Br": {"label": "Br"}, "B_phi": {"label": "B_phi"}, "B_theta": {"label": "B_theta"}}},
+
+		// one vector for three components
+		{"op": "remove", "path": "/interface/data/Br"},
+		{"op": "remove", "path": "/interface/data/B_phi"},
+		{"op": "remove", "path": "/interface/data/B_theta"},
+		{"op": "add", "path": "/interface/data/B", "value": {
+			"label": "B",
+			"title": "Magnetic field vector, three components in the chosen frame"
+		}},
+
+		// the frame is a property of the vector
+		{"op": "move", "from": "/interface/options/props/coords", "path": "/interface/data/B/props/frame"},
+		{"op": "remove", "path": "/interface/options"},
+		{"op": "replace", "path": "/interface/data/B/props/frame/label", "value": "Frame"},
+		{"op": "add", "path": "/interface/data/B/props/frame/set/enum/0", "value": {
+			"value": "SYS3",
+			"title": "Jupiter System III, components Br, B_phi and B_theta"
+		}},
+		{"op": "replace", "path": "/interface/data/B/props/frame/value", "value": "SYS3"},
+	]
+}

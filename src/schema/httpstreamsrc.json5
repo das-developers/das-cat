@@ -3,13 +3,27 @@
 	//
 	//   HttpStreamSrc (0.7)
 	//
-	// This defines an HTTP GET/POST endpoints that provides data in
-	// coordinates in a requested format.
+	// One HTTP endpoint that returns a data stream for a request, in two
+	// parts:
+	//
+	//   interface  What a person or program may ask for: coordinates, data
+	//              variables, output formats, server options and worked
+	//              examples.  All the user strings are here.
+	//   protocol   How a set of interface choices becomes a URL.  Only what
+	//              is needed to build one.
+	//
+	// A property in the interface that can be changed has a 'set' block
+	// naming the protocol parameter (and flag) its value travels in.
+	//
+	// The vocabulary is the one das2C reads (das3/source.c) and dasflex and
+	// dsdf_cat_import write.  Members marked "since das2C 3.0.6" are not
+	// understood by earlier clients.
 
 	"$schema":"http://json-schema.org/draft/2020-12/schema",
 
-	// Relative ids: $ref targets resolve against wherever this file was
-	// fetched from, so the published set works from any host or checkout
+	// Sources refer to each other by file name.  The build copies what a
+	// schema uses into the published file (src/scripts/schema_bundle.py), and
+	// gives that file its version as its id.
 	"$id":"httpstreamsrc.json",
 
 	"$ref":"node.json",  // All nodes have these properties
@@ -23,20 +37,11 @@
 		// Pinned so catalog.json's child oneOf can tell node types apart
 		"type":{"const":"HttpStreamSrc"},
 
-		// Helpful humans
-		"contacts":{
-			"type":"array", "items":{
-				"type":"object",
-				"properties":{
-					"role":{"type":"string"},
-					"name":{"type":"string"},
-					"email":{"type":"string"}
-				},
-				"required":["name","type"]
-			}
-		},
+		"contacts":{"$ref":"node.json#/$defs/Contacts"},
 
-		// How to convert user selections into GET parameters
+		"usage":{"$ref":"node.json#/$defs/Usage"},
+
+		// How to convert user selections into a request
 		"protocol":{
 			"type":"object",
 			"properties":{
@@ -44,10 +49,12 @@
 				// Method supported by this source
 				"method":{"type":"string", "enum":["GET","POST"]},
 
-				// A hint as what to expect when communicating with this source (deprecate?)
-				"convention":{"type":"string"},
+				// Formerly a hint at what to expect of the server.  Nothing
+				// reads it; dasflex still writes "HTTP/1.1".
+				"convention":{"type":"string", "deprecated":true},
 
-				// Do you need authorization to load data from this source
+				// Do you need authorization to load data from this source.
+				// When the member is missing clients should say "unknown".
 				"authorization":{
 					"type":"object",
 					"properties":{
@@ -56,31 +63,71 @@
 						// The HTTP Basic Auth realm associated with this data source, if any
 						"realm":{"type":"string"},
 
+						// How to log in, "http-basic" is the one in use
+						"methods":{"type":"array", "items":{"type":"string"}},
+
 						// If true, you may need to be within a particular network to access
 						// these data
-						"address":{"type":"boolean"}
+						"address":{"type":"boolean"},
+
+						// Who to ask for access, and such
+						"description":{"type":"string"}
 					},
-					"required":["required"]
+					"required":["required"],
+					"additionalProperties":false
 				},
 
-				// Root URL for the source, not including GET parameters specified
-				// in httpParams below.  If this does not contain a '?' character 
-				// then the client must append '?' before adding param=value pairs.
-				"baseUrls":{"type":"array", "items":{"$ref":"#/$defs/Url"}},
+				// Root URLs for the source, not including the parameters in
+				// httpParams below.  More than one means mirrors, in the order
+				// clients should try them.  If a URL has no '?' the client adds
+				// one before the first param=value pair, else it adds '&'.
+				"baseUrls":{"type":"array", "minItems":1, "items":{"$ref":"#/$defs/Url"}},
 
+				// The request parameters, by the name sent to the server
 				"httpParams":{
+					"type":"object",
 					"additionalProperties":{
 						"oneOf":[
 							{"$ref":"#/$defs/ValueParam"},
-							{"$ref":"#/$defs/ListParam"}
+							{"$ref":"#/$defs/FlagSetParam"}
 						]
 					}
 				}
-				
 			},
-			"required":["method","convention","baseUrls","authorization"]
+			"required":["method","baseUrls"],
+			"additionalProperties":false
 		},
+
+		// What may be asked for.  Section names are fixed, group names
+		// under coords, data and formats are the source's own.
+		"interface":{
+			"type":"object",
+			"properties":{
+
+				// Physical dimensions the data are located in: time, frequency,
+				// L-shell.  A choice about a coordinate (its range, its
+				// resolution) is a property of that coordinate.
+				"coords":{"$ref":"#/$defs/Groups"},
+
+				// The variables a stream may carry.  A variable that can be
+				// left out or added has a boolean 'enabled' property.
+				"data":{"$ref":"#/$defs/Groups"},
+
+				// Output serializations.  Each has a boolean 'enabled' property
+				// in the xorGroup "format": exactly one is on.
+				"formats":{"$ref":"#/$defs/Groups"},
+
+				// Whatever is about none of the above.  One group, no name.
+				"options":{"$ref":"#/$defs/Group"},
+
+				// Worked requests, in interface terms
+				"examples":{"type":"array", "items":{"$ref":"#/$defs/Example"}}
+			},
+			"additionalProperties":false
+		}
 	},
+
+	"required":["protocol"],
 
 	"unevaluatedProperties": false,  // Strict version
 
@@ -89,86 +136,358 @@
 		// dependencies
 		"Url":{ "type":"string", "format":"uri", "pattern": "^https?://"},
 
-		// Defines a parameter that provides a single value
-		"ValueParam":{
-			"properties":{
+		// Names that become parts of keys people type, das_fetch time.min=...
+		"Ident":{"type":"string", "pattern":"^[A-Za-z_][A-Za-z0-9_]{0,62}$"},
 
-				// Define a value format rule for the parameter, should have been
-				// named "constraint"
-				"type":{
-					// Undifferentiated string, default if no type specified
-					"type":"string", 
+		// Strings, numbers and booleans, as JSON has them
+		"Scalar":{"type":["string","number","boolean"]},
 
-					"enum":[
-						// Value is a time string in mostly in ISO-8601 format, UTC times
-						// are assumed in space physics, 'Z' suffix is not required
-						"isotime", 
-					         
-					  // Value is the string 'true' or 'false', some servers may accept 
-					  // 1 or 0 as well
-						"bool",
+		// A note on a protocol parameter or a flag, for someone reading the
+		// protocol section by itself: what the server does with it, in the
+		// words of whoever wrote the server side.  One plain string.  The
+		// protocol section has no other text.  Labels, titles and
+		// descriptions are user strings and belong in the interface.
+		// Clients do not show a comment and nothing may depend on what it
+		// says.
+		"Comment":{"type":"string", "minLength":1},
 
-						"string",  // Value is an undefined string
-						"real",    // Value is an ascii real number
-						"int",     // Value is an ascii integer
-						"enum",    // Value defined by enumerated list
-
-						// Similar to an enum, but multiple values are concantenated into
-						// a single value (in any order) via a separator
-						"set",
-
-						"FlagSet",  // Deprecated synonym for "set"
-						"flag_set", // Deprecated synonym for "set"
-					],
-
-					"default":"string"
-				},
-
-				// Does the data source required this parameter to produce anything
-				"required":{"type":"boolean"},
-
-				// Should any standard text be added before a user entered value
-				"prefix":{"type":"string"},
-
-				// The units the data source assumes the value is in.  Includes the
-				// fake unit UTC as (unnecessary?) documentation
-				"units":{"type":"string", "maxLength":32},
-
-				// Enum list for enumerated values, ignore if type not "enum"
-				"enum":{
-					"type":"array",
-					"items":{"type":"string"}
-				},
-
-				// Synonym for an enum that provides only one value
-				"value":{"type":"string"}
-			},
-
-			"required":["required"]
-
+		// The strings a server takes in one place, the 'enum' of a Flag or a
+		// ValueParam.  A plain list, unlike an interface set.enum whose
+		// items may carry titles.  Compared with what is sent as text, so
+		// 256 and "256" are the same entry and 1 and 1.0 are not.
+		"ProtocolEnum":{
+			"type":"array", "minItems":1, "uniqueItems":true,
+			"items":{"type":["string","number"]}
 		},
 
-		// Defines a parameter that provides multiple values.  Initentionally does
-		// not support recursion
-		"ListParam":{
+		// Low and high end of a range.  The high end is exclusive.  "now"
+		// is a legal high end for times.
+		"Range":{
+			"type":"array", "minItems":2, "maxItems":2,
+			"items":{"type":["string","number"]}
+		},
+
+		// The kinds of value.  A property's type is the type of one item
+		// when the property is a list ("multi").  The short spellings are
+		// what 2018 era nodes used.
+		"ValueType":{
+			"type":"string",
+			"enum":[
+				"isotime",  // UTC time, mostly ISO-8601, no 'Z' needed
+				"boolean",
+				"string",
+				"real",
+				"integer",
+				"enum",     // one of a fixed list, see set.enum
+				"bool", "int"   // deprecated spellings
+			]
+		},
+
+		// ---------------------------------------------------------------
+		// Protocol
+
+		// A parameter that carries one value, or with subSep or repeat
+		// several of them
+		"ValueParam":{
 			"type":"object",
 			"properties":{
-				"type":{"type":"string", "pattern":"list"},
-				// Place this value between individual subvalues on output
-				"listSep":{"type":"string", "default":","},
-				"subValues":{
-					"type":"object",
+				"type":{"$ref":"#/$defs/ValueType"},
 
-					// Each sub-value property name (aka key) is used by the 'interface'
-					// section to reference subValues in the the underlying protocol, 
-					// but unlike httpParams properties, these keys are not output to
-					// the server. 
+				// Does the server refuse requests without this parameter
+				"required":{"type":"boolean"},
+
+				// The units the server assumes the value is in
+				"units":{"type":"string", "maxLength":32},
+
+				// Every string the server takes as this parameter's value, or
+				// as one element of it when values are joined or repeated.
+				// What the interface sends here (a set.enum item's pval, else
+				// its value; a typed value) must be one of them, exactly.
+				// das2C 3.0.6 and later make no URL for anything else; earlier
+				// clients did not read the list.  Leave it out for a parameter
+				// that takes any time, number or text.
+				"enum":{"$ref":"#/$defs/ProtocolEnum"},
+
+				// Limits as the server sees them, not enforced by clients
+				"range":{"$ref":"#/$defs/Range"},
+
+				// Since das2C 3.0.6.  With subSep every control that feeds the
+				// parameter adds an element, joined with this text:
+				// read.data=a,b.  Without it the last control to speak wins.
+				"subSep":{"type":"string"},
+
+				// Since das2C 3.0.6.  Each element is sent as a pair of its
+				// own: parameter=bx&parameter=bz
+				"repeat":{"type":"boolean"},
+
+				"comment":{"$ref":"#/$defs/Comment"}
+			},
+			// Joined or repeated, not both
+			"not":{"required":["subSep","repeat"]},
+			"additionalProperties":false
+		},
+
+		// A parameter whose value is assembled from flags: the das2
+		// 'params' string, dasflex read.data.  Each flag sent is one piece,
+		// and pieces are joined with flagSep in the order 'flags' below
+		// lists them (since das2C 3.0.6; before that, in the order their
+		// controls appear in the interface, which writers should keep the
+		// same).  The request text is thus settled here, and the interface
+		// may be rearranged without changing what servers see.
+		"FlagSetParam":{
+			"type":"object",
+			"properties":{
+				"type":{"enum":["FlagSet", "flag_set"]},   // flag_set is the 2018 spelling
+				"required":{"type":"boolean"},
+
+				// Goes between flags, a space if not given
+				"flagSep":{"type":"string"},
+
+				"comment":{"$ref":"#/$defs/Comment"},
+
+				// By the name controls use for them in set.flag.  These names
+				// are not sent.
+				"flags":{
+					"type":"object",
+					"propertyNames":{"$ref":"#/$defs/Ident"},
+					"additionalProperties":{"$ref":"#/$defs/Flag"}
+				}
+			},
+			"required":["type","flags"],
+			"additionalProperties":false
+		},
+
+		// One flag.  A boolean control makes it a switch: when on, 'value'
+		// is sent (the flag's name if there is no value).  Any other
+		// control makes it a slot: 'prefix' and then the control's value.
+		//
+		// The protocol section names its own strings.  A switch has its one
+		// 'value'.  A slot that takes one of a fixed set of strings lists
+		// them in 'enum', and then the interface may show people other
+		// words for them (set.enum items with a pval).  A slot without an
+		// 'enum' takes anything: a number, a time, free text.
+		"Flag":{
+			"type":"object",
+			"properties":{
+				"value":{"$ref":"#/$defs/Scalar"},
+				"prefix":{"type":"string"},
+
+				// Since das2C 3.0.6.  Text sent after the value as the prefix
+				// is sent before it: {"prefix":"--win=", "suffix":"s"} sends
+				// --win=2.5s.  A flag that joins is closed once, after its
+				// last element; one that repeats is closed each time.  From
+				// das2 DSDF output fields with text after the '@'.
+				"suffix":{"type":"string"},
+
+				// Since das2C 3.0.6.  Every string that may follow the prefix,
+				// or be one element after it when the flag joins or repeats.
+				// What the interface sends to this flag must be one of them,
+				// exactly; das2C makes no URL for anything else.  The list
+				// says which strings exist, not which may be combined.
+				"enum":{"$ref":"#/$defs/ProtocolEnum"},
+
+				// The das2 'set:' constraint.  Everything sent to this flag is
+				// joined with this text behind one prefix: -lfdr ExEw
+				// ("" joins with nothing between), fan=090,270.  A switch on
+				// such a flag sends its set.pval as its element.  Elements go
+				// in the order of their controls.  The joined value is sent
+				// whole: if one control feeding it is off its default, the
+				// others send their defaults too.
+				"subSep":{"type":"string"},
+
+				// Since das2C 3.0.6.  A list control sends the flag once per
+				// item, prefix and all: -n bad_data -n fake_data
+				"repeat":{"type":"boolean"},
+
+				"comment":{"$ref":"#/$defs/Comment"},
+
+				// Not read by anything
+				"type":{"type":"string", "deprecated":true}
+			},
+			"allOf":[
+				{"not":{"required":["subSep","repeat"]}},
+				// a switch has a value, a list goes with a prefix
+				{"not":{"required":["value","enum"]}},
+				// and a suffix closes what a prefix opened
+				{"if":{"required":["suffix"]}, "then":{"required":["prefix"]}}
+			],
+			"additionalProperties":false
+		},
+
+		// ---------------------------------------------------------------
+		// Interface
+
+		"Groups":{
+			"type":"object",
+			"propertyNames":{"$ref":"#/$defs/Ident"},
+			"additionalProperties":{"$ref":"#/$defs/Group"}
+		},
+
+		// A coordinate, a data variable, a format, or the options
+		"Group":{
+			"type":"object",
+			"properties":{
+				// label is the short caption, title the longer line beside it
+				"label":{"type":"string", "minLength":1, "maxLength":48},
+				"title":{"type":"string", "minLength":1, "maxLength":256},
+				"description":{"type":"string"},
+
+				"props":{
+					"type":"object",
+					"propertyNames":{"$ref":"#/$defs/Ident"},
+					"additionalProperties":{"$ref":"#/$defs/Property"}
+				},
+
+				// Coordinates: where the source has data
+				"validRange":{"$ref":"#/$defs/Range"},
+
+				// Formats: what the stream may be, the usual one first
+				"mimeTypes":{"type":"array", "items":{"type":"string", "maxLength":64}},
+
+				// Presentation order of props, for writers that can't keep
+				// object members in order
+				"order":{"type":"array", "items":{"$ref":"#/$defs/Ident"}}
+			},
+			"additionalProperties":false
+		},
+
+		// One fact about a group, or with a set block one choice.  'value'
+		// is the fact, or the default in effect when a request says nothing;
+		// null means there is none.
+		"Property":{
+			"type":"object",
+			"properties":{
+				"label":{"type":"string", "minLength":1, "maxLength":48},
+				"title":{"type":"string", "minLength":1, "maxLength":256},
+				"description":{"type":"string"},
+				"type":{"$ref":"#/$defs/ValueType"},
+				"units":{"type":"string", "maxLength":32},
+
+				"value":{
+					"oneOf":[
+						{"type":"null"},
+						{"$ref":"#/$defs/Scalar"},
+						{"type":"array", "items":{"$ref":"#/$defs/Scalar"}, "uniqueItems":true}
+					]
+				},
+
+				// Since das2C 3.0.6.  The property holds a list: any number of
+				// items, or [fewest, most] when a list is given at all.  Its
+				// type, set.enum and set.range describe one item.  What it
+				// feeds must have subSep or repeat.  Never on a boolean.
+				"multi":{
+					"oneOf":[
+						{"const":true},
+						{"type":"array", "minItems":2, "maxItems":2,
+						 "items":{"type":"integer", "minimum":0}}
+					]
+				},
+
+				// On a group's 'enabled' toggle.  Toggles sharing a name here
+				// are radio buttons: at most one is on by default, switching
+				// one on switches the rest off, and the settings of a group
+				// that is off are not sent.  das2C 3.0.6 holds requests to
+				// this: a value given for a setting of a group that is off is
+				// refused, as is switching off the one that is on without
+				// choosing another.
+				"xorGroup":{"$ref":"#/$defs/Ident"},
+
+				"set":{"$ref":"#/$defs/SetBlock"}
+			},
+			"allOf":[
+				// a list has a list value, anything else does not
+				{"if":{"required":["multi"]},
+				 "then":{"properties":{
+					"value":{"type":["array","null"]},
+					"type":{"not":{"enum":["boolean","bool"]}}
+				 }},
+				 "else":{"properties":{"value":{"not":{"type":"array"}}}}
+				}
+			],
+			"additionalProperties":false
+		},
+
+		// How a property's value reaches the server
+		"SetBlock":{
+			"type":"object",
+			"properties":{
+				// The protocol parameter, a key of protocol.httpParams
+				"param":{"type":"string", "minLength":1},
+
+				// For a FlagSet parameter, which flag
+				"flag":{"$ref":"#/$defs/Ident"},
+
+				// Must a request supply this
+				"required":{"type":"boolean"},
+
+				// Booleans: the state that sends something, true if not given.
+				// The other state is the server's default and is silent.
+				"value":{"type":"boolean"},
+
+				// What to send instead of the property's value
+				"pval":{"$ref":"#/$defs/Scalar"},
+
+				// The choices of an enum, or of each item of an enum list
+				"enum":{
+					"type":"array", "minItems":1,
+					"items":{"oneOf":[
+						{"$ref":"#/$defs/Scalar"},
+						{"$ref":"#/$defs/EnumItem"}
+					]}
+				},
+
+				// Limits of a number or time, or of each item of a list
+				"range":{"$ref":"#/$defs/Range"}
+			},
+			"required":["param"],
+			"additionalProperties":false
+		},
+
+		"EnumItem":{
+			"type":"object",
+			"properties":{
+				// What people pick and requisitions hold
+				"value":{"$ref":"#/$defs/Scalar"},
+
+				// What is sent for it, if not the value itself.  Where the
+				// flag or parameter has an 'enum' this is one of its strings,
+				// and 'value' is the word a person or a program uses for it.
+				"pval":{"$ref":"#/$defs/Scalar"},
+
+				// Picking this item turns on this flag, as a switch
+				"flag":{"$ref":"#/$defs/Ident"},
+
+				"label":{"type":"string", "minLength":1, "maxLength":48},
+				"title":{"type":"string", "minLength":1, "maxLength":256},
+				"description":{"type":"string"}
+			},
+			"required":["value"],
+			"additionalProperties":false
+		},
+
+		// A request that is known to work.  Settings keys are paths to
+		// properties, 'coords/time/props/min', 'options/props/keep_spikes'.
+		"Example":{
+			"type":"object",
+			"properties":{
+				"label":{"type":"string", "minLength":1},
+				"title":{"type":"string"},
+				"description":{"type":"string"},
+				"settings":{
+					"type":"object",
+					"propertyNames":{
+						"pattern":"^((coords|data|formats)/[A-Za-z_][A-Za-z0-9_]{0,62}/props|options/props)/[A-Za-z_][A-Za-z0-9_]{0,62}$"
+					},
 					"additionalProperties":{
-						"$ref":"#/$defs/ValueParam"
+						"oneOf":[
+							{"$ref":"#/$defs/Scalar"},
+							{"type":"array", "items":{"$ref":"#/$defs/Scalar"}, "uniqueItems":true}
+						]
 					}
 				}
 			},
-			"required":["type","required"]
+			"required":["settings"],
+			"additionalProperties":false
 		}
 	}
 }

@@ -1,15 +1,16 @@
 {
 	// Das Federated Catalog (FedCat) Node Definition
 	//
-	//   Catalog (0.7)
+	//   Catalog (0.5)
 	//
 	// This defines a simple, recursive container for catalog nodes and node
 	// references.
 	
 	"$schema":"http://json-schema.org/draft/2020-12/schema",
 
-	// Relative ids: $ref targets resolve against wherever this file was
-	// fetched from, so the published set works from any host or checkout
+	// Sources refer to each other by file name.  The build copies what a
+	// schema uses into the published file (src/scripts/schema_bundle.py), and
+	// gives that file its version as its id.
 	"$id":"catalog.json",
 
 	"$ref":"node.json",  // All nodes have these properties
@@ -19,8 +20,6 @@
 	"type":"object",
 
 	"properties":{
-		// Pinned so the child oneOf below can tell a full Catalog from a
-		// SourceSet, both of which have a 'catalog' member
 		"type":{"const":"Catalog"},
 
 		"catalog":{
@@ -56,29 +55,17 @@
 			// requiring server side support code. This is the purpose of the
 			// federated catalog system.
 			
-			"additionalProperties":{"$ref":"#/$defs/Child"}
+			"additionalProperties":{"$ref":"node.json#/$defs/Child"}
 		},
 		"separator":{
-			"type":["null", "string"], "maxLength":16, "pattern":"[:/\\.,;]+",
+			// One to seven of these characters and nothing else.  Seven is
+			// what das2C reads; "/", ":/" and "://" are what is in use.
+			"type":["null", "string"], "maxLength":7, "pattern":"^[:/\\.,;]+$",
 			"default":"/"
 		}
 	},
 
 	"required":["catalog"],
 
-	"unevaluatedProperties": false, // <-- temporary
-
-	"$defs":{
-		// What may appear as a value under 'catalog'.  Shared with
-		// sourceset.json, which can't simply $ref this whole file because
-		// unevaluatedProperties above would reject its extra members.
-		"Child":{
-			"oneOf":[
-				{"$ref":"#"},                  // <-- recursive catalogs
-				{"$ref":"sourceset.json"},     // <-- same data, several sources
-				{"$ref":"reference.json"},     // <-- node reference
-				{"$ref":"httpstreamsrc.json"}  // <-- data source
-			]
-		}
-	}
+	"unevaluatedProperties": false // <-- temporary
 }

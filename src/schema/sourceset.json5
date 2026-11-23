@@ -1,7 +1,7 @@
 {
 	// Das Federated Catalog (FedCat) Node Definition
 	//
-	//   SourceSet (0.7)
+	//   SourceSet (0.2)
 	//
 	// A catalog whose children all provide the same data via different
 	// sources (das2 stream, das3 stream, ...).  Clients pick one child,
@@ -12,8 +12,9 @@
 
 	"$schema":"http://json-schema.org/draft/2020-12/schema",
 
-	// Relative ids: $ref targets resolve against wherever this file was
-	// fetched from, so the published set works from any host or checkout
+	// Sources refer to each other by file name.  The build copies what a
+	// schema uses into the published file (src/scripts/schema_bundle.py), and
+	// gives that file its version as its id.
 	"$id":"sourceset.json",
 
 	"$ref":"node.json",  // All nodes have these properties
@@ -27,11 +28,13 @@
 
 		"catalog":{
 			"type":"object",
-			"additionalProperties":{"$ref":"catalog.json#/$defs/Child"}
+			"additionalProperties":{"$ref":"node.json#/$defs/Child"}
 		},
 
 		"separator":{
-			"type":["null", "string"], "maxLength":16, "pattern":"[:/\\.,;]+",
+			// One to seven of these characters and nothing else.  Seven is
+			// what das2C reads; "/", ":/" and "://" are what is in use.
+			"type":["null", "string"], "maxLength":7, "pattern":"^[:/\\.,;]+$",
 			"default":"/"
 		},
 
@@ -41,16 +44,17 @@
 		"data":{"$ref":"#/$defs/DimSummary"},
 
 		// Usually just the science contacts
-		"contacts":{
-			"type":"array", "items":{
-				"type":"object",
-				"properties":{
-					"type":{"type":"string"},
-					"name":{"type":"string"},
-					"email":{"type":"string"}
-				},
-				"required":["name","type"]
-			}
+		"contacts":{"$ref":"node.json#/$defs/Contacts"},
+
+		// Terms of use, the same for every source in the set
+		"usage":{"$ref":"node.json#/$defs/Usage"},
+
+		// EPN-TAP core metadata for the dataset, by EPNcore column name
+		// (target_name, dataproduct_type, ...), for VESPA style searches
+		"EPNcore":{
+			"type":"object",
+			"propertyNames":{"pattern":"^[a-z][a-z0-9_]{0,62}$"},
+			"additionalProperties":{"type":"string"}
 		}
 	},
 
@@ -65,6 +69,7 @@
 				"type":"object",
 				"properties":{
 					"label":{"type":"string"},
+					"title":{"type":"string"},
 
 					// Min and max, as ISO-8601 strings for time dimensions
 					"validRange":{

@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
 
 # Run this script from the root of the das-cat git project.  Validates the
-# generated schemas (build them with 'make schema') and then the root
-# catalog nodes against them.  Usage: validate.sh [SCHEMA_DIR]
+# published schemas (build them with 'make schema') and then the root
+# catalog nodes and the example nodes against them.  Each node is checked
+# against the schema for its own type and version, see validate_tree.py.
 
-sSchema="${1:-schema/v0.7}"
-if [ ! -f "$sSchema/catalog.json" ]; then
-	echo "No $sSchema/catalog.json, run 'make schema' first"
+if ! ls schema/*/v*.json > /dev/null 2>&1; then
+	echo "No schema/<type>/v<version>.json files, run 'make schema' first"
 	exit 7
 fi
 
 nFail=0
 
+# The root nodes were stamped before their types had schemas (Catalog 0.3
+# and 0.4), so -c: check them against the current schema of their type.
 function validate {
-	check-jsonschema --base-uri "file://$(pwd)/$sSchema/" \
-		--schemafile "$(pwd)/$sSchema/catalog.json" "$@"
+	test/validate_tree.py -c "$@"
 
 	if [ "$?" == "0" ] ; then
 		echo "OK"
@@ -45,13 +46,35 @@ else
 fi
 
 echo "Validating schema files... "
-check-jsonschema --check-metaschema "$sSchema"/*.json
+check-jsonschema --check-metaschema schema/*/v*.json
 if [ "$?" != "0" ]; then
 	exit 7
 fi
 
-echo "FedCat Root catalogs... "
-validate cat/*.json
+# cat/spase.json is left out.  SPASE records are another branch of the
+# catalog with members of their own (type SpaseRecord, reference_urls)
+# that the Catalog schema does not describe, and they are not part of
+# what the das branch work covers.
+echo "FedCat Root catalogs (not spase.json)... "
+lRoots=""
+for f in cat/*.json; do
+	if [ "$f" == "cat/spase.json" ]; then
+		echo "   skipping $f, SPASE nodes have no schema here"
+	else
+		lRoots="$lRoots $f"
+	fi
+done
+validate $lRoots
+
+# These carry current versions, no -c
+echo "Example source nodes... "
+test/validate_tree.py test/ex*.json
+if [ "$?" == "0" ] ; then
+	echo "OK"
+else
+	echo "Failed"
+	nFail=$((nFail + 1))
+fi
 
 #echo "Checking das root catalogs... "
 #validate cat/das/*.json

@@ -1,242 +1,387 @@
 {
-   "$schema":"https://das2.org/schema/cat-0.7/httpstreamsrc.json5",
-
-   "label": "Das2/2.2 Source",
-
-   "title": "Electric Field averages and peaks from the Voyager 2 PWS Spectrum Analyzer",
-   "type": "HttpStreamSrc",
-   "version": "0.7",
-
-   "protocol": {
-      "authentication": {"required": false},
-      "base_urls": [
-         "https://planet.physics.uiowa.edu/das/das2Server?server=dataset&dataset=Voyager/2/PWS/SpecAnalyzer-4s-Efield"
-      ],
-      "convention": "das2/2.2",
-      "httpParams": {
-         "ascii":    {"type": "boolean", "required": false},
-         "end_time": {"type": "isotime", "required": true},
-         "params":   {"type": "list",    "required": false,
-            "listSep": " ",
-            "subValues": {
-               "00": {"value": "--negative=off"},
-               "01": {"value": "--pls=off"},
-               "02": {"value": "--noise=off"},
-               "03": {"value": "--threshold=on"},
-               "04": {"value": "--units=DN"},
-               "05": {"value": "--units=SD"},
-               "06": {"value": "--units=PF"},
-               "07": {"type":"enum",
-                  "enum": [
-                     "10.0Hz", "17.8Hz", "31.1Hz", "56.2Hz",
-                     "100Hz",  "178Hz",  "311Hz",  "562Hz",
-                     "1.00kHz","1.78kHz","3.11kHz","5.62kHz",
-                     "10.0kHz","17.8kHz","31.1kHz","56.2kHz"
-                  ],
-                  "prefix": "--chan=",
-               },
-               "08": {"value": "-s"}
-            }
-         },
-         "resolution": {"type": "real", "units": "s", "required": false},
-         "start_time": {"type": "isotime", "required": true}
-      }
-   },
-   "contacts": [
-      {
-         "role":  "maintainer",
-         "email": "larry-granroth@uiowa.edu",
-         "name":  "Larry Granroth"
-      }
-   ],
-
-   "interface": {
-
-      "formats": {
-         "das":{
-            "label":"das stream",
-            "title":"Streaming format for plots",
-            "mimeTypes":[
-               "application/vnd.das2.das2stream",
-               "text/vnd.das2.das2stream"
-            ],
-            "props":{
-               "serial":{"label":"Serialization", "value":"binary",
-                  "set":{
-                     "param": "format.serial",
-                     "enum":["text","binary"]
-                  }
-               }
-            }
-         }
-      },
-
-      "examples": [
-         {  "settings": {
-               "coords/time/max": "2014-09-01",
-               "coords/time/res": "43.2",
-               "coords/time/min": "2014-08-31"
-            },
-            "label": "Latest Data",
-         },
-         {
-            "settings": {
-               "coords/time/max": "1979-07-27",
-               "coords/time/res": "950.4",
-               "coords/time/min": "1979-07-05"
-            },
-            "label": "Jupiter Encounter",
-         },
-         {
-            "settings": {
-               "coords/time/max": "1981-09-15",
-               "coords/time/res": "1123.2",
-               "coords/time/min": "1981-08-20"
-            },
-            "label": "Saturn Encounter",
-         },
-         {
-            "settings": {
-               "coords/time/max": "1986-01-26",
-               "coords/time/res": "129.6",
-               "coords/time/min": "1986-01-23"
-            },
-            "label": "Uranus Encounter",
-         },
-         {
-            "settings": {
-               "coords/time/max": "1989-08-26",
-               "coords/time/res": "86.4",
-               "coords/time/min": "1989-08-24"
-            },
-            "label": "Neptune Encounter",
-         }
-      ],
-
-      "coords": {
-         "sclk": {
-            "label": "SCLK",
-            "title": "Spacecraft Clock",
-            "enabled": {
-               "type":"boolean",
-               "default": false,
-               "set": {"value": true, "param": "params", "item": "08"}
-            }
-         },
-         "time": {
-            "label": "Time",
-            "units": "UTC",
-            "props":{
-               "max": {
-                  "type":"isotime",
-                  "default":"2014-09-01",
-                  "range":["1977-08-20","now"],
-                  "check":[{"gt":"min"}],
-                  "set": {"param": "end_time", "required": true}
-               },
-               "min": {
-                  "type":"isotime",
-                  "default": "2014-08-31",
-                  "range":["1977-08-20","now"],
-                  "check":[{"lt":"max"}],
-                  "set": {"param": "start_time","required": true}
-               },
-               "res": {
-                  "type":"real",
-                  "units": "s",
-                  "default":"43.2",
-                  "range":["0.0", "31536000.0"],
-                  "set": {"param": "resolution", "required": false}
-               }
-            }
-         }
-      },
-      "data": {
-         "efield": {
-            "name": "E Field",
-            "title": "Electric field intensity",
-            "units": {
-               "set": {
-                  "enum": [
-                     {
-                        "flag": "04",
-                        "value": "raw"
-                     },
-                     {
-                        "flag": "05",
-                        "value": "V**2 m**-2 Hz**-1"
-                     },
-                     {
-                        "flag": "06",
-                        "value": "W m**-2 Hz**-1"
-                     }
-                  ],
-                  "param": "params"
-               },
-               "value": "V m**-1"
-            }
-         }
-      },
-      "options": {
-         "channel": {
-            "set": {
-               "enum": [
-                  {"value": "10.0Hz"}, {"value": "17.8Hz"}, 
-                  {"value": "31.1Hz"}, {"value": "56.2Hz"},
-                  {"value": "100Hz"},  {"value": "178Hz"},
-                  {"value": "311Hz"},  {"value": "562Hz"},
-                  {"value": "1.00kHz"},{"value": "1.78kHz"},
-                  {"value": "3.11kHz"},{"value": "5.62kHz"},
-                  {"value": "10.0kHz"},{"value": "17.8kHz"},
-                  {"value": "31.1kHz"},{"value": "56.2kHz"}
-               ],
-               "flag": "07",
-               "param": "params"
-            },
-            "title": "Spectrum analyzer channel to output",
-            "value": "all"
-         },
-         "negative": {
-            "set": {
-               "flag": "00",
-               "param": "params",
-               "value": true
-            },
-            "title": "Negative values are used as a noise flag. Use this option to keep them.",
-            "type": "boolean",
-            "value": false
-         },
-         "noise": {
-            "set": {
-               "flag": "02",
-               "param": "params",
-               "value": true
-            },
-            "title": "Turn off 17-time-point noise burst filter",
-            "type": "boolean",
-            "value": false
-         },
-         "pls": {
-            "set": {
-               "flag": "01",
-               "param": "params",
-               "value": true
-            },
-            "title": "Turn off PLS noise filter for the 311 Hz and 562 Hz bands.",
-            "type": "boolean",
-            "value": false
-         },
-         "threshold": {
-            "set": {
-               "flag": "03",
-               "param": "params",
-               "value": true
-            },
-            "title": "Filter out values above the data number thresholds given in HOUR[1/2]/FILTER.CSV",
-            "type": "boolean",
-            "value": false
-         }
-      }
-   }
-   
+	"type": "HttpStreamSrc",
+	"version": "0.7",
+	"label": "Das2 Source",
+	"title": "Electric Field averages and peaks from the Voyager 2 PWS Spectrum Analyzer",
+	"contacts": [
+		{
+			"type": "scientific",
+			"name": "Bill Kurth",
+			"email": "william-kurth@uiowa.edu"
+		},
+		{
+			"type": "technical",
+			"name": "Chris Piker",
+			"email": "chris-piker@uiowa.edu"
+		},
+		{
+			"type": "technical",
+			"name": "Larry Granroth",
+			"email": "larry-granroth@uiowa.edu"
+		}
+	],
+	"protocol": {
+		"method": "GET",
+		"baseUrls": [
+			"https://planet.physics.uiowa.edu/das/das2Server?server=dataset&dataset=Voyager/2/PWS/SpecAnalyzer-4s-Efield"
+		],
+		"authorization": {
+			"required": false
+		},
+		"httpParams": {
+			"start_time": {
+				"required": true,
+				"type": "isotime",
+				"comment": "The inclusive lower bound required of the subset, may be smaller at the server's option"
+			},
+			"end_time": {
+				"required": true,
+				"type": "isotime",
+				"comment": "The exclusive upper bound required of the subset, may be larger at the server's option"
+			},
+			"resolution": {
+				"required": false,
+				"type": "real",
+				"units": "s",
+				"comment": "The coarsest time resolution that the server should return, may be finer at the server's option"
+			},
+			"ascii": {
+				"required": false,
+				"type": "boolean",
+				"comment": "Output the text variant of a stream type if available"
+			},
+			"params": {
+				"type": "FlagSet",
+				"required": false,
+				"flagSep": " ",
+				"flags": {
+					"Keep_Negative": {
+						"value": "--negative=off",
+						"comment": "Negative values are used as a noise flag and are normally excluded.  Use this option to keep them."
+					},
+					"No_PLS_Filter": {
+						"value": "--pls=off",
+						"comment": "Turn off PLS noise filter for the 311 Hz and 562 Hz bands."
+					},
+					"No_Burst_Filter": {
+						"value": "--noise=off",
+						"comment": "Turn off 17-time-point noise burst filter"
+					},
+					"Threshold_Filter": {
+						"value": "--threshold=on",
+						"comment": "Filter out values above the data number thresholds given in HOUR[1/2]/FILTER.CSV"
+					},
+					"Spike_Filter": {
+						"value": "--v2spike=on",
+						"comment": "Filter interference observed in 1.0, 1.78 and 3.1 KHz channels"
+					},
+					"Channel": {
+						"prefix": "--chan=",
+						"enum": [
+							"10.0Hz",
+							"17.8Hz",
+							"31.1Hz",
+							"56.2Hz",
+							"100Hz",
+							"178Hz",
+							"311Hz",
+							"562Hz",
+							"1.00kHz",
+							"1.78kHz",
+							"3.11kHz",
+							"5.62kHz",
+							"10.0kHz",
+							"17.8kHz",
+							"31.1kHz",
+							"56.2kHz"
+						],
+						"comment": "Output only a single channel, by default all are sent"
+					},
+					"SCLK": {
+						"value": "-s",
+						"comment": "Output spacecraft clock values in addition to SCET times"
+					},
+					"output": {
+						"prefix": "--units=",
+						"enum": [
+							"DN",
+							"EF",
+							"SD",
+							"PF"
+						],
+						"comment": "Set the output units to \\nDN: Raw data numbers; \\nEF: Electric Field in V/m; \\nSD: Electric spectral density in V^2/m^2 Hz; \\nPF: Electric power spectral density in W/m^2 Hz\\n"
+					}
+				}
+			}
+		}
+	},
+	"interface": {
+		"coords": {
+			"time": {
+				"label": "Time",
+				"props": {
+					"min": {
+						"label": "Minimum",
+						"title": "Minimum time value to stream",
+						"value": null,
+						"set": {
+							"param": "start_time",
+							"required": true
+						}
+					},
+					"max": {
+						"label": "Maximum",
+						"title": "Maximum time value to stream",
+						"value": null,
+						"set": {
+							"param": "end_time",
+							"required": true
+						}
+					},
+					"res": {
+						"label": "Resolution",
+						"value": null,
+						"units": "s",
+						"title": "Maximum time between output points",
+						"description": "The server returns data at or better than the given resolution if possible.  Leave unset to get data at intrinsic resolution, without server side averages.",
+						"set": {
+							"param": "resolution",
+							"required": false
+						}
+					},
+					"units": {
+						"value": "UTC"
+					}
+				},
+				"validRange": [
+					"1977-08-20",
+					"now"
+				]
+			}
+		},
+		"formats": {
+			"das2": {
+				"label": "das2 stream",
+				"mimeTypes": [
+					"application/vnd.das2.das2stream",
+					"text/vnd.das2.das2stream"
+				],
+				"props": {
+					"enabled": {
+						"type": "boolean",
+						"xorGroup": "format",
+						"value": true
+					},
+					"text": {
+						"label": "Text",
+						"title": "Convert output to UTF-8 text",
+						"type": "boolean",
+						"value": false,
+						"set": {
+							"param": "ascii",
+							"pval": "true",
+							"value": true
+						}
+					}
+				}
+			}
+		},
+		"options": {
+			"label": "Options",
+			"props": {
+				"Keep_Negative": {
+					"label": "Keep_Negative",
+					"title": "Negative values are used as a noise flag and are normally excluded.  Use this option to keep them.",
+					"type": "boolean",
+					"value": false,
+					"set": {
+						"param": "params",
+						"flag": "Keep_Negative",
+						"value": true
+					}
+				},
+				"No_PLS_Filter": {
+					"label": "No_PLS_Filter",
+					"title": "Turn off PLS noise filter for the 311 Hz and 562 Hz bands.",
+					"type": "boolean",
+					"value": false,
+					"set": {
+						"param": "params",
+						"flag": "No_PLS_Filter",
+						"value": true
+					}
+				},
+				"No_Burst_Filter": {
+					"label": "No_Burst_Filter",
+					"title": "Turn off 17-time-point noise burst filter",
+					"type": "boolean",
+					"value": false,
+					"set": {
+						"param": "params",
+						"flag": "No_Burst_Filter",
+						"value": true
+					}
+				},
+				"Threshold_Filter": {
+					"label": "Threshold_Filter",
+					"title": "Filter out values above the data number thresholds given in HOUR[1/2]/FILTER.CSV",
+					"type": "boolean",
+					"value": false,
+					"set": {
+						"param": "params",
+						"flag": "Threshold_Filter",
+						"value": true
+					}
+				},
+				"Spike_Filter": {
+					"label": "Spike_Filter",
+					"title": "Filter interference observed in 1.0, 1.78 and 3.1 KHz channels",
+					"type": "boolean",
+					"value": false,
+					"set": {
+						"param": "params",
+						"flag": "Spike_Filter",
+						"value": true
+					}
+				},
+				"Channel": {
+					"label": "Channel",
+					"title": "Output only a single channel, by default all are sent",
+					"type": "enum",
+					"value": null,
+					"set": {
+						"param": "params",
+						"flag": "Channel",
+						"enum": [
+							{
+								"value": "10.0Hz"
+							},
+							{
+								"value": "17.8Hz"
+							},
+							{
+								"value": "31.1Hz"
+							},
+							{
+								"value": "56.2Hz"
+							},
+							{
+								"value": "100Hz"
+							},
+							{
+								"value": "178Hz"
+							},
+							{
+								"value": "311Hz"
+							},
+							{
+								"value": "562Hz"
+							},
+							{
+								"value": "1.00kHz"
+							},
+							{
+								"value": "1.78kHz"
+							},
+							{
+								"value": "3.11kHz"
+							},
+							{
+								"value": "5.62kHz"
+							},
+							{
+								"value": "10.0kHz"
+							},
+							{
+								"value": "17.8kHz"
+							},
+							{
+								"value": "31.1kHz"
+							},
+							{
+								"value": "56.2kHz"
+							}
+						]
+					}
+				},
+				"SCLK": {
+					"label": "SCLK",
+					"title": "Output spacecraft clock values in addition to SCET times",
+					"type": "boolean",
+					"value": false,
+					"set": {
+						"param": "params",
+						"flag": "SCLK",
+						"value": true
+					}
+				},
+				"output": {
+					"label": "output",
+					"title": "Set the output units to \\nDN: Raw data numbers; \\nEF: Electric Field in V/m; \\nSD: Electric spectral density in V^2/m^2 Hz; \\nPF: Electric power spectral density in W/m^2 Hz\\n",
+					"type": "enum",
+					"value": null,
+					"set": {
+						"param": "params",
+						"flag": "output",
+						"enum": [
+							{
+								"value": "DN"
+							},
+							{
+								"value": "EF"
+							},
+							{
+								"value": "SD"
+							},
+							{
+								"value": "PF"
+							}
+						]
+					}
+				}
+			}
+		},
+		"examples": [
+			{
+				"label": "Latest Data",
+				"settings": {
+					"coords/time/props/min": "2014-08-31",
+					"coords/time/props/max": "2014-09-01",
+					"coords/time/props/res": 43.2
+				}
+			},
+			{
+				"label": "Jupiter Encounter",
+				"settings": {
+					"coords/time/props/min": "1979-07-05",
+					"coords/time/props/max": "1979-07-27",
+					"coords/time/props/res": 950.4
+				}
+			},
+			{
+				"label": "Saturn Encounter",
+				"settings": {
+					"coords/time/props/min": "1981-08-20",
+					"coords/time/props/max": "1981-09-15",
+					"coords/time/props/res": 1123.2
+				}
+			},
+			{
+				"label": "Uranus Encounter",
+				"settings": {
+					"coords/time/props/min": "1986-01-23",
+					"coords/time/props/max": "1986-01-26",
+					"coords/time/props/res": 129.6
+				}
+			},
+			{
+				"label": "Neptune Encounter",
+				"settings": {
+					"coords/time/props/min": "1989-08-24",
+					"coords/time/props/max": "1989-08-26",
+					"coords/time/props/res": 86.4
+				}
+			}
+		]
+	}
 }

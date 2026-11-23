@@ -1,0 +1,1615 @@
+#! /usr/bin/env python3
+
+"""Read dataset definitions (DSDFs) from das2 servers and write das
+federated catalog nodes: Catalog 0.5, SourceSet 0.2, HttpStreamSrc 0.7.
+
+Server directories become Catalog nodes, each dataset becomes a SourceSet
+(<ds>.json) with one HttpStreamSrc child (<ds>/das2.json).  Everything is
+built directly from what the servers return, nothing is merged from older
+output.  A DSDF that can't be converted as written (illegal param token,
+param form outside the das2 Structured Sub-values spec, ...) is reported
+and its dataset is not written, so the DSDF gets fixed upstream.
+
+The conversion is mechanical and repeatable.  Changes that need judgment
+are not made here: they are per dataset override files (-o, see
+cat_override.py), applied after conversion and guarded by a hash of the
+DSDF lines they were reviewed against.
+
+Exit values: 0 all requested datasets written (or would be, with -n),
+5 some datasets were not written or an override file was not used,
+13 bad arguments, 17 a server list could not be read.
+"""
+
+import sys
+import os
+import os.path
+from os.path import basename as bname
+from os.path import dirname as dname
+
+import json
+import argparse
+import gettext
+import hashlib
+import logging
+import requests
+import re
+
+from html import unescape  # HTMLParser.unescape() was removed in 3.9
+from datetime import datetime, timedelta
+from importlib.machinery import SourceFileLoader
+
+# The override engine sits beside this script and neither is a package
+cat_override = SourceFileLoader('cat_override', os.path.join(
+	dname(os.path.abspath(__file__)), 'cat_override.py')).load_module()
+
+##############################################################################
+# das2 server times, enough to compute default resolutions without needing
+# the das2 module.  Accepts YYYY-MM-DD and YYYY-DOY, with '-' or '/' between
+# date fields, then an optional T or space and HH[:MM[:SS[.fff]]], then an
+# optional Z.  Deliberately stricter than das2py's parser: no month names,
+# two-digit years or implied fields, which in a DSDF are more likely typos.
+#
+# 'now' (open ended validRange) is not parsed.  It is copied into catalogs
+# as is and clients interpret it; it is no use for a default resolution.
+
+g_reDas2Time = re.compile(
+	r'^\s*(\d{4})[-/](?:(\d{1,2})[-/](\d{1,2})|(\d{3}))'
+	r'(?:[T ](\d{1,2})(?::(\d{1,2})(?::(\d{1,2}(?:\.\d*)?))?)?)?Z?\s*$'
+)
+
+def das2Time(sTime):
+	"""Parse a das2 time string to a naive UTC datetime, None if unparsable"""
+	m = g_reDas2Time.match(sTime)
+	if not m: return None
+	sY, sMon, sDom, sDoy, sH, sM, sS = m.groups()
+	try:
+		if sDoy:
+			# Range check by hand, timedelta would roll 2015-366 into 2016
+			dt = datetime(int(sY), 1, 1)
+			nDays = (datetime(int(sY) + 1, 1, 1) - dt).days
+			if not (1 <= int(sDoy) <= nDays): return None
+			dt += timedelta(days=int(sDoy) - 1)
+		else:
+			dt = datetime(int(sY), int(sMon), int(sDom))
+	except ValueError:
+		return None
+	return dt + timedelta(
+		hours=int(sH or 0), minutes=int(sM or 0), seconds=float(sS or 0)
+	)
+
+def das2Seconds(log, sWhere, sBeg, sEnd):
+	"""Seconds from sBeg to sEnd, None if either does not parse.
+
+	Failure is logged because the caller then omits a default resolution,
+	and a das2 server given no resolution returns full resolution data.
+	"""
+	dtBeg = das2Time(sBeg)
+	dtEnd = das2Time(sEnd)
+	if (dtBeg is None) or (dtEnd is None):
+		log.warning("%s: can't compute a default resolution from '%s' to '%s'"%(
+			sWhere, sBeg, sEnd))
+		return None
+	return (dtEnd - dtBeg).total_seconds()
+
+##############################################################################
+# Output vocabulary
+
+# Node types are versioned one by one.  These are the versions of the
+# layouts written here, and the schema files they are checked against,
+# schema/<type>/v<version>.json; keep them in step with the Makefile.
+g_dVersion  = {'Catalog':'0.5', 'SourceSet':'0.2', 'HttpStreamSrc':'0.7'}
+g_lDas2Mime = ['application/vnd.das2.das2stream', 'text/vnd.das2.das2stream']
+g_lQsMime   = ['application/vnd.das2.qstream', 'text/vnd.das2.qstream']
+
+# Protocol comments for the das2 parameters every dataset has.  Notes for
+# a developer reading a node's protocol section, not user strings.
+g_dParamNote = {
+	'start_time':"The inclusive lower bound required of the subset, may be "
+	             "smaller at the server's option",
+	'end_time':  "The exclusive upper bound required of the subset, may be "
+	             "larger at the server's option",
+	'resolution':"The coarsest time resolution that the server should return, "
+	             "may be finer at the server's option",
+	'interval':  "The time between model sample points",
+	# not part of the das2 API proper, an extra das2py-server takes
+	'ascii':     "Output the text variant of a stream type if available"
+}
+
+# Catalog keys and param tokens must be das2C identifiers (dasid_check)
+g_reIdent = re.compile(r'^[A-Za-z_][A-Za-z0-9_]{0,62}$')
+
+# A set: element is one item of a list, and lists are typed with commas
+# between the items (lfdr=Ex,Ew), so an element can't hold one
+g_reElem  = re.compile(r'^[^,]+$')
+
+g_reNum   = re.compile(r'^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$')
+g_reInt   = re.compile(r'^[-+]?\d+$')
+
+# Fields after the title in an item_NN line that are flags, not units
+g_lItemFlags = ('on', 'off', 'required', 'optional')
+
+# EPNcore keys a DSDF may give directly, with their older spellings
+g_lEpnKeys = [
+	'dataproduct_type', 'measurement_type', 'processing_level',
+	'target_name', 'target_class', 'target_region', 'feature_name'
+]
+g_dEpnTrans = {
+	'dataproductType':'dataproduct_type', 'measurementType':'measurement_type',
+	'targetClass':'target_class', 'targetName':'target_name',
+	'targetRegion':'target_region', 'featureName':'feature_name'
+}
+
+class DsdfError(Exception):
+	"""A DSDF that can't be converted as written, its dataset is not output"""
+	pass
+
+##############################################################################
+def setupLogger(sLogLevel, sName):
+	"""Utility to setup standard python logger.
+	sLogLevel - Logging level, starts with one of: C,c,E,e,W,w,I,i,D,d
+	           [critical,error,warning,info,debug]
+	"""
+	sLevel = sLogLevel.lower()
+	nLevel = logging.WARNING
+
+	sDateFmt = '%Y-%m-%d %H:%M:%S'
+	sConFmt = '%(levelname)-8s: %(message)s'
+
+	if sLevel.startswith("c"):
+		nLevel = logging.CRITICAL
+	elif sLevel.startswith("e"):
+		nLevel = logging.ERROR
+	elif sLevel.startswith("i"):
+		nLevel = logging.INFO
+	elif sLevel.startswith("d"):
+		nLevel = logging.DEBUG
+		sConFmt = '%(name)-12s %(levelname)-8s: %(message)s'
+
+	logger = logging.getLogger(sName)
+	logger.setLevel(nLevel)
+
+	conHdlr = logging.StreamHandler(sys.stderr)
+	conHdlr.setFormatter(logging.Formatter(sConFmt, sDateFmt))
+	logger.addHandler(conHdlr)
+
+	return logger
+
+##############################################################################
+# Reading server replies
+
+def parseDsdfProps(log, sUrl, sStr):
+	"""Parse the <properties> element of a server=dsdf reply.
+
+	Returns {key: {NN: value}}, NN being the two digit _NN suffix, or None
+	on failure.  A key without a suffix is NN '00': on input {thing} and
+	{thing}_00 are the same item.  (Autoplot disagrees, so DSDFs shouldn't
+	be written that way.)  When both are given and differ the numbered one
+	is kept, so the result does not depend on attribute order.
+	"""
+	iStart = sStr.find('<properties')
+	if iStart == -1:
+		log.error("Couldn't find start of stream properties from '%s'"%sUrl)
+		return None
+
+	iEnd = sStr.rfind('/>')
+	if iEnd == -1:
+		log.error("Couldn't find end of stream properties from '%s'"%sUrl)
+		return None
+
+	sProps = sStr[iStart + len('<properties') : iEnd]
+
+	dProps = {}
+	dBare = {}
+	lQuoted = []
+	for (sKey, sVal) in re.findall(r'([a-zA-Z][0-9a-zA-Z_]*)\s*=\s*"(.*?)"', sProps, re.S):
+		sVal = unescape(sVal).strip()
+
+		# DSDFs are IDL: a "double quoted" value, or a stray quote left by a
+		# typo, is served with the quote characters as part of the value
+		# (a value may end in a quote honestly, '... -y "Data Rate"', so an
+		# end quote only counts when the quotes don't pair up)
+		if sVal.startswith('"') or (sVal.count('"') % 2 == 1): lQuoted.append(sKey)
+
+		m = re.match(r'^(.*[A-Za-z])_(\d+)$', sKey)
+		if not m:
+			m = re.match(r'^(.*[A-Za-z])(\d\d)$', sKey)  # old style, param01
+		if m:
+			dSub = dProps.setdefault(m.group(1), {})
+			sNN = '%02d'%int(m.group(2))
+			if sNN in dSub:
+				log.warning("%s: %s_%s is given twice (as %s), the later one is "
+				            "kept"%(sUrl, m.group(1), sNN, sKey))
+			dSub[sNN] = sVal
+		else:
+			dBare[sKey] = sVal
+
+	if lQuoted:
+		log.warning("%s: values with a leading or unpaired \", a double quoted or "
+		            "mistyped DSDF line: %s"%(sUrl, ', '.join(lQuoted)))
+
+	for (sKey, sVal) in dBare.items():
+		dSub = dProps.setdefault(sKey, {})
+		if '00' not in dSub:
+			dSub['00'] = sVal
+		elif dSub['00'] != sVal:
+			log.warning("%s: %s and %s_00 differ, keeping %s_00 = '%s', ignoring '%s'"%(
+				sUrl, sKey, sKey, sKey, dSub['00'], sVal))
+
+	return dProps
+
+def _prop(dProps, sKey, sNN='00'):
+	"""A DSDF value, None if missing or empty"""
+	s = dProps.get(sKey, {}).get(sNN)
+	return s if s else None
+
+def _isTrue(dProps, sKey):
+	s = _prop(dProps, sKey)
+	return (s is not None) and (s.lower() in ('true', '1', 'yes'))
+
+def _numNN(s):
+	return int(s) if s.isdigit() else -1
+
+def _sortedNN(dSub):
+	return sorted(dSub, key=_numNN)
+
+def splitFields(sVal):
+	"""Split a das2 sub-value string on unescaped '|', strip, unescape"""
+	return [s.strip().replace('\\|', '|') for s in re.split(r'(?<!\\)\|', sVal)]
+
+def _num(s):
+	"""A number from a DSDF string, the string itself if it isn't one"""
+	if g_reInt.match(s): return int(s)
+	if g_reNum.match(s): return float(s)
+	return s
+
+##############################################################################
+# DSDF params (das2 Structured Sub-values for Params) to a FlagSet
+
+def parseValInfo(sNN, sVal):
+	"""paramValInfo_NN 'elem: text | elem: text' to a dict, split at the
+	first ':'"""
+	dOut = {}
+	for s in splitFields(sVal):
+		if not s: continue
+		n = s.find(':')
+		if n < 1:
+			raise DsdfError("paramValInfo_%s entry '%s' has no 'element:'"%(sNN, s))
+		dOut[s[:n].strip()] = s[n+1:].strip()
+	return dOut
+
+def parseParam(sNN, sVal):
+	"""One param_NN line to a dict with token, title and kind, plus:
+	  switch: sent, the text sent
+	  text:   prefix
+	  enum:   prefix, elems, user (what a person picks, per element)
+	  range:  prefix, range = (type, lo, hi)
+	  set:    prefix, elems, subSep
+	All but switch also have suffix, the output text after the '@',
+	'' for most.  Blanks beside the '@' are part of prefix and suffix:
+	'-b @' sends '-b 3'.
+	"""
+	l = splitFields(sVal)
+	if (len(l) < 2) or (len(l) > 4):
+		raise DsdfError("param_%s has %d fields: '%s'"%(sNN, len(l), sVal))
+
+	(sTok, sTitle) = l[:2]
+	d = {'nn':sNN, 'token':sTok, 'title':sTitle}
+	if not g_reIdent.match(sTok):
+		raise DsdfError("param_%s token '%s' is not a legal identifier"%(sNN, sTok))
+	if not sTitle:
+		raise DsdfError("param_%s '%s' has no title"%(sNN, sTok))
+
+	sOut = l[2] if len(l) > 2 else sTok   # 2-field form sends the token
+	sCon = l[3] if len(l) > 3 else ''
+
+	if not sOut:
+		raise DsdfError("param_%s '%s' has an empty output field"%(sNN, sTok))
+
+	if '@' not in sOut:
+		if sCon:
+			raise DsdfError("param_%s '%s' has a constraint but no '@' in '%s'"%(
+				sNN, sTok, sOut))
+		d['kind'] = 'switch'
+		d['sent'] = sOut
+		return d
+
+	# One value per flag.  '--from @ --to @' would be two values under one
+	# name, which neither a control nor a flag can say
+	if sOut.count('@') > 1:
+		raise DsdfError("param_%s '%s' has more than one '@' in '%s'"%(sNN, sTok, sOut))
+	n = sOut.index('@')
+	d['prefix'] = sOut[:n]
+	d['suffix'] = sOut[n+1:]
+
+	if not sCon:
+		d['kind'] = 'text'
+		return d
+
+	n = sCon.find(':')
+	if n == -1:
+		raise DsdfError("param_%s '%s' constraint '%s' has no type"%(sNN, sTok, sCon))
+	sType = sCon[:n].strip().lower()
+	lArgs = sCon[n+1:].split()
+
+	if sType == 'option':
+		if not lArgs:
+			raise DsdfError("param_%s '%s' option: list is empty"%(sNN, sTok))
+		if len(set(lArgs)) != len(lArgs):
+			raise DsdfError("param_%s '%s' option: list repeats a value"%(sNN, sTok))
+		d['kind'] = 'enum'
+		d['elems'] = lArgs
+		d['user'] = _userValues(lArgs)
+
+	elif sType == 'range':
+		if (len(lArgs) != 2) or not all(g_reNum.match(s) for s in lArgs):
+			raise DsdfError("param_%s '%s' range: needs two numbers, not '%s'"%(
+				sNN, sTok, sCon))
+		# The spec is silent on types, integer bounds mean an integer
+		d['kind'] = 'range'
+		if all(g_reInt.match(s) for s in lArgs):
+			d['range'] = ('integer', int(lArgs[0]), int(lArgs[1]))
+		else:
+			d['range'] = ('real', float(lArgs[0]), float(lArgs[1]))
+
+	elif sType == 'set':
+		if len(lArgs) < 2:
+			raise DsdfError("param_%s '%s' set: needs a separator and elements"%(
+				sNN, sTok))
+		d['kind'] = 'set'
+		d['subSep'] = {'NONE':'', 'SPACE':' '}.get(lArgs[0], lArgs[0])
+		d['elems'] = lArgs[1:]
+		if len(set(d['elems'])) != len(d['elems']):
+			raise DsdfError("param_%s '%s' set: list repeats a value"%(sNN, sTok))
+		for s in d['elems']:
+			if not g_reElem.match(s):
+				raise DsdfError("param_%s '%s' set: element '%s' has a comma, which "
+				                "separates the items of a list in a request"%(sNN, sTok, s))
+	else:
+		raise DsdfError("param_%s '%s' has unknown constraint type '%s'"%(
+			sNN, sTok, sType))
+	return d
+
+def _userValues(lElems):
+	"""What a person picks for each string of an option: list.
+
+	The DSDF's strings are what the reader takes, and they stay in the
+	protocol section.  Most are fit to show as they are.  One shaped like
+	a command line option, '--80khz', is not: it would put the reader's
+	argument syntax into the names client programs are written against.
+	Those lose their leading dashes here, and the interface item points
+	at the listed string with a pval.
+
+	Returns a list parallel to lElems, lElems itself when nothing is to be
+	done or when the stripped names would be empty, collide, or the dashes
+	are minus signs.
+	"""
+	if not any(s.startswith('-') for s in lElems): return lElems
+	if any(g_reNum.match(s) for s in lElems): return lElems
+	lUser = [s.lstrip('-') for s in lElems]
+	if not all(lUser): return lElems
+	if len(set(s.lower() for s in lUser)) != len(lUser): return lElems
+	return lUser
+
+def _slot(d, **dMore):
+	"""The protocol flag for a parsed param that takes a value: what goes
+	before it, what goes after it if anything does, then the rest"""
+	dFlag = {'prefix':d['prefix']}
+	if d['suffix']: dFlag['suffix'] = d['suffix']
+	dFlag.update(dMore)
+	return dFlag
+
+def parseParams(log, sDs, dProps):
+	"""DSDF param_NN, paramInfo_NN, paramValInfo_NN and paramSep to
+	(dHttpParam, dOptProps, lDefs).
+
+	dHttpParam is the FlagSet for the 'params' HTTP parameter, dOptProps
+	the interface option properties, lDefs the parsed params, needed to
+	split example params.  Flag keys and property keys are the param
+	tokens.  All user strings go in the interface.  The protocol has what
+	builds a URL and every string the reader is known to take: a flag made
+	from an option: or set: list carries the list as its "enum".  Each
+	flag also gets a "comment", the DSDF's title and paramInfo text as one
+	string.  It is for someone reading the protocol section by itself; no
+	client shows it, and overrides that reword the interface leave it as
+	the server's author wrote it.
+
+	A set: param is one flag with a subSep, and in the interface one enum
+	property with "multi": true whose value is a list: one selector, as
+	the DSDF says.  Clients need das2C 3.0.6 to read it.
+
+	Returns (None, {}, []) when the DSDF has no params.  Raises DsdfError.
+	"""
+	dParam = dProps.get('param', {})
+	if not dParam: return (None, {}, [])
+	dInfo    = dProps.get('paramInfo', {})
+	dValInfo = dProps.get('paramValInfo', {})
+
+	for sNN in list(dInfo) + list(dValInfo):
+		if sNN not in dParam:
+			log.warning("%s: paramInfo/paramValInfo_%s has no param_%s"%(sDs, sNN, sNN))
+
+	sFlagSep = _prop(dProps, 'paramSep') or ' '
+
+	lDefs = []
+	dFlags = {}
+	dOpts = {}
+	for sNN in _sortedNN(dParam):
+		d = parseParam(sNN, dParam[sNN])
+		sTok = d['token']
+		if sTok in dFlags:
+			raise DsdfError("param_%s token '%s' is used twice"%(sNN, sTok))
+
+		dVI = parseValInfo(sNN, dValInfo[sNN]) if sNN in dValInfo else {}
+		if dVI and (d['kind'] not in ('enum', 'set')):
+			raise DsdfError("paramValInfo_%s is given but param_%s '%s' has no "
+			                "option: or set: list"%(sNN, sNN, sTok))
+		for s in dVI:
+			if s not in d['elems']:
+				log.warning("%s: paramValInfo_%s names '%s', which is not in "
+				            "param_%s's list"%(sDs, sNN, s, sNN))
+		lDefs.append(d)
+
+		dSet = {'param':'params', 'flag':sTok}
+		dP = {'label':sTok, 'title':d['title']}
+		if sNN in dInfo: dP['description'] = dInfo[sNN]
+
+		if d['kind'] == 'switch':
+			dFlags[sTok] = {'value':d['sent']}
+			dSet['value'] = True
+			dP.update({'type':'boolean', 'value':False, 'set':dSet})
+
+		elif d['kind'] == 'text':
+			dFlags[sTok] = _slot(d)
+			dP.update({'type':'string', 'value':None, 'set':dSet})
+
+		elif d['kind'] == 'range':
+			dFlags[sTok] = _slot(d)
+			(sType, lo, hi) = d['range']
+			dSet['range'] = [lo, hi]   # exclusive upper, copied as is
+			dP.update({'type':sType, 'value':None, 'set':dSet})
+
+		elif d['kind'] == 'enum':
+			dFlags[sTok] = _slot(d, enum=list(d['elems']))
+			if (d['user'] is d['elems']) and any(s.startswith('-') for s in d['elems']) \
+			   and not any(g_reNum.match(s) for s in d['elems']):
+				log.warning("%s: param_%s '%s' offers values that look like command "
+				            "line options and can't be given plain names, they are "
+				            "shown as they are"%(sDs, sNN, sTok))
+			lEnum = []
+			for (s, sUser) in zip(d['elems'], d['user']):
+				dE = {'value':sUser}
+				if sUser != s: dE['pval'] = s
+				if s in dVI: dE['title'] = dVI[s]
+				lEnum.append(dE)
+			dSet['enum'] = lEnum
+			dP.update({'type':'enum', 'value':None, 'set':dSet})
+
+		else:
+			# set: one list property.  Clients send the chosen elements in
+			# enum order, so the list order here is the order sent.
+			dFlags[sTok] = _slot(d, subSep=d['subSep'], enum=list(d['elems']))
+			lEnum = []
+			for s in d['elems']:
+				dE = {'value':s}
+				if s in dVI: dE['title'] = dVI[s]
+				lEnum.append(dE)
+			dSet['enum'] = lEnum
+			dP.update({'type':'enum', 'multi':True, 'value':[], 'set':dSet})
+
+		# last, so the members that build a URL read first
+		sNote = d['title']
+		if sNN in dInfo:
+			sNote += ('  ' if sNote[-1:] in '.!?' else '.  ') + dInfo[sNN]
+		dFlags[sTok]['comment'] = sNote
+
+		dOpts[sTok] = dP
+
+	dHttp = {'type':'FlagSet', 'required':False, 'flagSep':sFlagSep, 'flags':dFlags}
+	return (dHttp, dOpts, lDefs)
+
+def _matchVal(d, sRest, sSep):
+	"""The value of a prefixed param at the front of sRest as (value, rest),
+	or None.  For set params the value is a list of elements."""
+	if d['kind'] == 'set':
+		if d['subSep'] == sSep:
+			# Survey -n: words are elements while they are known elements, the
+			# first unknown word starts the next flag
+			lWords = sRest.split(sSep)
+			lGot = []
+			while lWords and (lWords[0] in d['elems']):
+				lGot.append(lWords.pop(0))
+			return (lGot, sSep.join(lWords)) if lGot else None
+
+		n = sRest.find(sSep) if sSep else -1
+		sWord = sRest if n == -1 else sRest[:n]
+		sTail = '' if n == -1 else sRest[n:]
+		if d['subSep']:
+			lGot = sWord.split(d['subSep'])
+			if not all(e in d['elems'] for e in lGot): return None
+			return (lGot, sTail)
+
+		# NONE: elements run together, take known ones longest first
+		lElem = sorted(d['elems'], key=len, reverse=True)
+		lGot = []
+		while sWord:
+			for e in lElem:
+				if sWord.startswith(e):
+					lGot.append(e)
+					sWord = sWord[len(e):]
+					break
+			else:
+				return None
+		return (lGot, sTail) if lGot else None
+
+	n = sRest.find(sSep) if sSep else -1
+	sWord = sRest if n == -1 else sRest[:n]
+	sTail = '' if n == -1 else sRest[n:]
+	if not sWord: return None
+	if (d['kind'] == 'enum') and (sWord not in d['elems']): return None
+	if d['kind'] == 'range':
+		if not g_reNum.match(sWord): return None
+		if (d['range'][0] == 'integer') and not g_reInt.match(sWord): return None
+	return (sWord, sTail)
+
+def _matchSuffixed(d, sRest, sSep):
+	"""As _matchVal() for a param whose value is followed by fixed text:
+	the value ends at the first place the suffix stands with the end of
+	the flag right after it, and has to be a whole value by itself."""
+	sSuf = d.get('suffix', '')
+	if not sSuf: return _matchVal(d, sRest, sSep)
+	n = sRest.find(sSuf)
+	while n != -1:
+		sTail = sRest[n+len(sSuf):]
+		if (not sTail) or (not sSep) or sTail.startswith(sSep):
+			t = _matchVal(d, sRest[:n], sSep)
+			if t and not t[1]: return (t[0], sTail)
+		n = sRest.find(sSuf, n + 1)
+	return None
+
+def splitExampleParams(lDefs, sFlagSep, sParams):
+	"""Split an exampleParams string back into option settings.
+
+	Matching is in place: at each position the longest switch text or flag
+	prefix wins (a prefix may hold a space, '-lfdr '), and bare words go to
+	the empty prefix param whose list holds them, lists before free text.
+	A set: param becomes one list in the DSDF's element order, and an
+	option: value the name parseParams() gave it in the interface.
+	Returns (dSettings, sLeftover); sLeftover is the unmatched remainder,
+	'' when everything matched.
+	"""
+	dOut = {}
+	s = sParams.strip()
+	while s:
+		lHits = []
+		for d in lDefs:
+			if d['kind'] == 'switch':
+				w = d['sent']
+				if (s == w) or (s.startswith(w) and s[len(w):].startswith(sFlagSep)):
+					lHits.append((len(w), 1, d, w, s[len(w):]))
+			elif d['prefix']:
+				if s.startswith(d['prefix']):
+					t = _matchSuffixed(d, s[len(d['prefix']):], sFlagSep)
+					if t: lHits.append((len(d['prefix']), 1, d, t[0], t[1]))
+			else:
+				t = _matchSuffixed(d, s, sFlagSep)
+				if t: lHits.append((0, 0 if d['kind'] == 'text' else 1, d, t[0], t[1]))
+
+		if not lHits: return (dOut, s)
+		lHits.sort(key=lambda t: (t[0], t[1]), reverse=True)
+		if (len(lHits) > 1) and (lHits[0][:2] == lHits[1][:2]):
+			return (dOut, s)   # two params want the same text
+
+		(_, _, d, val, sTail) = lHits[0]
+		sKey = 'options/props/%s'%d['token']
+		# Only a set: holds several values.  A second '-c B' after '-c A'
+		# would quietly replace the first, so it is left unmatched.
+		if (sKey in dOut) and (d['kind'] != 'set'): return (dOut, s)
+		if d['kind'] == 'switch':
+			dOut[sKey] = True
+		elif d['kind'] == 'set':
+			# a flag given twice, '-n a -n b', is still one selection
+			lAll = dOut.get(sKey, []) + val
+			dOut[sKey] = [e for e in d['elems'] if e in lAll]
+		elif d['kind'] == 'enum':
+			dOut[sKey] = d['user'][d['elems'].index(val)]
+		elif d['kind'] == 'range':
+			dOut[sKey] = int(val) if (d['range'][0] == 'integer') else float(val)
+		else:
+			dOut[sKey] = val
+
+		s = sTail
+		if sFlagSep and s.startswith(sFlagSep): s = s[len(sFlagSep):]
+		if sFlagSep == ' ': s = s.lstrip()
+	return (dOut, '')
+
+##############################################################################
+# Other DSDF content
+
+def _contacts(dProps):
+	"""sciContact and techContact, 'Name <email>, Name <email>', to the
+	contacts list"""
+	lOut = []
+	for (sKey, sType) in (('sciContact', 'scientific'), ('techContact', 'technical')):
+		s = _prop(dProps, sKey)
+		if not s: continue
+		for sOne in s.split(','):
+			sOne = sOne.strip()
+			if not sOne: continue
+			n = sOne.find('<')
+			if n == -1:
+				dC = {'type':sType, 'name':sOne}
+			else:
+				dC = {'type':sType, 'name':sOne[:n].strip()}
+				sEmail = sOne[n+1:].strip().rstrip('>').strip()
+				if sEmail: dC['email'] = sEmail
+			if dC['name'] and (dC not in lOut): lOut.append(dC)
+	return lOut
+
+def _usage(dProps):
+	dOut = {}
+	if _prop(dProps, 'usagePolicy'):    dOut['policy'] = _prop(dProps, 'usagePolicy')
+	if _prop(dProps, 'usagePolicyUrl'): dOut['url'] = _prop(dProps, 'usagePolicyUrl')
+	return dOut
+
+def _epnCore(dProps):
+	dOut = {}
+	for sKey in dProps:
+		if sKey in g_lEpnKeys:   dOut[sKey] = _prop(dProps, sKey)
+		elif sKey in g_dEpnTrans: dOut[g_dEpnTrans[sKey]] = _prop(dProps, sKey)
+	for sNN in _sortedNN(dProps.get('epncore', {})):
+		l = splitFields(dProps['epncore'][sNN])
+		if len(l) == 2 and l[0]: dOut[l[0]] = l[1]
+	return {k:v for (k, v) in dOut.items() if v}
+
+def _rangeStr(s):
+	"""'lo to hi [units]' to (lo, hi, units), None if it doesn't parse"""
+	l = re.split(r'\s+to\s+', s.strip(), maxsplit=1)
+	if len(l) != 2: return None
+	lHi = l[1].split(None, 1)
+	if not lHi: return None
+	return (l[0].strip(), lHi[0], lHi[1].strip() if len(lHi) > 1 else None)
+
+def _varInfo(sDs, sKey, sNN, sVal):
+	"""A coord_/data_/item_ line to (name, title, units).
+
+	With X/Y/Z or nothing in field 2 the line is name|axis|units|title,
+	otherwise name|title|units.  In item lines on/off/required/optional
+	after the title are flags, not units; these are read-only catalog
+	entries, so the flags are not used.
+	"""
+	l = splitFields(sVal)
+	sName = l[0]
+	if not g_reIdent.match(sName):
+		raise DsdfError("%s_%s name '%s' is not a legal identifier"%(sKey, sNN, sName))
+
+	if (len(l) > 1) and (l[1] in ('X', 'Y', 'Z', '')):
+		sUnits = l[2] if len(l) > 2 else None
+		sTitle = l[3] if len(l) > 3 else None
+	else:
+		sTitle = l[1] if len(l) > 1 else None
+		lRest = l[2:]
+		if sKey == 'item':
+			lRest = [s for s in lRest if s.lower() not in g_lItemFlags]
+		sUnits = lRest[0] if lRest else None
+	return (sName, sTitle or None, sUnits or None)
+
+def _label(sName):
+	return sName[0].upper() + sName[1:]
+
+def _timeRange(log, sDs, dProps):
+	s = _prop(dProps, 'validRange')
+	if not s: return None
+	t = _rangeStr(s)
+	if not t:
+		log.warning("%s: can't read validRange '%s'"%(sDs, s))
+		return None
+	return [t[0], (t[1] + (' ' + t[2] if t[2] else '')).replace('UTC', '').strip()]
+
+def _vars(log, sDs, dProps):
+	"""Read-only coords (beside time) and data from coord_/coordRange_/
+	data_/item_ lines.  Returns (sTimeTitle, dCoords, dData)."""
+	sTimeTitle = None
+	dCoords = {}
+	for sNN in _sortedNN(dProps.get('coord', {})):
+		(sName, sTitle, sUnits) = _varInfo(sDs, 'coord', sNN, dProps['coord'][sNN])
+		if sName.lower() == 'time':
+			sTimeTitle = sTitle
+			continue
+		if sName in dCoords:
+			log.warning("%s: coord '%s' is given twice, coord_%s ignored"%(sDs, sName, sNN))
+			continue
+		dC = {'label':_label(sName)}
+		if sTitle: dC['title'] = sTitle
+		sRng = _prop(dProps, 'coordRange', sNN)
+		if sRng:
+			t = _rangeStr(sRng)
+			if not t:
+				raise DsdfError("coordRange_%s '%s' is not 'lo to hi units'"%(sNN, sRng))
+			dC['validRange'] = [_num(t[0]), _num(t[1])]
+			if t[2] and sUnits and (t[2] != sUnits):
+				log.warning("%s: coordRange_%s units '%s' differ from coord_%s units "
+				            "'%s'"%(sDs, sNN, t[2], sNN, sUnits))
+			sUnits = sUnits or t[2]
+		if sUnits: dC['props'] = {'units':{'value':sUnits}}
+		dCoords[sName] = dC
+
+	for sNN in dProps.get('coordRange', {}):
+		if sNN not in dProps.get('coord', {}):
+			log.warning("%s: coordRange_%s has no coord_%s"%(sDs, sNN, sNN))
+
+	dData = {}
+	for sKey in ('data', 'item'):
+		for sNN in _sortedNN(dProps.get(sKey, {})):
+			(sName, sTitle, sUnits) = _varInfo(sDs, sKey, sNN, dProps[sKey][sNN])
+			if (sName in dData) or (sName in dCoords):
+				log.warning("%s: '%s' is given twice, %s_%s ignored"%(sDs, sName, sKey, sNN))
+				continue
+			dD = {'label':_label(sName)}
+			if sTitle: dD['title'] = sTitle
+			if sUnits: dD['props'] = {'units':{'value':sUnits}}
+			dData[sName] = dD
+
+	return (sTimeTitle, dCoords, dData)
+
+def _examples(log, sDs, dProps, lDefs, sFlagSep, bInterval):
+	"""exampleRange_NN with exampleParams_NN and exampleInterval_NN as
+	interface settings.  Examples whose params don't split back into
+	options are dropped with a warning."""
+	lOut = []
+	dRange = dProps.get('exampleRange', {})
+	for sNN in _sortedNN(dRange):
+		l = splitFields(dRange[sNN])
+		t = _rangeStr(l[0])
+		if not t:
+			log.warning("%s: exampleRange_%s '%s' is not 'begin to end', dropped"%(
+				sDs, sNN, dRange[sNN]))
+			continue
+		sBeg = t[0].replace('UTC', '').strip()
+		sEnd = t[1].replace('UTC', '').strip()
+
+		dSet = {'coords/time/props/min':sBeg, 'coords/time/props/max':sEnd}
+		sInter = _prop(dProps, 'exampleInterval', sNN)
+		if bInterval:
+			if sInter:
+				dSet['coords/time/props/interval'] = _num(sInter)
+			else:
+				log.warning("%s: exampleRange_%s has no exampleInterval_%s, and an "
+				            "interval is required"%(sDs, sNN, sNN))
+		else:
+			if sInter:
+				log.warning("%s: exampleInterval_%s ignored, this source takes a "
+				            "resolution"%(sDs, sNN))
+			# 2000 points across the range keeps plots quick to load
+			rSec = das2Seconds(log, sDs, sBeg, sEnd)
+			if rSec is not None:
+				dSet['coords/time/props/res'] = rSec / 2000.0
+
+		sParams = _prop(dProps, 'exampleParams', sNN)
+		if sParams:
+			(dOpt, sLeft) = splitExampleParams(lDefs, sFlagSep, sParams)
+			if sLeft:
+				log.warning("%s: exampleParams_%s '%s': '%s' matches no param, "
+				            "example dropped"%(sDs, sNN, sParams, sLeft))
+				continue
+			dSet.update(dOpt)
+
+		lOut.append({'label': l[1] if (len(l) > 1 and l[1]) else 'Example %s'%sNN,
+		             'settings':dSet})
+
+	for sNN in dProps.get('exampleParams', {}):
+		if sNN not in dRange:
+			log.warning("%s: exampleParams_%s has no exampleRange_%s"%(sDs, sNN, sNN))
+	return lOut
+
+##############################################################################
+# Node builders
+
+def _provides(dProps):
+	"""Stream types a das2 server returns for a dataset.  Both binary and
+	text, the server converts on request (ascii=true).  das1 readers are
+	wrapped into das2 streams by the server."""
+	return list(g_lQsMime) if _isTrue(dProps, 'qstream') else list(g_lDas2Mime)
+
+def buildSource(log, sDs, dProps, lBaseUrls):
+	"""The HttpStreamSrc for one dataset, the mechanical conversion alone.
+
+	:param sDs: The server's dataset path, for messages.
+	:param dProps: The DSDF as parseDsdfProps() returns it.
+	:param lBaseUrls: Data URLs in failover order.
+	:raises DsdfError: The DSDF can't be converted as written.
+	"""
+
+	(dFlagSet, dOpts, lDefs) = parseParams(log, sDs, dProps)
+	(sTimeTitle, dCoords, dData) = _vars(log, sDs, dProps)
+	bInterval = _isTrue(dProps, 'requiresInterval')
+
+	dOut = {'type':'HttpStreamSrc', 'version':g_dVersion['HttpStreamSrc'], 'label':'Das2 Source'}
+	if _prop(dProps, 'description'): dOut['title'] = _prop(dProps, 'description')
+
+	lContacts = _contacts(dProps)
+	if lContacts: dOut['contacts'] = lContacts
+	dUsage = _usage(dProps)
+	if dUsage: dOut['usage'] = dUsage
+
+	# Protocol, only what is needed to build a URL ####################
+	# These parameters are the fixed part of the das2 server API (ascii is
+	# das2py-server's own addition) and no DSDF describes them.  A catalog is more general than das2, so each
+	# says in a comment what a das2 server does with it.
+	dHttp = {
+		'start_time':{'required':True, 'type':'isotime', 'comment':g_dParamNote['start_time']},
+		'end_time':  {'required':True, 'type':'isotime', 'comment':g_dParamNote['end_time']}
+	}
+	if bInterval:
+		dHttp['interval'] = {'required':True, 'type':'real', 'units':'s',
+		                     'comment':g_dParamNote['interval']}
+	else:
+		dHttp['resolution'] = {'required':False, 'type':'real', 'units':'s',
+		                       'comment':g_dParamNote['resolution']}
+	dHttp['ascii'] = {'required':False, 'type':'boolean', 'comment':g_dParamNote['ascii']}
+	if dFlagSet: dHttp['params'] = dFlagSet
+
+	dAuth = {'required':False}
+	if _prop(dProps, 'securityRealm'):
+		dAuth = {'required':True, 'realm':_prop(dProps, 'securityRealm')}
+
+	dOut['protocol'] = {
+		'method':'GET', 'baseUrls':lBaseUrls, 'authorization':dAuth,
+		'httpParams':dHttp
+	}
+
+	# Interface, where the user strings go ############################
+	dIface = {}
+	dOut['interface'] = dIface
+
+	# Time values are null, a client sends what the user picks; examples
+	# carry real times
+	dTProps = {
+		'min':{'label':'Minimum', 'title':'Minimum time value to stream',
+		       'value':None, 'set':{'param':'start_time', 'required':True}},
+		'max':{'label':'Maximum', 'title':'Maximum time value to stream',
+		       'value':None, 'set':{'param':'end_time', 'required':True}},
+	}
+	if bInterval:
+		dTProps['interval'] = {
+			'label':'Interval', 'value':None, 'units':'s',
+			'title':'Time between model calculations or interpolations',
+			'set':{'param':'interval', 'required':True}
+		}
+	else:
+		dTProps['res'] = {
+			'label':'Resolution', 'value':None, 'units':'s',
+			'title':'Maximum time between output points',
+			'description':'The server returns data at or better than the given '
+			   'resolution if possible.  Leave unset to get data at intrinsic '
+			   'resolution, without server side averages.',
+			'set':{'param':'resolution', 'required':False}
+		}
+	dTProps['units'] = {'value':'UTC'}
+
+	dTime = {'label':'Time'}
+	if sTimeTitle: dTime['title'] = sTimeTitle
+	dTime['props'] = dTProps
+	lValid = _timeRange(log, sDs, dProps)
+	if lValid: dTime['validRange'] = lValid
+
+	dIface['coords'] = {'time':dTime}
+	dIface['coords'].update(dCoords)
+	if dData: dIface['data'] = dData
+
+	# Text conversion is an output format choice.  A das2 server has one
+	# format per dataset, so its 'enabled' is a fact with no control; it
+	# is still written because that is where clients look for the format
+	# in effect, and through it the MIME type to expect.
+	lProv = _provides(dProps)
+	bQs = 'qstream' in lProv[0]
+	dIface['formats'] = { ('qstream' if bQs else 'das2') : {
+		'label': 'QStream' if bQs else 'das2 stream',
+		'mimeTypes': lProv,
+		'props': {'enabled': {'type':'boolean', 'xorGroup':'format', 'value':True},
+		'text': {
+			'label':'Text', 'title':'Convert output to UTF-8 text',
+			'type':'boolean', 'value':False,
+			'set':{'param':'ascii', 'pval':'true', 'value':True}
+		}}
+	}}
+
+	if dOpts: dIface['options'] = {'label':'Options', 'props':dOpts}
+
+	sFlagSep = dFlagSet['flagSep'] if dFlagSet else ' '
+	lEx = _examples(log, sDs, dProps, lDefs, sFlagSep, bInterval)
+	if lEx: dIface['examples'] = lEx
+	else: log.warning("%s: no usable examples"%sDs)
+
+	return dOut
+
+def buildSourceSet(sLabel, sTitle, dProps, dSrc, sSrcUrl):
+	"""The SourceSet for one dataset, a summary plus a stub for its
+	HttpStreamSrc"""
+
+	dOut = {'type':'SourceSet', 'version':g_dVersion['SourceSet'], 'label':sLabel}
+	if sTitle: dOut['title'] = sTitle
+
+	dIface = dSrc['interface']
+	for sSec in ('coords', 'data'):
+		dSum = {}
+		for (sName, dV) in dIface.get(sSec, {}).items():
+			# an override may make a variable and leave it without a label
+			dS = {'label':dV.get('label', _label(sName))}
+			if 'title' in dV: dS['title'] = dV['title']
+			if 'validRange' in dV: dS['validRange'] = dV['validRange']
+			dSum[sName] = dS
+		if dSum: dOut[sSec] = dSum
+
+	lSci = [d for d in dSrc.get('contacts', []) if d['type'] == 'scientific']
+	if lSci: dOut['contacts'] = lSci
+	if 'usage' in dSrc: dOut['usage'] = dSrc['usage']
+	dEpn = _epnCore(dProps)
+	if dEpn: dOut['EPNcore'] = dEpn
+
+	dOut['catalog'] = {'das2':{
+		'type':'HttpStreamSrc', 'label':'Das2 Source', 'purpose':'primary-stream',
+		'mime':'application/json', 'provides':list(dIface['formats'].values())[0]['mimeTypes'],
+		'urls':[sSrcUrl]
+	}}
+	return dOut
+
+def buildCatalog(sLabel, sTitle, dStubs):
+	dOut = {'type':'Catalog', 'version':g_dVersion['Catalog'], 'label':sLabel}
+	if sTitle: dOut['title'] = sTitle
+	dOut['catalog'] = dStubs
+	return dOut
+
+##############################################################################
+# Overrides and the consistency check
+
+# DSDF keys that decide the structure of a node.  An override is reviewed
+# against these lines, so a change in any of them sends it back for review.
+# Contacts, descriptions, cache levels and valid ranges are left out on
+# purpose: they change often and no override depends on them.
+g_lStructKeys = (
+	'param', 'paramInfo', 'paramValInfo', 'paramSep', 'coord', 'coordRange',
+	'data', 'item', 'exampleRange', 'exampleParams', 'exampleInterval',
+	'requiresInterval', 'qstream', 'das2Stream'
+)
+
+def dsdfHash(dProps):
+	"""A short hash of the DSDF lines a node's structure comes from, as
+	'sha256:' and 16 hex digits.  Independent of the order the server
+	lists keys in."""
+	lLines = []
+	for sKey in g_lStructKeys:
+		for sNN in sorted(dProps.get(sKey, {})):
+			lLines.append('%s_%s=%s'%(sKey, sNN, dProps[sKey][sNN]))
+	# as JSON, so that a newline inside a value can't pass for two lines
+	sAll = json.dumps(lLines, ensure_ascii=True).encode('ascii')
+	return 'sha256:' + hashlib.sha256(sAll).hexdigest()[:16]
+
+def _valueProblem(dP, val):
+	"""Why val can't be a value of property dP, None if it can.  The
+	checks das2C makes when a request is built, made here so that a bad
+	default or example stops the node instead of the first user."""
+	bList = (dP.get('multi', False) is not False)
+	if isinstance(val, list) != bList:
+		return 'a list, it takes one value' if isinstance(val, list) else \
+		       'a single value, it takes a list'
+	lVals = val if bList else [val]
+
+	if bList and lVals:
+		if len(set(str(v).lower() for v in lVals)) != len(lVals):
+			return 'the same item twice'
+		t = dP['multi']
+		if isinstance(t, list) and (len(t) == 2) and not (t[0] <= len(lVals) <= t[1]):
+			return '%d items, it takes %d to %d'%(len(lVals), max(t[0], 1), t[1])
+
+	dSet = dP.get('set') or {}
+	lEnum = [str(d['value'] if isinstance(d, dict) else d).lower() for d in dSet.get('enum', [])]
+	sType = 'enum' if lEnum else dP.get('type', 'string')
+	for v in lVals:
+		if isinstance(v, (dict, list)) or (v is None):
+			return 'a value that is not a string, number or boolean'
+		sV = str(v)
+		if sType == 'enum':
+			# a fixed property may say enum and list no choices
+			if lEnum and (sV.lower() not in lEnum):
+				return "'%s', which is not one of its choices"%sV
+		elif sType in ('boolean', 'bool'):
+			if not isinstance(v, bool) and (sV.lower() not in ('true', 'false')):
+				return "'%s', it is a boolean"%sV
+		elif sType in ('integer', 'int'):
+			if isinstance(v, bool) or not g_reInt.match(sV):
+				return "'%s', it is an integer"%sV
+		elif sType == 'real':
+			if isinstance(v, bool) or not g_reNum.match(sV):
+				return "'%s', it is a number"%sV
+	return None
+
+def _notListed(dP, dT, val):
+	"""Why a typed value can't be sent to target dT, None if it can.  For
+	controls without choices of their own (text, numbers) whose flag or
+	parameter has an enum of its own; choices are checked item by item where the
+	control is read."""
+	if (dT is None) or ('enum' not in dT): return None
+	dSet = dP.get('set') or {}
+	if dSet.get('enum') or ('pval' in dSet) or (dP.get('type') == 'boolean'): return None
+	lVals = [str(v) for v in dT['enum']]
+	for v in (val if isinstance(val, list) else [val]):
+		if str(v) not in lVals:
+			return "'%s', which the protocol does not list in its enum"%v
+	return None
+
+def _checkSource(dSrc):
+	lBad = []
+	dHttp = dSrc.get('protocol', {}).get('httpParams', {})
+	dIface = dSrc.get('interface', {})
+	dCtrl = {}   # settings key -> property, for the ones with a set block
+	dTarg = {}   # settings key -> the flag or parameter entry it feeds
+
+	def target(sAt, dSet, sFlag):
+		"""The flag or parameter entry a control feeds, None if missing"""
+		dParam = dHttp.get(dSet.get('param'))
+		if dParam is None:
+			lBad.append("%s sets '%s', which is not a protocol parameter"%(sAt, dSet.get('param')))
+			return None
+		if sFlag is None: return dParam
+		dFlag = dParam.get('flags', {}).get(sFlag)
+		if dFlag is None:
+			lBad.append("%s uses flag '%s', which parameter '%s' does not have"%(
+				sAt, sFlag, dSet['param']))
+		return dFlag
+
+	def prop(sAt, dP):
+		bList = (dP.get('multi', False) is not False)
+		if bList and (dP.get('type') == 'boolean'):
+			lBad.append("%s is a boolean, it can't be multi"%sAt)
+		if dP.get('value') is not None:
+			sWhy = _valueProblem(dP, dP['value'])
+			if sWhy: lBad.append("%s has the value %s"%(sAt, sWhy))
+		dSet = dP.get('set')
+		if dSet is None: return
+		dCtrl[sAt] = dP
+
+		dT = target(sAt, dSet, dSet.get('flag'))
+		if dT is not None: dTarg[sAt] = dT
+		if (dT is not None) and (dP.get('value') is not None):
+			sWhy = _notListed(dP, dT, dP['value'])
+			if sWhy: lBad.append("%s has the value %s"%(sAt, sWhy))
+		lItems = dSet.get('enum', [])
+		for dItem in lItems:
+			if isinstance(dItem, dict) and ('flag' in dItem):
+				target(sAt, dSet, dItem['flag'])
+		if dT is None: return
+		bJoin = ('subSep' in dT)
+		bRepeat = (dT.get('repeat') is True)
+		# When every item names a flag of its own each chosen item is a
+		# switch, and nothing has to say how a list travels
+		bSwitches = ('flag' not in dSet) and bool(lItems) and all(
+			isinstance(d, dict) and ('flag' in d) for d in lItems)
+		if bList and (bJoin == bRepeat) and not bSwitches:
+			lBad.append("%s is multi, what it feeds needs exactly one of subSep "
+			            "and repeat"%sAt)
+		if (dP.get('type') == 'boolean') and bJoin and ('pval' not in dSet):
+			lBad.append("%s is a switch on something that joins elements, it needs "
+			            "a pval"%sAt)
+
+		# What the control can send must be among the strings its target
+		# lists.  One choice may be missing: the default, when the server
+		# gives it for a request that says nothing (a frame the reader uses
+		# unless told otherwise).  Defaults are not sent, so that choice has
+		# no string.  It can't be missing from a joined value, whose parts
+		# travel with their defaults, or from a required control.
+		lVals = dT.get('enum')
+		if lVals is None: return
+		lVals = [str(v) for v in lVals]
+		bDflt = (not bJoin) and (not bList) and (not dSet.get('required', False))
+		for dItem in lItems:
+			if isinstance(dItem, dict) and ('flag' in dItem): continue
+			val = dItem.get('value') if isinstance(dItem, dict) else dItem
+			sSent = str(dItem['pval']) if isinstance(dItem, dict) and ('pval' in dItem) else str(val)
+			if sSent in lVals: continue
+			if bDflt and (val == dP.get('value')) and not (isinstance(dItem, dict) and ('pval' in dItem)):
+				continue
+			lBad.append("%s offers '%s', which sends '%s', and the protocol does not "
+			            "list that in its enum"%(sAt, val, sSent))
+		if (not lItems) and ('pval' in dSet) and (str(dSet['pval']) not in lVals):
+			lBad.append("%s sends '%s', which the protocol does not list in its "
+			            "enum"%(sAt, dSet['pval']))
+
+	for (sParam, dParam) in dHttp.items():
+		for (sFlag, dFlag) in dParam.get('flags', {}).items():
+			if ('enum' in dFlag) and ('value' in dFlag):
+				lBad.append("flag '%s' of parameter '%s' has both value and enum: a "
+				            "switch sends its one value, a list is for what follows "
+				            "a prefix"%(sFlag, sParam))
+			if ('suffix' in dFlag) and ('prefix' not in dFlag):
+				lBad.append("flag '%s' of parameter '%s' has a suffix and no prefix: "
+				            "a suffix closes what a prefix opened, a switch sends "
+				            "its value alone"%(sFlag, sParam))
+
+	for sSec in ('coords', 'data', 'formats'):
+		for (sGrp, dGrp) in dIface.get(sSec, {}).items():
+			if not g_reIdent.match(sGrp):
+				lBad.append("%s/%s is not a legal name"%(sSec, sGrp))
+			for (sProp, dP) in dGrp.get('props', {}).items():
+				if not g_reIdent.match(sProp):
+					lBad.append("%s/%s/props/%s is not a legal name"%(sSec, sGrp, sProp))
+				prop('%s/%s/props/%s'%(sSec, sGrp, sProp), dP)
+	for (sProp, dP) in dIface.get('options', {}).get('props', {}).items():
+		if not g_reIdent.match(sProp):
+			lBad.append("options/props/%s is not a legal name"%sProp)
+		prop('options/props/%s'%sProp, dP)
+
+	# The dataset summary is built from the first format's MIME types
+	lFmt = list(dIface.get('formats', {}).values())
+	if (not lFmt) or not isinstance(lFmt[0].get('mimeTypes'), list) or not lFmt[0]['mimeTypes']:
+		lBad.append("there is no format with mimeTypes")
+
+	for (i, dEx) in enumerate(dIface.get('examples', [])):
+		for (sKey, val) in dEx['settings'].items():
+			if sKey not in dCtrl:
+				lBad.append("example %d sets %s, which is not a settable property"%(i, sKey))
+				continue
+			sWhy = _valueProblem(dCtrl[sKey], val)
+			if sWhy: lBad.append("example %d gives %s %s"%(i, sKey, sWhy))
+			sWhy = _notListed(dCtrl[sKey], dTarg.get(sKey), val)
+			if sWhy: lBad.append("example %d gives %s %s"%(i, sKey, sWhy))
+	return lBad
+
+def checkSource(dSrc):
+	"""Internal consistency of an HttpStreamSrc, as a list of problems.
+
+	Run on every node before it is written, with or without an override:
+	every control names a protocol parameter and flag that exist, list
+	properties feed something that says how a list travels, switches on
+	joining flags name their element, names are legal identifiers,
+	defaults and examples only give properties values they can take, and
+	where the protocol has an enum on a flag or parameter, nothing
+	the interface offers sends anything else.
+	These are the mistakes an override can make that a schema can't see,
+	since they span the protocol and interface sections.
+	"""
+	try:
+		return _checkSource(dSrc)
+	except (AttributeError, TypeError, KeyError, IndexError) as e:
+		# An override can leave anything at all where an object should be
+		return ["it no longer has the shape of a source node (%s: %s)"%(
+			type(e).__name__, e)]
+
+##############################################################################
+# Output
+
+def writeObj(log, dOut, sFile, bNoOp):
+	"""Write a node as strict JSON, only when it changed.  Key order is
+	kept, not sorted: das2C joins set: elements in property order."""
+	sOut = json.dumps(dOut, ensure_ascii=False, indent='\t') + '\n'
+
+	sOld = None
+	if os.path.isfile(sFile):
+		with open(sFile, encoding='utf-8') as f: sOld = f.read()
+
+	if sOld == sOut:
+		log.debug("No updates required for %s"%sFile)
+		return
+	if bNoOp:
+		log.info("Would have updated %s"%sFile)
+		return
+
+	if dname(sFile): os.makedirs(dname(sFile), exist_ok=True)
+	with open("%s.tmp"%sFile, 'w', encoding='utf-8') as f: f.write(sOut)
+	os.rename("%s.tmp"%sFile, sFile)
+	log.info("Updated %s"%sFile)
+
+##############################################################################
+# Servers
+
+class Server(object):
+	"""One das2 server: its dataset list and DSDF replies"""
+
+	def __init__(self, log, sUrl):
+		self.log = log
+		self.sUrl = sUrl
+		self.dDirs = {}    # 'A/B' -> description, for directories
+		self.dSets = {}    # 'A/B/C' -> description, for datasets
+
+	def getList(self):
+		sUrl = '%s?server=list'%self.sUrl
+		self.log.info("Getting dataset list from %s"%self.sUrl)
+		res = requests.get(sUrl, timeout=120)
+		if res.status_code != requests.codes.ok:
+			self.log.error("Couldn't get dataset list from %s"%sUrl)
+			return False
+
+		for sLine in res.text.split('\n'):
+			l = [s.strip() for s in sLine.split('|', 1)]
+			sPath = l[0].replace('.dsdf', '')
+			if len(sPath) < 2: continue
+			sDesc = l[1] if (len(l) > 1 and l[1]) else None
+			if sPath.endswith('/'): self.dDirs[sPath.rstrip('/')] = sDesc
+			else: self.dSets[sPath] = sDesc
+		return True
+
+	def getId(self):
+		res = requests.get('%s?server=id'%self.sUrl, timeout=60)
+		if res.status_code != requests.codes.ok: return None
+		return res.text.strip()
+
+	def getProps(self, sDs):
+		sUrl = '%s?server=dsdf&dataset=%s'%(self.sUrl, sDs)
+		self.log.debug("Getting definition for %s from %s"%(sDs, self.sUrl))
+		try:
+			res = requests.get(sUrl, timeout=120)
+		except requests.RequestException as e:
+			self.log.error("Couldn't get %s: %s"%(sUrl, e))
+			return None
+		if res.status_code != requests.codes.ok:
+			self.log.error("Couldn't get %s, HTTP %d"%(sUrl, res.status_code))
+			return None
+		return parseDsdfProps(self.log, sUrl, res.text)
+
+	def dataUrl(self, sDs):
+		return '%s?server=dataset&dataset=%s'%(self.sUrl, sDs)
+
+def _driftReport(dA, dB):
+	"""Keys whose values differ between two DSDF replies"""
+	lOut = []
+	for sKey in sorted(set(dA) | set(dB)):
+		dSa = dA.get(sKey, {})
+		dSb = dB.get(sKey, {})
+		for sNN in sorted(set(dSa) | set(dSb)):
+			if dSa.get(sNN) != dSb.get(sNN):
+				lOut.append(sKey if sNN == '00' and len(dSa) <= 1 else '%s_%s'%(sKey, sNN))
+	return lOut
+
+##############################################################################
+# Tree walk
+
+class Importer(object):
+	"""One run: the merged dataset lists of the servers, walked from the
+	root, written at and below the target path."""
+
+	def __init__(self, log, lServers, lExclude, sRootUrl, sOutDir, lTarg, bNoOp,
+	             sOverDir=None):
+		self.log = log
+		self.lTarg = lTarg
+		self.lServers = lServers
+		# Exclusions are whole path components, however they were typed
+		self.lExclude = [s.strip('/') for s in lExclude if s.strip('/')]
+		self.sRootUrl = sRootUrl
+		self.sOutDir = sOutDir
+		self.bNoOp = bNoOp
+		self.sOverDir = sOverDir
+		self.lSkipped = []
+		self.lOverUsed = []    # override files applied or deliberately passed over
+		self.nWritten = 0
+
+		self.lExclUsed = []
+
+		# Union of all server lists, first server's description wins
+		self.dDirs = {}
+		self.dSets = {}
+		for srv in lServers:
+			for (s, sDesc) in srv.dDirs.items():
+				if self._keep(s): self.dDirs.setdefault(s, sDesc)
+			for (s, sDesc) in srv.dSets.items():
+				if self._keep(s): self.dSets.setdefault(s, sDesc)
+
+		# A typo in an exclusion would let a branch in without a word
+		for s in self.lExclude:
+			if s not in self.lExclUsed:
+				log.warning("Exclusion '%s' matches nothing the servers list (paths "
+				            "are case sensitive)"%s)
+
+		# Directories implied by a dataset path but not listed
+		for s in list(self.dSets) + list(self.dDirs):
+			l = s.split('/')
+			for i in range(1, len(l)):
+				sDir = '/'.join(l[:i])
+				if sDir not in self.dDirs:
+					log.warning("Directory %s is not in any server list"%sDir)
+					self.dDirs[sDir] = None
+
+	def _keep(self, sPath):
+		sLow = '/%s/'%sPath.lower()
+		if ('/test/' in sLow) or ('/testing/' in sLow): return False
+		for s in self.lExclude:
+			if (sPath == s) or sPath.startswith(s + '/'):
+				if s not in self.lExclUsed: self.lExclUsed.append(s)
+				return False
+		return True
+
+	def _children(self, sDir):
+		"""Immediate child dirs and datasets of sDir ('' is the root)"""
+		def under(s):
+			if sDir == '': return '/' not in s
+			return s.startswith(sDir + '/') and ('/' not in s[len(sDir) + 1:])
+		return (sorted(s for s in self.dDirs if under(s)),
+		        sorted(s for s in self.dSets if under(s)))
+
+	def _rel(self, sPath):
+		"""Catalog path below the root, as used in file names and URLs"""
+		return sPath.lower()
+
+	def _url(self, sPath):
+		if not sPath: return self.sRootUrl
+		return '%s/%s.json'%(self.sRootUrl[:-len('.json')], self._rel(sPath))
+
+	def _file(self, sPath):
+		"""OUT_DIR is the directory the SRV_PATH node is written in, as it
+		always was: uiowa.json for '/', juno.json for 'Juno'"""
+		lFull = [bname(self.sRootUrl)[:-len('.json')].lower()]
+		if sPath: lFull += self._rel(sPath).split('/')
+		return os.path.join(self.sOutDir, *lFull[len(self.lTarg):]) + '.json'
+
+	def _label(self, sPath, sRootLabel):
+		if not sPath: return sRootLabel
+		return sPath.split('/')[-1].replace('_', ' ')
+
+	def _skipped(self, sDs):
+		"""Record a dataset that was not written, and return the stub its
+		parent should carry anyway: the one for the node already on disk
+		from an earlier run, if there is one.  A DSDF typo or a stale
+		override then leaves the published catalog as it was, old node
+		still listed, instead of dropping the dataset from its parent."""
+		self.lSkipped.append(sDs)
+		try:
+			with open(self._file(sDs), encoding='utf-8') as f: dOld = json.load(f)
+			dStub = {'type':'SourceSet', 'label':dOld['label']}
+			if dOld.get('title'): dStub['title'] = dOld['title']
+		except (OSError, ValueError, KeyError, TypeError):
+			return None
+		self.log.warning("%s: keeping the node already in %s"%(sDs, self._file(sDs)))
+		dStub['urls'] = [self._url(sDs)]
+		return dStub
+
+	def doDataset(self, sDs):
+		"""Write one dataset's SourceSet and HttpStreamSrc, return the stub
+		for its parent catalog.  For a dataset that can't be written that
+		is the stub of what is already on disk, or None."""
+		log = self.log
+
+		# Content comes from the first server that has the dataset, every
+		# server that has it is a base URL, in server order
+		dProps = None
+		lUrls = []
+		for srv in self.lServers:
+			if sDs not in srv.dSets: continue
+			d = srv.getProps(sDs)
+			if d is None:
+				log.warning("%s: not using %s for this dataset"%(sDs, srv.sUrl))
+				continue
+			if dProps is None:
+				dProps = d
+				sFrom = srv.sUrl
+			else:
+				lDiff = _driftReport(dProps, d)
+				if lDiff:
+					log.warning("%s: %s differs from %s in: %s"%(
+						sDs, srv.sUrl, sFrom, ', '.join(lDiff)))
+			lUrls.append(srv.dataUrl(sDs))
+
+		if dProps is None:
+			log.error("%s: no server returned a definition, not written"%sDs)
+			return self._skipped(sDs)
+
+		try:
+			dSrc = buildSource(log, sDs, dProps, lUrls)
+			self._override(sDs, dProps, dSrc)
+			lBad = checkSource(dSrc)
+			if lBad: raise DsdfError('; '.join(lBad))
+		except DsdfError as e:
+			log.error("%s: %s, not written"%(sDs, e))
+			return self._skipped(sDs)
+
+		sSrcUrl = '%s/das2.json'%self._url(sDs)[:-len('.json')]
+		sLabel = self._label(sDs, None)
+		sTitle = self.dSets[sDs] or dSrc.get('title')
+		dSet = buildSourceSet(sLabel, sTitle, dProps, dSrc, sSrcUrl)
+
+		writeObj(log, dSrc, os.path.join(self._file(sDs)[:-len('.json')], 'das2.json'), self.bNoOp)
+		writeObj(log, dSet, self._file(sDs), self.bNoOp)
+		self.nWritten += 1
+
+		dStub = {'type':'SourceSet', 'label':sLabel}
+		if sTitle: dStub['title'] = sTitle
+		dStub['urls'] = [self._url(sDs)]
+		return dStub
+
+	def _override(self, sDs, dProps, dSrc):
+		"""Apply the dataset's override file, if the override directory has
+		one, to its freshly built source.  The file is <dir>/<dataset path>
+		.json5, server spelling.
+
+		An override is trusted only for the DSDF it was reviewed against.
+		Anything that does not line up raises DsdfError, so the dataset is
+		not written and what is on disk stays as it was until someone
+		looks.
+		"""
+		if not self.sOverDir: return
+		sFile = os.path.join(self.sOverDir, *sDs.split('/')) + '.json5'
+		if not os.path.isfile(sFile): return
+		self.lOverUsed.append(os.path.abspath(sFile))
+
+		try:
+			dOver = cat_override.loadOverride(sFile)
+		except cat_override.OverrideError as e:
+			raise DsdfError("override unusable, %s"%e)
+
+		if dOver['dataset'] != sDs:
+			raise DsdfError("override %s says it is for dataset '%s'"%(sFile, dOver['dataset']))
+
+		sHash = dsdfHash(dProps)
+		if dOver['dsdf'] != sHash:
+			raise DsdfError("override %s was reviewed against DSDF %s, the DSDF is now "
+				"%s.  Review the override, then set its dsdf member to the new "
+				"value"%(sFile, dOver['dsdf'], sHash))
+
+		try:
+			cat_override.applyOps(dSrc, dOver['ops'])
+		except cat_override.OverrideError as e:
+			raise DsdfError("override %s, %s"%(sFile, e))
+		except (TypeError, AttributeError, KeyError, IndexError, ValueError) as e:
+			# Ops can reshape a node into something later ops trip over.
+			# One dataset's bad override must not stop the whole run.
+			raise DsdfError("override %s failed part way, %s: %s"%(sFile, type(e).__name__, e))
+		self.log.info("%s: applied override %s"%(sDs, sFile))
+
+	def unusedOverrides(self):
+		"""Override files at or under the target that no dataset used, a
+		renamed or retired dataset most likely"""
+		if not self.sOverDir: return []
+		lOut = []
+		sTop = os.path.join(self.sOverDir, *self.lTarg)
+		# .json too: a file named that way is an override nobody will read
+		lFiles = [sTop + s for s in ('.json5', '.json') if os.path.isfile(sTop + s)]
+		for (sDir, lDirs, lNames) in os.walk(sTop):
+			lFiles += [os.path.join(sDir, s) for s in lNames if s.endswith(('.json5', '.json'))]
+		for sFile in sorted(lFiles):
+			if os.path.abspath(sFile) not in self.lOverUsed: lOut.append(sFile)
+		return lOut
+
+	def doDir(self, sDir, lTarg, sRootLabel, sRootTitle):
+		"""Walk a directory.  Directories at or under the target path are
+		written, ones above it are only walked.  Returns the stub for the
+		parent catalog, or None if nothing under it was written."""
+		lPath = sDir.split('/') if sDir else []
+		bWrite = (lPath[:len(lTarg)] == lTarg)
+		(lDirs, lSets) = self._children(sDir)
+
+		# Children share one lower cased name space on disk and in URLs, a
+		# directory and a dataset of one name included.  The first keeps the
+		# name, and the rest are refused before they can overwrite its files.
+		dStubs = {}
+		lTaken = []
+		for (sChild, bSet) in [(s, False) for s in lDirs] + [(s, True) for s in lSets]:
+			lChild = sChild.split('/')
+			if not bWrite and (lChild != lTarg[:len(lChild)]): continue
+			sKey = lChild[-1].lower()
+			if sKey in lTaken:
+				self.log.error("%s: two children are named '%s' when lower cased, the "
+				               "%s %s is not written"%(sDir or '/', sKey,
+				               'dataset' if bSet else 'directory', sChild))
+				self.lSkipped.append(sChild)
+				continue
+			lTaken.append(sKey)
+			if bSet:
+				dStub = self.doDataset(sChild)
+			else:
+				dStub = self.doDir(sChild, lTarg, sRootLabel, sRootTitle)
+			if dStub is not None: dStubs[sKey] = dStub
+
+		if not dStubs: return None
+		sLabel = self._label(sDir, sRootLabel)
+		sTitle = sRootTitle if not sDir else self.dDirs.get(sDir)
+		if bWrite:
+			writeObj(self.log, buildCatalog(sLabel, sTitle, dStubs), self._file(sDir), self.bNoOp)
+
+		dStub = {'type':'Catalog', 'label':sLabel}
+		if sTitle: dStub['title'] = sTitle
+		dStub['urls'] = [self._url(sDir)]
+		return dStub
+
+##############################################################################
+
+def main(argv):
+
+	gettext.install('dsdf_cat_import')
+
+	sDesc = _("Read dataset definitions from das2 servers and write das "
+	          "federated catalog nodes.")
+
+	psr = argparse.ArgumentParser(prog=bname(argv[0]), description=sDesc)
+	add_arg = psr.add_argument
+
+	add_arg('-l', "--log-level", dest="sLevel", metavar="LOG_LEVEL",
+	        help=_("Logging level one of [critical, error, warning, "
+	        "info, debug].  The default is info."), action="store", default="info")
+
+	add_arg("-t", "--title", action='store', dest="sTitle", metavar="title",
+	        help=_("Title for the top level catalog, used when the server "
+	        "root is written.  Defaults to the server's id string."), default=None)
+
+	add_arg("-n", "--no-op", action='store_true', dest="bNoOp", default=False,
+	        help=_("Don't write anything, report what would change."))
+
+	add_arg("-e", "--exclude", action='append', dest="lExclude",
+	        metavar="SRV_PATH", help=_("A server directory or dataset to leave out, "
+	        "may be given multiple times.  Whole path components are matched: "
+	        "Juno/WAV/em leaves out everything under that directory and nothing "
+	        "else."), default=[])
+
+	add_arg("-o", "--overrides", action='store', dest="sOverDir", metavar="DIR",
+	        help=_("A directory of override files, DIR/<dataset path>.json5 in "
+	        "the server's spelling, each applied to its dataset's source node "
+	        "after conversion.  See cat_override.py.  A dataset whose override "
+	        "does not apply is not written."), default=None)
+
+	add_arg("-m", "--mirror", action='append', dest="lMirrors", metavar="SRV_URL",
+	        help=_("A server holding replicas of SRV_URL's datasets, may be given "
+	        "multiple times, in failover order.  Datasets are read from the "
+	        "first server that has them, the rest are checked for drift.  Every "
+	        "server that has a dataset is one of its base URLs, in this order."),
+	        default=[])
+
+	add_arg('SRV_URL', help=_("The das2 server to read, the first choice for "
+	        "every dataset it has, ex: https://jupiter.physics.uiowa.edu/das/server"))
+
+	add_arg('SRV_PATH', help=_("The server directory or dataset to write, '/' for "
+	        "everything.  Leading '/' characters are ignored, paths are relative "
+	        "to the server root."))
+
+	add_arg('ROOT_URL', help=_("The URL of the catalog file for the server "
+	        "root, ending in '.json', used to build child URLs.  Ex: "
+	        "https://das2.org/catalog/das/site/uiowa.json"))
+
+	add_arg('OUT_DIR', help=_("The output directory, the directory ROOT_URL's "
+	        "file is in.  SRV_PATH and everything under it is written below it."))
+
+	args = psr.parse_args(argv[1:])
+
+	log = setupLogger(args.sLevel, bname(argv[0]))
+
+	if not args.ROOT_URL.endswith('.json'):
+		log.error("ROOT_URL must end in '.json'")
+		return 13
+
+	lServers = [Server(log, s) for s in [args.SRV_URL] + args.lMirrors]
+	for srv in lServers:
+		if not srv.getList(): return 17
+
+	lTarg = [s for s in args.SRV_PATH.split('/') if s]
+
+	if args.sOverDir and not os.path.isdir(args.sOverDir):
+		log.error("Override directory '%s' does not exist"%args.sOverDir)
+		return 13
+
+	imp = Importer(log, lServers, args.lExclude, args.ROOT_URL, args.OUT_DIR,
+	               lTarg, args.bNoOp, args.sOverDir)
+
+	sTarg = '/'.join(lTarg)
+	if sTarg and (sTarg not in imp.dDirs) and (sTarg not in imp.dSets):
+		log.error("No servers list '%s'"%sTarg)
+		return 13
+
+	sRootLabel = bname(args.ROOT_URL)[:-len('.json')]
+	sRootTitle = args.sTitle
+	if (not lTarg) and (not sRootTitle): sRootTitle = lServers[0].getId()
+
+	if sTarg in imp.dSets:
+		imp.doDataset(sTarg)
+	else:
+		imp.doDir('', lTarg, sRootLabel, sRootTitle)
+
+	# A reviewed change that silently stops being applied is a node that
+	# quietly went back to the plain conversion, so this is not a warning
+	lUnused = imp.unusedOverrides()
+	for sFile in lUnused:
+		log.error("Override %s was not used: no dataset in this run is at that "
+		          "path (the name must be the server's spelling, ending .json5)"%sFile)
+
+	log.info("%d datasets written%s"%(imp.nWritten, ' (no-op)' if args.bNoOp else ''))
+	if imp.lSkipped:
+		log.error("%d datasets not written: %s"%(len(imp.lSkipped), ', '.join(imp.lSkipped)))
+	return 5 if (imp.lSkipped or lUnused) else 0
+
+##############################################################################
+if __name__ == "__main__":
+	sys.exit(main(sys.argv))
