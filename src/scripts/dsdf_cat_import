@@ -1189,14 +1189,15 @@ def writeObj(log, dOut, sFile, bNoOp):
 	if sOld == sOut:
 		log.debug("No updates required for %s"%sFile)
 		return
+	sDid = 'created' if sOld is None else 'updated'
 	if bNoOp:
-		log.info("Would have updated %s"%sFile)
+		log.info("Would have %s %s"%(sDid, sFile))
 		return
 
 	if dname(sFile): os.makedirs(dname(sFile), exist_ok=True)
 	with open("%s.tmp"%sFile, 'w', encoding='utf-8') as f: f.write(sOut)
 	os.rename("%s.tmp"%sFile, sFile)
-	log.info("Updated %s"%sFile)
+	log.info("%s %s"%(sDid.capitalize(), sFile))
 
 ##############################################################################
 # Servers
@@ -1392,7 +1393,7 @@ class Importer(object):
 
 		try:
 			dSrc = buildSource(log, sDs, dProps, lUrls)
-			self._override(sDs, dProps, dSrc)
+			sOver = self._override(sDs, dProps, dSrc)
 			lBad = checkSource(dSrc)
 			if lBad: raise DsdfError('; '.join(lBad))
 		except DsdfError as e:
@@ -1404,7 +1405,13 @@ class Importer(object):
 		sTitle = self.dSets[sDs] or dSrc.get('title')
 		dSet = buildSourceSet(sLabel, sTitle, dProps, dSrc, sSrcUrl)
 
-		writeObj(log, dSrc, os.path.join(self._file(sDs)[:-len('.json')], 'das2.json'), self.bNoOp)
+		sSrcFile = os.path.join(self._file(sDs)[:-len('.json')], 'das2.json')
+		if sOver:
+			# Said for every run, changed file or not: it is how a log shows
+			# which nodes are not plain conversions
+			log.info("%s %s with %s"%(
+				'Would have customized' if self.bNoOp else 'Customized', sSrcFile, sOver))
+		writeObj(log, dSrc, sSrcFile, self.bNoOp)
 		writeObj(log, dSet, self._file(sDs), self.bNoOp)
 		self.nWritten += 1
 
@@ -1423,9 +1430,9 @@ class Importer(object):
 		not written and what is on disk stays as it was until someone
 		looks.
 		"""
-		if not self.sOverDir: return
+		if not self.sOverDir: return None
 		sFile = os.path.join(self.sOverDir, *sDs.split('/')) + '.json5'
-		if not os.path.isfile(sFile): return
+		if not os.path.isfile(sFile): return None
 		self.lOverUsed.append(os.path.abspath(sFile))
 
 		try:
@@ -1450,7 +1457,7 @@ class Importer(object):
 			# Ops can reshape a node into something later ops trip over.
 			# One dataset's bad override must not stop the whole run.
 			raise DsdfError("override %s failed part way, %s: %s"%(sFile, type(e).__name__, e))
-		self.log.info("%s: applied override %s"%(sDs, sFile))
+		return sFile
 
 	def unusedOverrides(self):
 		"""Override files at or under the target that no dataset used, a
