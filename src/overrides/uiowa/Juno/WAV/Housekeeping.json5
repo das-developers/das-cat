@@ -1,0 +1,30 @@
+{
+	// Juno Waves housekeeping.
+	//
+	// Every one of this DSDF's 74 params names a housekeeping field to
+	// output, 'p12v | +12V regulated supply | 12.0'.  They are choices of
+	// data variable, not server options, and the interface rule is that a
+	// choice goes in the section it is about.  So each param becomes a
+	// data variable with an 'enabled' toggle, the form used for CDF and
+	// dasflex variable selection, and the options section goes away.
+	// The param's title is the variable's title and its token the label.
+	// The DSDF has no item_ lines for the fields, so the variables do not
+	// exist until this override makes them.
+	//
+	// What is sent does not change: the toggles feed the same flags.
+	//
+	// One thing a form can't show: the reader sends only the fields
+	// asked for, and with none asked for it sends them all.  So all
+	// toggles off means everything, not nothing.  The description says so.
+
+	"dataset": "Juno/WAV/Housekeeping",
+	"dsdf": "sha256:ef0b5a18d166df4b",
+	"ops": [
+		{"op": "move", "from": "/interface/options/props/*", "path": "/interface/data/*/props/enabled"},
+		{"op": "move", "from": "/interface/data/*/props/enabled/title", "path": "/interface/data/*/title", "before": "props"},
+		{"op": "move", "from": "/interface/data/*/props/enabled/label", "path": "/interface/data/*/label", "before": "title"},
+		{"op": "remove", "path": "/interface/options"},
+		{"op": "add", "path": "/description", "after": "title",
+		 "value": "Each housekeeping field is a data variable that can be turned on.  With none turned on the server sends every field."},
+	]
+}

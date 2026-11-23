@@ -1,15 +1,16 @@
 {
 	// Das Federated Catalog (FedCat) Common Properties for all nodes
 	//
-	//   Node (0.7)
+	//   Node, shared by every node type
 	//
 	// This is essentially a virtual class, no real catalog object uses this
 	// directly.
 	
 	"$schema":"http://json-schema.org/draft/2020-12/schema",
 
-	// Relative ids: $ref targets resolve against wherever this file was
-	// fetched from, so the published set works from any host or checkout
+	// Sources refer to each other by file name.  The build copies what a
+	// schema uses into the published file (src/scripts/schema_bundle.py), and
+	// gives that file its version as its id.
 	"$id":"node.json",
 
 	"$ref":"catobj.json",  // All nodes are catalog objects
@@ -35,5 +36,51 @@
 		// but usually it does.
 		"token":{"type":"string", "pattern":"^[a-z_][a-z0-9_]{0,32}$"},
 
+	},
+
+	// Members several node types share.  Kept here so that a SourceSet's
+	// summary and the sources under it can't drift apart.
+	"$defs":{
+
+		// What may appear as a value under a 'catalog' member, of a Catalog
+		// or a SourceSet.  Every entry says what it is: a catalog object
+		// has a type.  One that points elsewhere (urls or locations) is a
+		// Reference and is checked as one.  One that holds a node in place
+		// is checked here only as a catalog object.  It is a node of its
+		// own type and version, to be checked against its own schema, so
+		// that a container does not have to change version when a type it
+		// may hold does.
+		"Child":{
+			"$ref":"catobj.json",
+			"if":{"anyOf":[ {"required":["urls"]}, {"required":["locations"]} ]},
+			"then":{"$ref":"reference.json"}
+		},
+
+		// Helpful humans.  'type' says what to ask them about: "scientific",
+		// "technical", "maintainer", ...
+		"Contacts":{
+			"type":"array", "items":{
+				"type":"object",
+				"properties":{
+					"type":{"type":"string", "minLength":1, "maxLength":32},
+					"name":{"type":"string", "minLength":1},
+					"email":{"type":"string"}
+				},
+				"required":["name","type"],
+				"additionalProperties":false
+			}
+		},
+
+		// Terms the data are offered under.  'policy' is a short phrase a
+		// client can show beside a plot, "Ask Before Publication"; 'url' is
+		// where the whole policy is written down.
+		"Usage":{
+			"type":"object",
+			"properties":{
+				"policy":{"type":"string", "minLength":1, "maxLength":128},
+				"url":{"type":"string", "format":"uri", "pattern": "^https?://"}
+			},
+			"additionalProperties":false
+		}
 	}
 }

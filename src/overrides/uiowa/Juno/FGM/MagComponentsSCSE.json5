@@ -1,0 +1,35 @@
+{
+	// Juno FGM field components in the SCSE frame.
+	//
+	// The DSDF lists four outputs (item_00..03: mag, r, t, n) and four
+	// params that each turn one of them off, 'no_r | Turn off the R
+	// component output | r.out.off'.  That is variable selection with the
+	// sense inverted, so each param becomes the 'enabled' toggle of its
+	// data variable: on by default, and turning it off sends the flag.
+	// What is sent does not change, only which state of the control sends
+	// it.
+	//
+	// remove and add rather than move, because the meaning flips: an
+	// example setting 'no_r: true' would have to become 'enabled: false',
+	// which a move can't do.  The DSDF has no examples with params today;
+	// if one appears the importer stops on it.
+
+	"dataset": "Juno/FGM/MagComponentsSCSE",
+	"dsdf": "sha256:ac32d91bcfa2ae48",
+	"ops": [
+		{"op": "test", "path": "/protocol/httpParams/params/flags/no_mag/value", "value": "mag.out.off"},
+		{"op": "test", "path": "/protocol/httpParams/params/flags/no_r/value", "value": "r.out.off"},
+		{"op": "test", "path": "/protocol/httpParams/params/flags/no_t/value", "value": "t.out.off"},
+		{"op": "test", "path": "/protocol/httpParams/params/flags/no_n/value", "value": "n.out.off"},
+
+		{"op": "add", "path": "/interface/data/mag/props/enabled",
+		 "value": {"type": "boolean", "value": true, "set": {"param": "params", "flag": "no_mag", "value": false}}},
+		{"op": "add", "path": "/interface/data/r/props/enabled",
+		 "value": {"type": "boolean", "value": true, "set": {"param": "params", "flag": "no_r", "value": false}}},
+		{"op": "add", "path": "/interface/data/t/props/enabled",
+		 "value": {"type": "boolean", "value": true, "set": {"param": "params", "flag": "no_t", "value": false}}},
+		{"op": "add", "path": "/interface/data/n/props/enabled",
+		 "value": {"type": "boolean", "value": true, "set": {"param": "params", "flag": "no_n", "value": false}}},
+		{"op": "remove", "path": "/interface/options"},
+	]
+}

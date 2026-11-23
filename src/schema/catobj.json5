@@ -1,15 +1,16 @@
 {
 	// Das Federated Catalog (FedCat) Common Catalog Object properties
 	//
-	//   CatObj (0.7)
+	//   CatObj, shared by every node type and reference
 	//
 	// This is a "virtual object", no real catalog node has only these
 	// properties
 
 	"$schema":"http://json-schema.org/draft/2020-12/schema",
 
-	// Relative ids: $ref targets resolve against wherever this file was
-	// fetched from, so the published set works from any host or checkout
+	// Sources refer to each other by file name.  The build copies what a
+	// schema uses into the published file (src/scripts/schema_bundle.py), and
+	// gives that file its version as its id.
 	"$id":"catobj.json",
 
 	"title":"CatObj",
@@ -31,11 +32,13 @@
 			//"pattern":"^[a-zA-Z_][a-zA-Z0-9_]{0,63}$"
 		},
 
-		// Short display string for tight spaces
-		"label":{"type":"string", "minLength":1, "maxLength":32},
+		// Short display string for tight spaces.  48 and not 32: importers
+		// make labels from server dataset names, and the longest of those
+		// served today is 33 characters.
+		"label":{"type":"string", "minLength":1, "maxLength":48},
 
 		// Synonym for label
-		"name":{"type":"string", "minLength":1, "maxLength":32, "deprecated":true},	
+		"name":{"type":"string", "minLength":1, "maxLength":48, "deprecated":true},	
 
 		// A 1-line summary of the node
 		"title":{"type":"string", "minLength":1, "maxLength":256},

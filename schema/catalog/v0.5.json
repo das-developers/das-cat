@@ -1,0 +1,278 @@
+{
+	"$schema": "http://json-schema.org/draft/2020-12/schema",
+	"$id": "v0.5.json",
+	"$ref": "node.json",
+	"title": "A potentially recursive collection of das FedCat nodes",
+	"type": "object",
+	"properties": {
+		"type": {
+			"const": "Catalog"
+		},
+		"catalog": {
+			"type": "object",
+			"additionalProperties": {
+				"$ref": "node.json#/$defs/Child"
+			}
+		},
+		"separator": {
+			"type": [
+				"null",
+				"string"
+			],
+			"maxLength": 7,
+			"pattern": "^[:/\\.,;]+$",
+			"default": "/"
+		}
+	},
+	"required": [
+		"catalog"
+	],
+	"unevaluatedProperties": false,
+	"$defs": {
+		"catobj.json": {
+			"$id": "catobj.json",
+			"title": "CatObj",
+			"description": "All JSON nodes and references have these properties",
+			"type": "object",
+			"properties": {
+				"type": {
+					"type": "string",
+					"enum": [
+						"Catalog",
+						"SpdfMasterCat",
+						"SpaseCatalog",
+						"SourceSet",
+						"HttpStreamSrc",
+						"WebSockSrc",
+						"Das2DSDF"
+					]
+				},
+				"label": {
+					"type": "string",
+					"minLength": 1,
+					"maxLength": 48
+				},
+				"name": {
+					"type": "string",
+					"minLength": 1,
+					"maxLength": 48,
+					"deprecated": true
+				},
+				"title": {
+					"type": "string",
+					"minLength": 1,
+					"maxLength": 256
+				},
+				"description": {
+					"type": "string",
+					"minLength": 3,
+					"maxLength": 8192
+				}
+			},
+			"anyOf": [
+				{
+					"required": [
+						"name",
+						"type"
+					]
+				},
+				{
+					"required": [
+						"label",
+						"type"
+					]
+				}
+			]
+		},
+		"node.json": {
+			"$id": "node.json",
+			"$ref": "catobj.json",
+			"title": "Node",
+			"description": "All JSON nodes have these properties",
+			"type": "object",
+			"properties": {
+				"$schema": {
+					"type": "string",
+					"format": "uri",
+					"pattern": "^https?://"
+				},
+				"version": {
+					"type": "string",
+					"pattern": "^[0-9][0-9]{0,2}\\.[0-9][0-9]{0,2}(\\.[0-9][0-9]{0,2})?$"
+				},
+				"token": {
+					"type": "string",
+					"pattern": "^[a-z_][a-z0-9_]{0,32}$"
+				}
+			},
+			"$defs": {
+				"Child": {
+					"$ref": "catobj.json",
+					"if": {
+						"anyOf": [
+							{
+								"required": [
+									"urls"
+								]
+							},
+							{
+								"required": [
+									"locations"
+								]
+							}
+						]
+					},
+					"then": {
+						"$ref": "reference.json"
+					}
+				},
+				"Contacts": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"type": {
+								"type": "string",
+								"minLength": 1,
+								"maxLength": 32
+							},
+							"name": {
+								"type": "string",
+								"minLength": 1
+							},
+							"email": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"name",
+							"type"
+						],
+						"additionalProperties": false
+					}
+				},
+				"Usage": {
+					"type": "object",
+					"properties": {
+						"policy": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 128
+						},
+						"url": {
+							"type": "string",
+							"format": "uri",
+							"pattern": "^https?://"
+						}
+					},
+					"additionalProperties": false
+				}
+			}
+		},
+		"reference.json": {
+			"$id": "reference.json",
+			"$ref": "catobj.json",
+			"title": "A reference to a complete node",
+			"type": "object",
+			"properties": {
+				"externalDesc": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/Url"
+					}
+				},
+				"mime": {
+					"type": "string",
+					"maxLength": 64,
+					"default": "application/json"
+				},
+				"MIME": {
+					"type": "string",
+					"maxLength": 64,
+					"deprecated": true
+				},
+				"provides": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"maxLength": 64
+					}
+				},
+				"purpose": {
+					"type": "string",
+					"maxLength": 32
+				},
+				"locations": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/Location"
+					}
+				},
+				"urls": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/Url"
+					},
+					"deprecated": true
+				}
+			},
+			"anyOf": [
+				{
+					"required": [
+						"label",
+						"type",
+						"locations"
+					]
+				},
+				{
+					"required": [
+						"name",
+						"type",
+						"locations"
+					]
+				},
+				{
+					"required": [
+						"label",
+						"type",
+						"urls"
+					]
+				},
+				{
+					"required": [
+						"name",
+						"type",
+						"urls"
+					]
+				}
+			],
+			"unevaluatedProperties": false,
+			"$defs": {
+				"Url": {
+					"type": "string",
+					"format": "uri",
+					"pattern": "^https?://"
+				},
+				"Location": {
+					"type": "object",
+					"properties": {
+						"url": {
+							"$ref": "#/$defs/Url"
+						},
+						"authReq": {
+							"type": "boolean",
+							"default": false
+						},
+						"addressReq": {
+							"type": "boolean",
+							"default": false
+						}
+					},
+					"required": [
+						"url"
+					]
+				}
+			}
+		}
+	}
+}

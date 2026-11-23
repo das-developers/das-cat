@@ -1,0 +1,57 @@
+{
+	// Juno Waves burst mode waveforms.
+	//
+	// The DSDF has two params, 'band' and
+	//
+	//    start_times | Only output capture start times, no waveform data | -s
+	//
+	// An option that removes data is, to a person, the switch that turns
+	// that data off.  So start_times becomes the 'enabled' toggle of the
+	// waveform variable: on by default, and turning it off sends -s.  What
+	// is sent does not change, only which state of the control sends it.
+	// The protocol section is not touched: there the flag is still
+	// start_times, with the DSDF's own words as its comment.
+	//
+	// The DSDF has no data or item lines, so the node has no data section
+	// and the variable is added here.  Its name is a judgment.  The stream
+	// names its one yscan after the band it carries ('lfr_lo_e' with no
+	// band given, seen 2026-11-22), so no single stream name exists to
+	// copy, and 'waveform' is the DSDF's own word for what -s leaves out.
+	// No units are given because they follow the band (V/m for the
+	// default, an electric band).  If the DSDF gains a data line, the
+	// importer stops on the changed hash; use the DSDF's name then and
+	// keep only the toggle from this file.
+	//
+	// 'band' stays an option.  It could be read as a property of the
+	// waveform variable, but this is a Juno dataset and nothing about its
+	// advertised choices moves without the owner's say.
+	//
+	// remove and add rather than move, because the meaning flips: an
+	// example setting 'start_times: true' would have to become 'enabled:
+	// false', which a move can't do.  None of the 20 examples sets a
+	// param; if one comes to set start_times the importer stops on it.
+	//
+	// Checked live 2026-11-22 from a host on the server's test address
+	// list, 2016-08-27T12:40 to 13:00: with nothing sent the stream has
+	// the yscan (cut off at 3 MB), with params=-s it is 17 kB and its
+	// packets hold time tags alone.
+
+	"dataset": "Juno/WAV/Burst_Waveforms",
+	"dsdf": "sha256:8dcb81f3c32d466e",
+	"ops": [
+		{"op": "test", "path": "/protocol/httpParams/params/flags/start_times/value", "value": "-s"},
+		{"op": "test", "path": "/interface/options/props/start_times/set/value", "value": true},
+
+		{"op": "add", "path": "/interface/data", "after": "coords",
+		 "value": {"waveform": {
+			"label": "Waveform",
+			"title": "Calibrated waveform samples of the band chosen",
+			"props": {"enabled": {
+				"type": "boolean", "value": true,
+				"title": "Output the waveform samples.  When off only the capture start times are sent",
+				"set": {"param": "params", "flag": "start_times", "value": false}
+			}}
+		 }}},
+		{"op": "remove", "path": "/interface/options/props/start_times"},
+	]
+}

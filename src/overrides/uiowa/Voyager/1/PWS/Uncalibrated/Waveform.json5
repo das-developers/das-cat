@@ -1,0 +1,42 @@
+{
+	// Voyager PWS wideband reader (vxpsd), notch frequencies.
+	//
+	// The DSDF can only describe NOTCHES as free text:
+	//
+	//    NOTCHES | A list of space separated kHz frequency values to
+	//              remove from the output | @
+	//
+	// The reader takes up to 24 numbers (MAXNOTCH in vxpsd.c), each a
+	// frequency in kHz from 0, the DC line, up to the 14.4 kHz top of the
+	// spectrum, and removes the line nearest each one.  That is a list of
+	// reals with a range and a count, which the catalog can say, so a
+	// form can offer a number list editor instead of a text box and
+	// refuse a 25th value.  The upper range bound is exclusive, hence
+	// 14.41 to let 14.4 through.
+	//
+	// What is sent does not change: the numbers still go out as bare
+	// words separated by spaces.  The flag gains a subSep because that
+	// is how a list says it is joined; it is the same space the flag
+	// set already puts between words.
+	//
+	// The same override, but for the dataset name and hash, sits beside
+	// each of the six Voyager datasets served by this reader.
+
+	"dataset": "Voyager/1/PWS/Uncalibrated/Waveform",
+	"dsdf": "sha256:2fbfd42db59ba3a4",
+	"ops": [
+		{"op": "test", "path": "/protocol/httpParams/params/flagSep", "value": " "},
+		{"op": "test", "path": "/protocol/httpParams/params/flags/NOTCHES/prefix", "value": ""},
+		{"op": "test", "path": "/interface/options/props/NOTCHES/type", "value": "string"},
+
+		{"op": "add", "path": "/protocol/httpParams/params/flags/NOTCHES/subSep", "value": " ", "after": "prefix"},
+		{"op": "move", "from": "/interface/options/props/NOTCHES", "path": "/interface/options/props/notches"},
+		{"op": "replace", "path": "/interface/options/props/notches/label", "value": "Notches"},
+		{"op": "replace", "path": "/interface/options/props/notches/title", "value": "Frequencies to remove from the output"},
+		{"op": "add", "path": "/interface/options/props/notches/units", "value": "kHz", "after": "title"},
+		{"op": "replace", "path": "/interface/options/props/notches/type", "value": "real"},
+		{"op": "add", "path": "/interface/options/props/notches/multi", "value": [1, 24], "after": "type"},
+		{"op": "replace", "path": "/interface/options/props/notches/value", "value": []},
+		{"op": "add", "path": "/interface/options/props/notches/set/range", "value": [0.0, 14.41]},
+	]
+}

@@ -1,0 +1,88 @@
+{
+	// Cassini RPWS low rate survey, electric.
+	//
+	// The DSDF's mfr and hfr params each mix two kinds of thing in one set:
+	//
+	//    mfr | ... | -mfr @ | set: NONE 1 2 3 Ex Ew
+	//    hfr | ... | -hfr @ | set: NONE A B C 1 2 Eu Ev Ex Ew
+	//
+	// bands of the receiver and the sensors to take them from, and the
+	// reader wants at least one of each.  A DSDF param has no way to say
+	// that, so the converter can only make one list of five (or nine)
+	// unrelated choices.  Here each becomes a band list and a sensor list
+	// that fill the same flag, bands first, which is the order the DSDF
+	// lists them in and so what is sent does not change: -mfr 12Ex.
+	//
+	// HFR bands HF1 and HF2 are spelled 1 and 2 on the reader's command
+	// line.  Beside A, B and C that reads as a typo, so the choices are
+	// named HF1 and HF2 and send 1 and 2 (pval).
+	//
+	// Labels: the converter can only use the param token as the label.
+	// These are the short captions a form shows.
+	//
+	// Not done here, on purpose: the reader's defaults (LFDR and MFDR Ex Ew,
+	// MFR bands 1 and 3 Ex Ew, HFR all bands Eu Ev Ex Ew, and seven of the
+	// filters) are not written as default values.  Choosing anything for
+	// one receiver replaces the default set for all of them, so a form
+	// showing the defaults ticked would show receivers as on that the
+	// request has just turned off.  The titles say what happens instead.
+
+	"dataset": "Cassini/RPWS/Survey",
+	"dsdf": "sha256:834ce215aa1b544d",
+	"ops": [
+		// The split below counts on this element order
+		{"op": "test", "path": "/interface/options/props/mfr/set/enum/2/value", "value": "3"},
+		{"op": "test", "path": "/interface/options/props/mfr/set/enum/3/value", "value": "Ex"},
+		{"op": "test", "path": "/interface/options/props/hfr/set/enum/4/value", "value": "2"},
+		{"op": "test", "path": "/interface/options/props/hfr/set/enum/5/value", "value": "Eu"},
+		{"op": "test", "path": "/protocol/httpParams/params/flags/mfr/prefix", "value": "-mfr "},
+		{"op": "test", "path": "/protocol/httpParams/params/flags/mfr/subSep", "value": ""},
+		{"op": "test", "path": "/protocol/httpParams/params/flags/mfr/enum", "value": ["1", "2", "3", "Ex", "Ew"]},
+		{"op": "test", "path": "/protocol/httpParams/params/flags/hfr/prefix", "value": "-hfr "},
+		{"op": "test", "path": "/protocol/httpParams/params/flags/hfr/subSep", "value": ""},
+		{"op": "test", "path": "/protocol/httpParams/params/flags/hfr/enum", "value": ["A", "B", "C", "1", "2", "Eu", "Ev", "Ex", "Ew"]},
+
+		// MFR: bands 1 2 3, then sensors Ex Ew
+		{"op": "copy", "from": "/interface/options/props/mfr", "path": "/interface/options/props/mfr_bands", "before": "mfr"},
+		{"op": "remove", "path": "/interface/options/props/mfr_bands/set/enum/4"},
+		{"op": "remove", "path": "/interface/options/props/mfr_bands/set/enum/3"},
+		{"op": "replace", "path": "/interface/options/props/mfr_bands/label", "value": "MFR bands"},
+		{"op": "replace", "path": "/interface/options/props/mfr_bands/title", "value": "MFR bands to output"},
+		{"op": "move", "from": "/interface/options/props/mfr", "path": "/interface/options/props/mfr_sensors"},
+		{"op": "remove", "path": "/interface/options/props/mfr_sensors/set/enum/2"},
+		{"op": "remove", "path": "/interface/options/props/mfr_sensors/set/enum/1"},
+		{"op": "remove", "path": "/interface/options/props/mfr_sensors/set/enum/0"},
+		{"op": "replace", "path": "/interface/options/props/mfr_sensors/label", "value": "MFR sensors"},
+		{"op": "replace", "path": "/interface/options/props/mfr_sensors/title", "value": "MFR sensors to output"},
+
+		// HFR: bands A B C HF1 HF2, then sensors Eu Ev Ex Ew
+		{"op": "copy", "from": "/interface/options/props/hfr", "path": "/interface/options/props/hfr_bands", "before": "hfr"},
+		{"op": "remove", "path": "/interface/options/props/hfr_bands/set/enum/8"},
+		{"op": "remove", "path": "/interface/options/props/hfr_bands/set/enum/7"},
+		{"op": "remove", "path": "/interface/options/props/hfr_bands/set/enum/6"},
+		{"op": "remove", "path": "/interface/options/props/hfr_bands/set/enum/5"},
+		{"op": "replace", "path": "/interface/options/props/hfr_bands/set/enum/3/value", "value": "HF1"},
+		{"op": "add", "path": "/interface/options/props/hfr_bands/set/enum/3/pval", "value": "1", "after": "value"},
+		{"op": "replace", "path": "/interface/options/props/hfr_bands/set/enum/4/value", "value": "HF2"},
+		{"op": "add", "path": "/interface/options/props/hfr_bands/set/enum/4/pval", "value": "2", "after": "value"},
+		{"op": "replace", "path": "/interface/options/props/hfr_bands/label", "value": "HFR bands"},
+		{"op": "replace", "path": "/interface/options/props/hfr_bands/title", "value": "HFR bands to output"},
+		{"op": "move", "from": "/interface/options/props/hfr", "path": "/interface/options/props/hfr_sensors"},
+		{"op": "remove", "path": "/interface/options/props/hfr_sensors/set/enum/4"},
+		{"op": "remove", "path": "/interface/options/props/hfr_sensors/set/enum/3"},
+		{"op": "remove", "path": "/interface/options/props/hfr_sensors/set/enum/2"},
+		{"op": "remove", "path": "/interface/options/props/hfr_sensors/set/enum/1"},
+		{"op": "remove", "path": "/interface/options/props/hfr_sensors/set/enum/0"},
+		{"op": "replace", "path": "/interface/options/props/hfr_sensors/label", "value": "HFR sensors"},
+		{"op": "replace", "path": "/interface/options/props/hfr_sensors/title", "value": "HFR sensors to output"},
+
+		// Captions
+		{"op": "replace", "path": "/interface/options/props/res_cor/label", "value": "Resonance correction"},
+		{"op": "replace", "path": "/interface/options/props/bg_div/label", "value": "Background division"},
+		{"op": "replace", "path": "/interface/options/props/lfdr/label", "value": "LFDR sensors"},
+		{"op": "replace", "path": "/interface/options/props/mfdr/label", "value": "MFDR sensors"},
+		{"op": "replace", "path": "/interface/options/props/nix/label", "value": "Remove"},
+		{"op": "replace", "path": "/interface/options/props/no_bascap/label", "value": "No base capacitance"},
+		{"op": "replace", "path": "/interface/options/props/no_antlen/label", "value": "No antenna length"},
+	]
+}
